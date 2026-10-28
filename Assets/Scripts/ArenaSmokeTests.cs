@@ -5,531 +5,89 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.LowLevel;
-
 namespace Askich
 {
-    /// <summary>
-    /// Opt-in integration checks for a development player. Not included in release players.
-    /// Run with -askich-smoke [-askich-test-output absolute/results.json].
-    /// </summary>
     public sealed class ArenaSmokeTests : MonoBehaviour
     {
-        const BindingFlags PrivateInstance = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
-        readonly List<Result> results = new List<Result>();
-        readonly List<InputDevice> disabledDevices = new List<InputDevice>();
+        const BindingFlags Flags=BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic;
         ArenaGame game;
-        Keyboard testKeyboard;
-        static string originalSavePath;
-        static string testSavePath;
-
-        [Serializable]
-        sealed class Result
-        {
-            public string name;
-            public bool passed;
-            public string detail;
-        }
-
-        [Serializable]
-        sealed class Report
-        {
-            public string suite = "Askich runtime smoke";
-            public string unityVersion;
-            public string utc;
-            public bool passed;
-            public Result[] tests;
-        }
-
+        [Serializable] public class Result { public string name; public bool passed; public string detail; }
+        [Serializable] public class Report { public string suite="Askich medieval runtime integration"; public bool passed; public Result[] tests; }
+        readonly List<Result> results=new List<Result>();
+        static string isolated;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void IsolateProfile()
+        static void Isolate()
         {
-            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-askich-smoke") < 0) return;
-            originalSavePath = AskichProfile.SavePathOverride;
-            testSavePath = Path.Combine(Path.GetTempPath(), "askich-smoke-" + Guid.NewGuid().ToString("N") + ".json");
-            AskichProfile.SavePathOverride = testSavePath;
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"-askich-smoke")<0) return;
+            isolated=Path.Combine(Path.GetTempPath(),"askich-medieval-"+Guid.NewGuid().ToString("N")+".json"); AskichProfile.SavePathOverride=isolated;
         }
-
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void Bootstrap()
+        static void Bootstrap() { if(isolated!=null) new GameObject("Smoke tests").AddComponent<ArenaSmokeTests>(); }
+        T Get<T>(string name) => (T)typeof(ArenaGame).GetField(name,Flags).GetValue(game);
+        void Set(string name,object value) => typeof(ArenaGame).GetField(name,Flags).SetValue(game,value);
+        object Call(string name,params object[] args) => typeof(ArenaGame).GetMethod(name,Flags).Invoke(game,args);
+        string Mode => typeof(ArenaGame).GetField("mode",Flags).GetValue(game).ToString();
+        void Check(bool value,string detail) { if(!value) throw new Exception(detail); }
+        void Test(string name,Action action)
         {
-            if (Array.IndexOf(Environment.GetCommandLineArgs(), "-askich-smoke") < 0) return;
-            new GameObject("Development smoke runner").AddComponent<ArenaSmokeTests>();
+            try { game.StartRun(); action(); results.Add(new Result{name=name,passed=true,detail="OK"}); }
+            catch(Exception e) { results.Add(new Result{name=name,passed=false,detail=(e.InnerException??e).Message}); }
         }
-
+        void Begin(int faction=0) { Set("faction",faction); game.StartRun(); Call("ContinueStory",false); }
+        IList Enemies => Get<IList>("enemies");
+        object Enemy(Vector2 position)
+        {
+            Set("remaining",3); Call("SpawnEnemy"); object e=Enemies[Enemies.Count-1]; Field(e,"pos",position); return e;
+        }
+        void Field(object obj,string name,object value) => obj.GetType().GetField(name).SetValue(obj,value);
+        T Field<T>(object obj,string name) => (T)obj.GetType().GetField(name).GetValue(obj);
         IEnumerator Start()
         {
-            // Let the scene's Awake and initial Input System update complete first.
             yield return null;
-            bool passed = false;
-            try
-            {
-                game = FindFirstObjectByType<ArenaGame>();
-                Require(game != null, "The built scene did not contain ArenaGame.");
-                game.enabled = false;
-                foreach (InputDevice device in InputSystem.devices)
-                {
-                    if (device.enabled && (device is Keyboard || device is Mouse)) disabledDevices.Add(device);
-                }
-                foreach (InputDevice device in disabledDevices) InputSystem.DisableDevice(device);
-                testKeyboard = InputSystem.AddDevice<Keyboard>("Smoke keyboard");
-                ReleaseKeys();
-
-                Check("prologue_gates_first_wave", TestStartRun);
-                Check("swept_projectile_kills_enemy_and_scores", TestProjectileKill);
-                Check("enemy_contact_causes_defeat", TestContactDefeat);
-                Check("lethal_hit_stops_scoring_healing_and_spawning_in_same_frame", TestDefeatStopsFrame);
-                Check("dash_input_grants_temporary_invulnerability", TestDash);
-                Check("pause_stops_simulation_time", TestPause);
-                Check("wave_completion_offers_three_unique_upgrades", TestUpgradeOffer);
-                Check("selected_upgrade_changes_stats_and_advances_wave", TestUpgradeApplication);
-                Check("five_waves_reach_victory", TestVictory);
-                Check("restart_clears_actors_and_upgrade_state", TestRestart);
-                Check("collectible_currency_survives_defeat_and_restart", TestCurrency);
-                Check("locked_skins_require_currency_and_equip_without_repaying", TestSkinShop);
-                Check("story_choice_changes_stats_and_is_single_use", TestStoryChoice);
-                Check("story_key_does_not_also_select_upgrade", TestStoryKey);
-                Check("wave_three_changes_location", TestLocations);
-                Check("profile_round_trip_preserves_wallet_unlocks_and_record", TestProfileRoundTrip);
-                Check("corrupt_profile_falls_back_to_safe_defaults", TestCorruptProfile);
-                passed = results.Count == 17 && results.TrueForAll(result => result.passed);
-            }
-            catch (Exception error)
-            {
-                results.Add(new Result { name = "smoke_harness", passed = false, detail = Explain(error) });
-            }
-            finally
-            {
-                if (testKeyboard != null) InputSystem.RemoveDevice(testKeyboard);
-                foreach (InputDevice device in disabledDevices) if (device.added) InputSystem.EnableDevice(device);
-                // All saves were redirected before the scene Awake; never touch the real profile.
-                if (game != null) Set("persistenceEnabled", false);
-                AskichProfile.SavePathOverride = originalSavePath;
-                if (!string.IsNullOrEmpty(testSavePath) && File.Exists(testSavePath)) File.Delete(testSavePath);
-            }
-
-            var report = new Report
-            {
-                unityVersion = Application.unityVersion,
-                utc = DateTime.UtcNow.ToString("o"),
-                passed = passed,
-                tests = results.ToArray()
-            };
-            try
-            {
-                string output = OutputPath();
-                string directory = Path.GetDirectoryName(output);
-                if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
-                File.WriteAllText(output, JsonUtility.ToJson(report, true));
-            }
-            catch (Exception error)
-            {
-                passed = false;
-                Debug.LogError("ASKICH_SMOKE_REPORT_ERROR " + error.Message);
-            }
-            Debug.Log(passed ? "ASKICH_SMOKE_PASS" : "ASKICH_SMOKE_FAIL");
-            Application.Quit(passed ? 0 : 1);
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#endif
-        }
-
-        void TestStartRun()
-        {
-            game.StartRun();
-            Require(Mode() == "Story" && Get<int>("wave") == 0, "The prologue did not precede combat.");
-            Call("Update");
-            Require(Mode() == "Story" && List("enemies").Count == 0, "Enemies appeared while reading the prologue.");
-            Call("ContinueStory", 0);
-            AssertInitialState();
-            Require(Get<float>("spawnTimer") > 0, "First wave did not provide a spawn grace period.");
-        }
-
-        void TestProjectileKill()
-        {
-            StartPlaying();
-            Call("SpawnEnemy");
-            object enemy = List("enemies")[0];
-            SetObject(enemy, "pos", new Vector2(1.2f, 0));
-            SetObject(enemy, "hp", 32f);
-            int beforeScore = Get<int>("score");
-            // Neither end of this 2.2-unit step overlaps the enemy: this exercises swept hits.
-            Call("Fire", Vector2.zero, Vector2.right, false, 100f, 0);
-            Call("UpdateShots", 0.1f);
-            Require(List("enemies").Count == 0, "Projectile crossed the enemy without killing it.");
-            Require(List("shots").Count == 0, "Non-piercing projectile survived its hit.");
-            Require(Get<int>("kills") == 1 && Get<int>("score") > beforeScore, "Kill did not update the score.");
-        }
-
-        void TestContactDefeat()
-        {
-            StartPlaying();
-            Call("SpawnEnemy");
-            SetObject(List("enemies")[0], "pos", Vector2.zero);
-            Set("health", 10f);
-            Call("UpdateEnemies", 0f);
-            Require(Get<float>("health") == 0 && Mode() == "Defeat", "Lethal enemy contact did not enter Defeat.");
-            Require(Get<bool>("savedResult"), "Defeat did not finish the run.");
-        }
-
-        void TestDefeatStopsFrame()
-        {
-            // Cover defeat in both UpdateEnemies and UpdateShots; later stages must stop.
-            foreach (bool projectile in new[] { false, true })
-            {
-                StartPlaying();
-                Set("kills", 6);
-                Call("SpawnEnemy");
-                SetObject(List("enemies")[0], "pos", Vector2.zero);
-                Call("KillEnemy", 0); // Place a real repair pickup directly under the pilot.
-                Require(List("pickups").Count == 1, "Defeat fixture did not create a repair pickup.");
-
-                Call("SpawnEnemy");
-                object target = List("enemies")[0];
-                SetObject(target, "pos", new Vector2(2, 0));
-                SetObject(target, "hp", 1f);
-                SetObject(target, "kind", 0);
-                Call("Fire", new Vector2(2, 0), Vector2.left, false, 100f, 0);
-                if (projectile)
-                {
-                    // Reverse projectile traversal processes this lethal shot before our shot.
-                    Call("Fire", Vector2.zero, Vector2.right, true, 100f, 0);
-                }
-                else
-                {
-                    Call("SpawnEnemy");
-                    SetObject(List("enemies")[1], "pos", Vector2.zero);
-                    SetObject(List("enemies")[1], "kind", 0);
-                }
-
-                Set("health", 1f);
-                Set("hurtTimer", 0f);
-                Set("remaining", 1);
-                Set("spawnTimer", -1f); // A spawn is due, but must not occur after death.
-                int beforeScore = Get<int>("score");
-                int beforeKills = Get<int>("kills");
-                int beforeEnemies = List("enemies").Count;
-                int beforeCurrency = Get<int>("credits");
-                int beforeShards = List("shards").Count;
-                Call("Update");
-                string cause = projectile ? "projectile" : "contact";
-                Require(Mode() == "Defeat" && Get<float>("health") == 0,
-                    "Lethal " + cause + " was followed by a repair pickup in the same frame.");
-                Require(Get<int>("score") == beforeScore && Get<int>("kills") == beforeKills,
-                    "Combat continued scoring after lethal " + cause + ".");
-                Require(List("pickups").Count == 1 && List("enemies").Count == beforeEnemies
-                    && Get<int>("remaining") == 1,
-                    "Actors were collected, killed or spawned after lethal " + cause + ".");
-                Require(Get<int>("credits") == beforeCurrency && List("shards").Count == beforeShards,
-                    "Currency was collected after lethal " + cause + ".");
-            }
-        }
-
-        void TestDash()
-        {
-            StartPlaying();
-            InputSystem.QueueStateEvent(testKeyboard, new KeyboardState(Key.Space));
-            InputSystem.Update();
-            Call("UpdatePlayer", 0f);
-            Require(Get<float>("dashTimer") > 0 && Get<float>("dashCooldown") > 0, "Space did not start a dash.");
-            Call("Hurt", 500f);
-            Require(Get<float>("health") == 100 && Mode() == "Playing", "Damage bypassed dash invulnerability.");
-            ReleaseKeys();
-            // Advance the actual player timer, then verify protection expires.
-            Call("UpdatePlayer", 0.3f);
-            Call("Hurt", 500f);
-            Require(Mode() == "Defeat", "Dash protection did not expire.");
-        }
-
-        void TestPause()
-        {
-            ReleaseKeys();
-            StartPlaying();
-            Set("elapsed", 12.5f);
-            SetMode("Paused");
-            int beforeRemaining = Get<int>("remaining");
-            Call("Update");
-            Require(Mode() == "Paused", "Pause unexpectedly resumed.");
-            Require(Get<float>("elapsed") == 12.5f && Get<int>("remaining") == beforeRemaining,
-                "Paused Update advanced simulation time or wave spawns.");
-        }
-
-        void TestUpgradeOffer()
-        {
-            StartPlaying();
-            Set("health", 60f);
-            Call("Fire", new Vector2(8, 4), Vector2.right, true, 10f, 0);
-            CompleteCurrentWave();
-            Require(Mode() == "Story", "Wave completion did not reveal its story beat.");
-            Call("ContinueStory", 0);
-            Require(Mode() == "Upgrade", "An empty completed wave did not enter upgrade selection.");
-            int[] choices = Get<int[]>("offered");
-            Require(choices.Length == 3 && new HashSet<int>(choices).Count == 3, "Upgrade choices are not three unique cards.");
-            foreach (int choice in choices) Require(choice >= 0 && choice <= 5, "An invalid upgrade was offered.");
-            Require(Get<float>("health") > 60, "Wave completion did not repair the pilot.");
-            Require(List("shots").Count == 0, "Wave completion left projectiles active.");
-        }
-
-        void TestUpgradeApplication()
-        {
-            StartPlaying();
-            CompleteToUpgrade();
-            int choice = Get<int[]>("offered")[0];
-            string field = new[] { "damage", "fireInterval", "maxHealth", "spread", "moveSpeed", "piercing" }[choice];
-            double before = Convert.ToDouble(Field(field).GetValue(game));
-            Call("ApplyUpgrade", choice);
-            double after = Convert.ToDouble(Field(field).GetValue(game));
-            Require(choice == 1 ? after < before : after > before, "Selected upgrade did not improve its stat.");
-            Require(Mode() == "Playing" && Get<int>("wave") == 2, "Upgrade did not advance to wave two.");
-            Require(Get<int>("remaining") > 0, "New wave has no queued enemies.");
-            Call("ApplyUpgrade", choice);
-            Require(Convert.ToDouble(Field(field).GetValue(game)) == after && Get<int>("wave") == 2,
-                "Upgrade was applied outside the selection screen.");
-        }
-
-        void TestVictory()
-        {
-            StartPlaying();
-            for (int completed = 1; completed <= 5; completed++)
-            {
-                Require(Get<int>("wave") == completed, "Wave progression skipped or repeated a wave.");
-                CompleteCurrentWave();
-                if (completed < 5)
-                {
-                    Require(Mode() == "Story", "An intermediate wave did not reveal its story.");
-                    Call("ContinueStory", 0);
-                    Require(Mode() == "Upgrade", "Story continuation did not offer an upgrade.");
-                    Call("ApplyUpgrade", Get<int[]>("offered")[0]);
-                }
-            }
-            Require(Mode() == "Victory" && Get<bool>("savedResult"), "Clearing wave five did not finish in Victory.");
-            Require(Get<int>("score") > 0, "Victory did not award its survival bonus.");
-        }
-
-        void TestRestart()
-        {
-            StartPlaying();
-            CompleteToUpgrade();
-            Call("ApplyUpgrade", 3);
-            CompleteToUpgrade();
-            Call("ApplyUpgrade", 5);
-            CompleteToUpgrade();
-            Call("ApplyUpgrade", 2);
-            Set("kills", 6);
-            Call("SpawnEnemy");
-            Call("KillEnemy", 0); // Seventh kill creates a repair pickup.
-            Call("SpawnEnemy");
-            Call("Fire", Vector2.zero, Vector2.right, false, 10f, 0);
-            Require(List("enemies").Count > 0 && List("shots").Count > 0 && List("pickups").Count > 0,
-                "Restart fixture did not contain the expected combat actors.");
-            game.StartRun();
-            Require(Mode() == "Story" && Get<int>("wave") == 0, "Restart skipped the prologue.");
-            Call("ContinueStory", 0);
-            AssertInitialState();
-            foreach (string list in new[] { "enemies", "shots", "sparks", "pickups", "shards" })
-                Require(List(list).Count == 0, "Restart left active " + list + ".");
-        }
-
-        void TestCurrency()
-        {
-            StartPlaying();
-            int before = Get<int>("credits");
-            Call("SpawnEnemy");
-            SetObject(List("enemies")[0], "pos", Vector2.zero);
-            Call("KillEnemy", 0);
-            Require(List("shards").Count > 0, "Defeated enemy did not drop collectible currency.");
-            Require(Get<int>("credits") == before, "Currency was awarded before collecting the drop.");
-            int value = 0;
-            foreach (object shard in List("shards"))
-            {
-                SetObject(shard, "pos", Vector2.zero);
-                value += Convert.ToInt32(shard.GetType().GetField("value").GetValue(shard));
-            }
-            Call("UpdateShards", 0f);
-            Require(value > 0 && List("shards").Count == 0, "Currency pickup did not consume its drop.");
-            Require(Get<int>("credits") == before + value && Get<int>("runCredits") == value, "Currency pickup updated the wrong balances.");
-            Call("UpdateShards", 0f);
-            Require(Get<int>("credits") == before + value, "A collected shard paid twice.");
-            Require(AskichProfile.Load().credits == before + value, "Collected currency was not saved.");
-            Call("Hurt", 500f);
-            Require(Mode() == "Defeat" && Get<int>("credits") == before + value, "Defeat removed the wallet.");
-            game.StartRun();
-            Require(Get<int>("credits") == before + value && Get<int>("runCredits") == 0, "Restart did not retain only persistent currency.");
-        }
-
-        void TestSkinShop()
-        {
-            SetMode("Menu");
-            Call("OpenShop");
-            Require(Mode() == "Shop", "Hangar did not open from the menu.");
-            Set("credits", 179);
-            Set("skinUnlocked", new[] { true, false, false });
-            Set("selectedSkin", 0);
-            bool denied = (bool)CallResult("PurchaseOrEquipSkin", 1);
-            Require(!denied && Get<int>("credits") == 179 && !Get<bool[]>("skinUnlocked")[1], "A locked skin could be bought without enough currency.");
-            Set("credits", 700);
-            Require((bool)CallResult("PurchaseOrEquipSkin", 1), "First locked skin could not be purchased.");
-            Require(Get<int>("credits") == 520 && Get<bool[]>("skinUnlocked")[1] && Get<int>("selectedSkin") == 1,
-                "First skin price, unlock or equipment was incorrect.");
-            Require((bool)CallResult("PurchaseOrEquipSkin", 2), "Second locked skin could not be purchased.");
-            Require(Get<int>("credits") == 0 && Get<bool[]>("skinUnlocked")[2] && Get<int>("selectedSkin") == 2,
-                "Second skin price, unlock or equipment was incorrect.");
-            Require((bool)CallResult("PurchaseOrEquipSkin", 1) && Get<int>("credits") == 0 && Get<int>("selectedSkin") == 1,
-                "Equipping an owned skin charged currency again.");
-            Require(!(bool)CallResult("PurchaseOrEquipSkin", -1) && !(bool)CallResult("PurchaseOrEquipSkin", 3),
-                "Shop accepted an invalid skin index.");
-            AskichProfile saved = AskichProfile.Load();
-            Require(saved.credits == 0 && (saved.unlockedSkins & 7) == 7 && saved.selectedSkin == 1,
-                "Purchased skins or equipment were not persisted.");
-            Call("CloseShop");
-            Require(Mode() == "Menu", "Closing the hangar did not return to the menu.");
-        }
-
-        void TestStoryChoice()
-        {
-            foreach (int choice in new[] { 0, 1 })
-            {
-                StartPlaying();
-                CompleteToUpgrade(); Call("ApplyUpgrade", Get<int[]>("offered")[0]);
-                CompleteCurrentWave();
-                Require(Mode() == "Story" && Get<int>("wave") == 2, "The junction dialogue is not before location two.");
-                float beforeHealth = Get<float>("maxHealth"), beforeDamage = Get<float>("damage");
-                Call("ContinueStory", choice);
-                Require(Mode() == "Upgrade", "The story choice did not continue to upgrades.");
-                if (choice == 0)
-                    Require(Get<bool>("rescuedArchive") && Mathf.Approximately(Get<float>("maxHealth"), beforeHealth + 15), "Rescuing the archive did not grant its promised bonus.");
-                else
-                    Require(!Get<bool>("rescuedArchive") && Mathf.Approximately(Get<float>("damage"), beforeDamage * 1.1f), "Silencing the beacon did not grant its promised bonus.");
-                float afterHealth = Get<float>("maxHealth"), afterDamage = Get<float>("damage");
-                Call("ContinueStory", choice);
-                Require(Get<float>("maxHealth") == afterHealth && Get<float>("damage") == afterDamage, "A dialogue choice could be claimed twice.");
-            }
-        }
-
-        void TestStoryKey()
-        {
-            StartPlaying();
-            CompleteToUpgrade(); Call("ApplyUpgrade", Get<int[]>("offered")[0]);
-            CompleteCurrentWave();
-            Require(Mode() == "Story" && Get<int>("wave") == 2, "The choice dialogue was not prepared.");
-            InputSystem.QueueStateEvent(testKeyboard, new KeyboardState(Key.Digit1));
-            InputSystem.Update();
-            Call("Update");
-            ReleaseKeys();
-            Require(Mode() == "Upgrade" && Get<int>("wave") == 2,
-                "A single story-choice key also selected an upgrade and skipped the upgrade screen.");
-            Require(Get<bool>("rescuedArchive"), "The first keyboard choice did not rescue the archive.");
-        }
-
-        void TestLocations()
-        {
-            StartPlaying();
-            Require((int)typeof(ArenaGame).GetProperty("LocationIndex").GetValue(game) == 0, "First wave is not at the cold dock.");
-            for (int i = 0; i < 2; i++) { CompleteToUpgrade(); Call("ApplyUpgrade", Get<int[]>("offered")[0]); }
-            Require(Get<int>("wave") == 3 && (int)typeof(ArenaGame).GetProperty("LocationIndex").GetValue(game) == 1,
-                "The third wave did not move to the living foundry.");
-            Require(Get<Transform>("world").childCount > 0, "The second location has no geometry.");
-        }
-
-        void TestProfileRoundTrip()
-        {
-            var profile = new AskichProfile { credits = 734, unlockedSkins = 7, selectedSkin = 2, bestScore = 42000 };
-            Require(profile.Save(), "Profile save reported failure.");
-            AskichProfile loaded = AskichProfile.Load();
-            Require(loaded.credits == 734 && loaded.unlockedSkins == 7 && loaded.selectedSkin == 2 && loaded.bestScore == 42000,
-                "A saved profile did not survive a fresh load.");
-        }
-
-        void TestCorruptProfile()
-        {
-            File.WriteAllText(testSavePath, "{broken json");
-            AskichProfile profile = AskichProfile.Load();
-            Require(profile.credits >= 0 && (profile.unlockedSkins & 1) == 1 && profile.selectedSkin == 0,
-                "Invalid profile data did not fall back to the default skin and a safe balance.");
-            profile.credits = -20; profile.selectedSkin = 99; profile.unlockedSkins = 0; profile.Validate();
-            Require(profile.credits >= 0 && profile.selectedSkin == 0 && (profile.unlockedSkins & 1) == 1,
-                "Malformed profile fields could create a negative balance or equip a locked skin.");
-        }
-
-        void StartPlaying()
-        {
-            ReleaseKeys(); game.StartRun(); Call("ContinueStory", 0);
-            Require(Mode() == "Playing", "Prologue did not start the first wave.");
-        }
-
-        void CompleteToUpgrade()
-        {
-            CompleteCurrentWave();
-            Require(Mode() == "Story", "Intermediate wave did not reveal story.");
-            Call("ContinueStory", 0);
-            Require(Mode() == "Upgrade", "Story did not lead to an upgrade.");
-        }
-
-        void AssertInitialState()
-        {
-            Require(Mode() == "Playing" && Get<int>("wave") == 1 && Get<int>("remaining") > 0, "Run did not start on wave one.");
-            Require(Get<float>("health") == 100 && Get<float>("maxHealth") == 100, "Health was not reset.");
-            Require(Get<float>("damage") == 22 && Mathf.Approximately(Get<float>("fireInterval"), 0.17f)
-                && Mathf.Approximately(Get<float>("moveSpeed"), 5.2f), "Weapon or movement upgrades survived restart.");
-            Require(Get<int>("spread") == 0 && Get<int>("piercing") == 0, "Projectile upgrades survived restart.");
-            Require(Get<int>("score") == 0 && Get<int>("kills") == 0 && Get<float>("elapsed") == 0, "Run counters were not reset.");
-            Require(Get<Vector2>("playerPos") == Vector2.zero && !Get<bool>("savedResult"), "Pilot or result state was not reset.");
-        }
-
-        void CompleteCurrentWave()
-        {
-            Require(List("enemies").Count == 0, "Wave fixture still contains enemies.");
-            Set("remaining", 0);
-            Call("Update");
-        }
-
-        void ReleaseKeys()
-        {
-            InputSystem.QueueStateEvent(testKeyboard, new KeyboardState());
-            InputSystem.Update();
-        }
-
-        void Check(string name, Action action)
-        {
-            try { action(); results.Add(new Result { name = name, passed = true, detail = "passed" }); }
-            catch (Exception error) { results.Add(new Result { name = name, passed = false, detail = Explain(error) }); }
-        }
-
-        static string Explain(Exception error)
-        {
-            while (error is TargetInvocationException && error.InnerException != null) error = error.InnerException;
-            return error.GetType().Name + ": " + error.Message;
-        }
-
-        static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
-        static FieldInfo Field(string name) => typeof(ArenaGame).GetField(name, PrivateInstance) ?? throw new MissingFieldException(name);
-        T Get<T>(string name) => (T)Field(name).GetValue(game);
-        void Set(string name, object value) => Field(name).SetValue(game, value);
-        IList List(string name) => Get<IList>(name);
-        string Mode() => Field("mode").GetValue(game).ToString();
-        void SetMode(string value) => Set("mode", Enum.Parse(Field("mode").FieldType, value));
-        void Call(string name, params object[] arguments) => CallResult(name, arguments);
-        object CallResult(string name, params object[] arguments)
-        {
-            MethodInfo method = typeof(ArenaGame).GetMethod(name, PrivateInstance) ?? throw new MissingMethodException(name);
-            return method.Invoke(game, arguments);
-        }
-        static void SetObject(object target, string name, object value)
-        {
-            FieldInfo field = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                ?? throw new MissingFieldException(name);
-            field.SetValue(target, value);
-        }
-
-        static string OutputPath()
-        {
-            string[] args = Environment.GetCommandLineArgs();
-            int index = Array.IndexOf(args, "-askich-test-output");
-            if (index < 0) return Path.Combine(Application.persistentDataPath, "askich-smoke-results.json");
-            if (index + 1 >= args.Length || !Path.IsPathRooted(args[index + 1]))
-                throw new ArgumentException("-askich-test-output requires an absolute file path.");
-            return args[index + 1];
+            game=FindFirstObjectByType<ArenaGame>(); game.enabled=false;
+            Test("all_atlas_frames_are_available",()=> {for(int r=0;r<7;r++) for(int c=0;c<4;c++) Check(MedievalArt.Warrior(r,c)!=null,"warrior atlas"); for(int i=0;i<16;i++) Check(MedievalArt.Prop(i)!=null,"prop atlas");});
+            Test("prologue_gates_campaign",()=>Check(Mode=="Story"&&Get<int>("wave")==0,"prologue missing"));
+            Test("three_factions_have_distinct_stats",()=> {Begin(0);Check(Get<float>("reach")==2.2f,"spear reach");Begin(1);Check(Get<float>("maxHealth")==135,"knight health");Begin(2);Check(Get<float>("damage")==34,"axe damage");});
+            Test("light_attack_cone_and_distance",()=> {Begin();Set("playerPos",Vector2.zero);Set("facing",Vector2.right);var front=Enemy(Vector2.right);var rear=Enemy(Vector2.left);var far=Enemy(Vector2.right*4);Call("Attack",false);Check(Field<float>(front,"hp")==24,"front damage");Check(Field<float>(rear,"hp")==52&&Field<float>(far,"hp")==52,"cone or range");});
+            Test("heavy_attack_spends_stamina_and_kills_once",()=> {Begin(2);Set("playerPos",Vector2.zero);Set("facing",Vector2.right);Enemy(Vector2.right);Call("Attack",true);Check(Get<int>("kills")==1&&Get<float>("stamina")==92,"heavy attack");Call("Attack",true);Check(Get<int>("kills")==1&&Get<float>("stamina")==92,"cooldown");});
+            Test("exhaustion_prevents_attack",()=> {Begin();Set("stamina",0f);Set("attackTimer",0f);Call("Attack",true);Check(Get<float>("attackTimer")==0,"free heavy attack");});
+            Test("shield_is_directional",()=> {Begin(1);Set("playerPos",Vector2.zero);Set("facing",Vector2.right);Set("blocking",true);Call("Hurt",20f,Vector2.right);Check(Get<float>("health")>130,"front block");Set("hurtTimer",0f);float before=Get<float>("health");Call("Hurt",20f,Vector2.left);Check(Mathf.Approximately(before-Get<float>("health"),20),"back was blocked");});
+            Test("dodge_cost_and_invulnerability",()=> {Begin();Call("Dodge",Vector2.left);float hp=Get<float>("health");Call("Hurt",90f,Vector2.left);Check(Get<float>("health")==hp&&Get<float>("stamina")==85&&Get<float>("dodgeTimer")>0,"dodge");});
+            Test("defeat_stops_damage_and_result_rewrites",()=> {Begin();Call("Hurt",500f,Vector2.left);Check(Mode=="Defeat","death");Call("Finish",true);Check(Mode=="Defeat","result rewritten");});
+            Test("wagon_requires_proximity_and_arrival",()=> {Begin();Call("NextWave");Set("remaining",0);Set("playerPos",new Vector2(8,0));float x=Get<Vector2>("objectivePos").x;Call("Tick",.05f);Check(Get<Vector2>("objectivePos").x==x,"wagon moved alone");Set("playerPos",Get<Vector2>("objectivePos"));Call("Tick",.05f);Check(Get<Vector2>("objectivePos").x>x,"escort stalled");Check(!(bool)Call("ObjectiveComplete"),"premature objective");});
+            Test("rescue_requires_nearby_interaction",()=> {Begin();Call("NextWave");Call("NextWave");Call("Rescue");Check(Get<int>("rescued")==0,"remote rescue");Set("playerPos",new Vector2(-6,0));Call("Rescue");Call("Rescue");Check(Get<int>("rescued")==1,"duplicate rescue");Check(game.LocationIndex==1,"fortress transition");});
+            Test("siege_failure_ends_campaign",()=> {Begin();Call("NextWave");Call("DamageObjective",1000f);Check(Mode=="Defeat","wagon destruction");});
+            Test("temple_choice_is_single_use",()=> {Begin();Set("wave",3);Call("CompleteMission");float dmg=Get<float>("damage");Call("ContinueStory",false);float after=Get<float>("damage");Call("ContinueStory",false);Check(Mathf.Approximately(after,dmg*1.15f)&&Get<float>("damage")==after,"choice repeated");});
+            Test("ally_choice_spawns_companion",()=> {Begin();Set("wave",3);Call("CompleteMission");Call("ContinueStory",true);Call("Upgrade",0);Check(Get<SpriteRenderer>("ally")!=null&&Get<int>("wave")==4,"ally missing");});
+            Test("upgrades_apply_once_and_advance",()=> {Begin();Call("CompleteMission");Call("ContinueStory",false);float hp=Get<float>("maxHealth");Call("Upgrade",1);Call("Upgrade",1);Check(Get<float>("maxHealth")==hp+25&&Get<int>("wave")==2,"upgrade repeated");});
+            Test("five_missions_reach_victory_and_save_faction",()=> {Begin(2);for(int i=1;i<=5;i++) {Set("remaining",0);Call("CompleteMission");if(i<5){Call("ContinueStory",true);Call("Upgrade",1);}}Check(Mode=="Victory"&&(Get<AskichProfile>("profile").completedFactions&4)!=0,"victory");});
+            Test("wardrobe_wallet_and_no_double_charge",()=> {var p=Get<AskichProfile>("profile");p.credits=179;p.unlockedSkins=1;Check(!(bool)Call("BuySkin",1),"free unlock");p.credits=700;Check((bool)Call("BuySkin",2)&&p.credits==180,"price");Call("BuySkin",2);Check(p.credits==180,"double charge");});
+            Test("v1_profile_migrates_without_losing_currency",()=> {File.WriteAllText(isolated,"{\"version\":1,\"credits\":345,\"unlockedSkins\":3,\"selectedSkin\":1,\"bestScore\":900}");var p=AskichProfile.Load();Check(p.version==3&&p.credits==345&&p.selectedSkin==1&&p.selectedFaction==0,"migration");p.selectedFaction=2;p.completedFactions=5;Check(p.Save(),"save");var restored=AskichProfile.Load();Check(restored.selectedFaction==2&&restored.completedFactions==5,"round trip");});
+            Test("corrupt_profile_falls_back",()=> {File.WriteAllText(isolated,"corrupt");Check(AskichProfile.Load().credits==0,"fallback");});
+            Test("restart_resets_campaign_not_wallet",()=> {Begin();Call("AddSilver",42);int credits=Get<AskichProfile>("profile").credits;Enemy(Vector2.zero);game.StartRun();Check(Enemies.Count==0&&Get<int>("wave")==0&&!Get<bool>("orderAlly")&&Get<AskichProfile>("profile").credits==credits,"restart");});
+            Test("equipment_pickup_is_local_and_persistent",()=> {Begin(0);Set("playerPos",Vector2.zero);Set("kills",3);Call("DropGear",Vector2.right*4);Call("PickGear");Check((Get<AskichProfile>("profile").ownedItems&1)==0,"remote pickup");Set("playerPos",Vector2.right*4);Call("PickGear");Check((Get<AskichProfile>("profile").ownedItems&1)!=0,"pickup missing");Check((bool)Call("EquipItem",0),"equip");Begin(0);Check(Get<float>("damage")==34,"bonus missing");Begin(1);Check(Get<float>("damage")==26,"foreign item bonus");});
+            Test("unowned_equipment_cannot_be_equipped",()=>Check(!(bool)Call("EquipItem",8),"unowned item"));
+            Test("nine_house_sprites_available",()=> {for(int f=0;f<3;f++)for(int t=0;t<3;t++)Check(MedievalArt.House(f,t)!=null,"house atlas");});
+            Test("settlement_queue_debits_once_and_completes",()=> {var t=new Settlement();t.Validate();int wood=t.wood;Check(t.Build(0,2),"build rejected");Check(!t.Build(1,2)&&t.wood==wood-45,"double build");t.AdvanceDay();Check(t.buildings[0]==2&&t.levels[0]==1&&t.pendingPlot==-1,"construction");Check(!t.Build(0,3),"overlap");});
+            Test("settlement_prerequisites_and_insufficient_resources",()=> {var t=new Settlement();t.Validate();Check(!t.Build(7,1),"early hall");t.wood=0;Check(!t.Build(0,2),"free building");Check(!t.Reform(false,2),"early reform");});
+            Test("settlement_production_hunger_and_defence",()=> {var t=new Settlement();t.Validate();int wood=t.wood;t.AdvanceDay();Check(t.wood==wood+22&&t.population==13,"production");t.buildings[11]=0;t.levels[11]=0;t.food=0;t.AdvanceDay();Check(t.morale<70&&t.population==12,"hunger");});
+            Test("settlement_raid_is_single_reward_per_cooldown",()=> {var t=new Settlement();t.Validate();Check(!t.ResolveRaid(0,0),"raid without barracks");t.buildings[0]=7;t.levels[0]=1;Check(t.ResolveRaid(0,0),"prepared raid");int wood=t.wood;Check(!t.ResolveRaid(0,0)&&t.wood==wood,"duplicate loot");Check(t.soldiers==3,"casualties");});
+            Test("settlement_reform_constraints_and_cost",()=> {var t=new Settlement();t.Validate();t.levels[7]=2;t.buildings[0]=10;t.levels[0]=1;Check(t.Reform(false,2)&&t.government==2&&t.food==60&&t.legitimacy==35,"veche reform");Check(!t.Reform(false,1),"reform bypass");});
+            Test("settlement_profile_roundtrip_isolated_factions",()=> {var p=Get<AskichProfile>("profile");p.Validate();p.settlements[0].wood=777;p.settlements[1].wood=123;p.ownedItems|=1;Check(p.Save(),"save");var restored=AskichProfile.Load();Check(restored.settlements[0].wood==777&&restored.settlements[1].wood==123&&(restored.ownedItems&1)!=0,"roundtrip");});
+            Test("settlement_reachable_progression_without_resource_cheats",()=> {
+                var t=new Settlement();t.Validate();
+                void BuildEventually(int plot,int type){int guard=0;while(t.BuildReason(plot,type)!=""&&guard++<100)t.AdvanceDay();Check(t.Build(plot,type),"Cannot build "+type+": "+t.BuildReason(plot,type));while(t.pendingPlot>=0)t.AdvanceDay();}
+                BuildEventually(0,3);BuildEventually(1,5);BuildEventually(2,2);BuildEventually(3,6);BuildEventually(4,7);BuildEventually(5,8);BuildEventually(7,1);
+                BuildEventually(11,3);BuildEventually(0,3);BuildEventually(3,6);BuildEventually(8,9);BuildEventually(8,9);BuildEventually(9,10);BuildEventually(10,2);BuildEventually(7,1);
+                while(t.legitimacy<50||t.food<40)t.AdvanceDay();Check(t.Reform(true,1),"confederation unreachable");Check(t.Hall==3&&t.constitution==1,"progression");
+            });
+            Test("touch_multitouch_and_press_edges",()=> {var input=new TouchControls();var points=new[]{TouchControls.Stick+Vector2.right*68,TouchControls.Attack,TouchControls.Heavy};input.Evaluate(points);Check(input.move.x==1&&input.attack&&input.heavy,"multitouch");input.Evaluate(points);Check(!input.heavy&&input.attack,"held heavy repeats");input.Evaluate(new Vector2[0]);Check(input.move==Vector2.zero&&!input.attack&&!input.block,"release");input.Evaluate(new[]{TouchControls.Shield,TouchControls.Dodge,TouchControls.Interact});Check(input.block&&input.dodge&&input.interact,"combat buttons");});
+            Test("viewport_coordinate_roundtrip",()=> {float scale=ScreenLayout.Scale;Vector2 point=new Vector2(740,430),offset=ScreenLayout.Offset;Vector2 screen=new Vector2(offset.x+point.x*scale,Screen.height-offset.y-point.y*scale);Check(Vector2.Distance(ScreenLayout.ToUI(screen),point)<.01f,"coordinate mapping");});
+            bool passed=results.TrueForAll(r=>r.passed);
+            string[] args=Environment.GetCommandLineArgs();int at=Array.IndexOf(args,"-askich-test-output");string output=at>=0?args[at+1]:Path.Combine(Application.persistentDataPath,"smoke.json");
+            File.WriteAllText(output,JsonUtility.ToJson(new Report{passed=passed,tests=results.ToArray()},true));
+            Debug.Log("ASKICH_SMOKE_"+(passed?"PASS":"FAIL")+" "+results.Count);
+            if(File.Exists(isolated))File.Delete(isolated);AskichProfile.SavePathOverride=null;Application.Quit(passed?0:1);
         }
     }
 }

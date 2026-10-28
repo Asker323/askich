@@ -8,7 +8,7 @@ namespace Askich
         public const int FinalWave = 5;
         public const float HalfWidth = 12.65f;
         public const float HalfHeight = 6.05f;
-        public static int WaveSize(int wave) => 12 + Mathf.Clamp(wave, 1, FinalWave) * 6;
+        public static int WaveSize(int wave) => 8 + Mathf.Clamp(wave, 1, FinalWave) * 2;
         public static Vector2 Clamp(Vector2 p, float radius = 0.35f) => new Vector2(
             Mathf.Clamp(p.x, -HalfWidth + radius, HalfWidth - radius),
             Mathf.Clamp(p.y, -HalfHeight + radius, HalfHeight - radius));

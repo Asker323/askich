@@ -1,0 +1,17 @@
+{
+    "passed": false,
+    "wave": 2,
+    "kills": 19,
+    "health": 75.0,
+    "seconds": 62.65283966064453,
+    "mode": "Defeat",
+    "screenshots": [
+        "01-menu",
+        "02-factions",
+        "story-0",
+        "03-village",
+        "story-1",
+        "camp-1"
+    ],
+    "errors": []
+}

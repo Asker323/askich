@@ -1,0 +1,9 @@
+
+
+## Settlement buildings (2.1)
+
+`Assets/Resources/Medieval/houses.png` is an unedited transparent 1254 × 1254 ImageGen output, with three dwelling tiers for each of the three factions. Pixel rectangles are defined in `MedievalArt.House`. These are stylized historical motifs, not archaeological reconstructions. Economic buildings reuse props with extra storage/work bays; barracks and defences change silhouette by tier.
+
+Built-in ImageGen prompt:
+
+Production sprite atlas for a medieval settlement building game. Square canvas, exact THREE columns and THREE rows, nine isolated buildings, transparent RGBA background. Each object fits fully within its equal cell with at least 12 percent clear space on all sides; absolutely no overlaps between cells. Top-down three-quarter camera, cohesive detailed earthy pixel art with dark outlines, matching medieval strategy game sprites. Each row is a culture, each column a development tier, historically inspired circa 11th to 13th centuries (no Renaissance, no fantasy towers). Row1 Rus: small log cabin with simple timber gable roof; larger log dwelling with plank roof and covered porch; wealthy two-storey timber hall on low stone foundation with modest carved wooden details, no onion domes. Row2 France: small timber and wattle cottage with straw roof; larger timber-framed plaster house with wooden shingles; prosperous stone-and-timber medieval townhouse with tiled pitched roof, no glass expanses. Row3 Norway: small turf-roofed wooden cabin; long timber house with turf roof and restrained carved gables; prosperous timber hall with steep wooden shingle roof and carved gables, no horns or fantasy ornament. Natural wood, stone, earth tones, modest scale. No people, no labels, no text, no grid lines, no ground tile, no watermark. Entire building silhouettes, feet/bottom aligned consistently within each cell. Make all three tiers visibly different and more developed from left to right.

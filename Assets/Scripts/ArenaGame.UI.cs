@@ -1,218 +1,173 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 namespace Askich
 {
     public sealed partial class ArenaGame
     {
-        const float UiWidth = 1280, UiHeight = 720;
-        static readonly Color Ink = new Color(0.9f, 0.95f, 0.96f);
-        static readonly Color MutedInk = new Color(0.44f, 0.58f, 0.64f);
-        static readonly Color Panel = new Color(0.028f, 0.052f, 0.078f, 0.98f);
-        Font font;
-        GUIStyle label;
-
+        GUIStyle titleStyle, headingStyle, textStyle, smallStyle, buttonStyle;
+        readonly Color parchment=new Color(.91f,.85f,.69f);
+        readonly Color gold=new Color(.75f,.57f,.29f);
+        void Styles()
+        {
+            if(titleStyle!=null) return;
+            var font=Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            titleStyle=new GUIStyle {font=font,fontSize=54,fontStyle=FontStyle.Bold,normal={textColor=parchment},alignment=TextAnchor.MiddleCenter};
+            headingStyle=new GUIStyle(titleStyle){fontSize=26,alignment=TextAnchor.UpperLeft,wordWrap=true};
+            textStyle=new GUIStyle(headingStyle){fontSize=21,fontStyle=FontStyle.Normal};
+            smallStyle=new GUIStyle(textStyle){fontSize=16};
+            buttonStyle=new GUIStyle(textStyle){alignment=TextAnchor.MiddleCenter,fontStyle=FontStyle.Bold,fontSize=20};
+        }
+        void Box(Rect r,Color c) { Color old=GUI.color; GUI.color=c; GUI.DrawTexture(r,Texture2D.whiteTexture); GUI.color=old; }
+        void Panel(Rect r) { Box(r,gold); Box(new Rect(r.x+1,r.y+1,r.width-2,r.height-2),new Color(.11f,.095f,.07f,.98f)); }
+        void Text(Rect r,string value,GUIStyle style=null) => GUI.Label(r,value,style??textStyle);
+        bool Button(Rect r,string value,bool enabled=true)
+        {
+            bool hover=r.Contains(Event.current.mousePosition);
+            Box(r,enabled?(hover?new Color(.36f,.28f,.16f):new Color(.24f,.2f,.13f)):new Color(.15f,.14f,.12f));
+            Box(new Rect(r.x,r.y+r.height-2,r.width,2),enabled?gold:Color.gray);
+            Color old=GUI.color; if(!enabled) GUI.color=new Color(.6f,.6f,.6f);
+            bool clicked=GUI.Button(r,value,new GUIStyle(buttonStyle){fontSize=r.height<40?15:value.Length>35?16:20}); GUI.color=old; return enabled&&clicked;
+        }
+        void Bar(Rect r,float fraction,Color color) { Box(r,new Color(.055f,.05f,.04f)); Box(new Rect(r.x+2,r.y+2,(r.width-4)*Mathf.Clamp01(fraction),r.height-4),color); }
         void OnGUI()
         {
-            if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            if (label == null) label = new GUIStyle(GUI.skin.label) { font = font, richText = false, wordWrap = true, padding = new RectOffset(0, 0, 0, 0) };
-            float scale = Mathf.Min(Screen.width / UiWidth, Screen.height / UiHeight);
-            Vector2 offset = new Vector2((Screen.width - UiWidth * scale) / 2, (Screen.height - UiHeight * scale) / 2);
-            Matrix4x4 old = GUI.matrix;
-            GUI.matrix = Matrix4x4.TRS(offset, Quaternion.identity, Vector3.one * scale);
-            if (mode == Mode.Menu) Menu();
-            else if (mode == Mode.Story) StoryScreen();
-            else if (mode == Mode.Shop) ShopScreen();
-            else Hud();
-            if (mode == Mode.Playing)
+            Styles(); Matrix4x4 old=GUI.matrix; float scale=ScreenLayout.Scale;
+            GUI.matrix=Matrix4x4.TRS(ScreenLayout.Offset,Quaternion.identity,Vector3.one*scale);
+            if(mode==Mode.Playing||mode==Mode.Paused) Hud();
+            if(TouchControls.Enabled&&mode==Mode.Playing)TouchHud();
+            if(mode!=Mode.Playing) Box(new Rect(0,0,1280,720),new Color(.025f,.022f,.017f,.72f));
+            switch(mode)
             {
-                if (waveBanner > 0)
-                {
-                    Box(new Rect(460, 115, 360, 65), new Color(0.025f, 0.05f, 0.08f, 0.9f));
-                    Text(new Rect(460, 122, 360, 25), "ВОЛНА " + wave.ToString("00") + " / 05", 19, LocationIndex == 0 ? NeonVisual.Cyan : NeonVisual.Gold, TextAnchor.MiddleCenter, true);
-                    Text(new Rect(460, 150, 360, 22), wave == 1 ? "Удерживай ЛКМ, чтобы стрелять" : wave == 2 ? "Снайперы на периметре" : wave == 3 ? "Тяжёлые дроны готовят рывок" : "Не останавливайся", 13, MutedInk, TextAnchor.MiddleCenter);
-                }
-                Crosshair(scale, offset);
+                case Mode.Menu: Menu(); break;
+                case Mode.Settlement: TownScreen(); break;
+                case Mode.Armory: ArmoryScreen(); break;
+                case Mode.Raid: RaidScreen(); break;
+                case Mode.Faction: FactionScreen(); break;
+                case Mode.Story: StoryScreen(); break;
+                case Mode.Upgrade: UpgradeScreen(); break;
+                case Mode.Shop: ShopScreen(); break;
+                case Mode.Paused:
+                    Panel(new Rect(400,210,480,300)); Text(new Rect(430,235,420,60),"ПРИВАЛ",titleStyle);
+                    if(Button(new Rect(450,320,380,54),"Продолжить · Esc")) mode=Mode.Playing;
+                    if(Button(new Rect(450,390,380,54),"Завершить поход")) { Finish(false); }
+                    break;
+                case Mode.Defeat: case Mode.Victory: ResultScreen(); break;
             }
-            if (mode == Mode.Upgrade) UpgradeScreen();
-            if (mode == Mode.Paused) PauseScreen();
-            if (mode == Mode.Defeat || mode == Mode.Victory) ResultScreen();
-            if (noticeTime > 0 && mode == Mode.Playing)
-                Text(new Rect(430, 585, 420, 28), notice, 16, NeonVisual.Cyan, TextAnchor.MiddleCenter);
-            if (noticeTime > 0 && mode == Mode.Shop)
-            {
-                Box(new Rect(330, 626, 620, 34), new Color(0.06f, 0.12f, 0.15f));
-                Text(new Rect(344, 628, 592, 30), notice, 14, Ink, TextAnchor.MiddleCenter);
-            }
-            GUI.matrix = old;
+            GUI.matrix=old;
         }
-
-        void Hud()
-        {
-            Box(new Rect(0, 0, 1280, 77), new Color(0.018f, 0.032f, 0.055f, 0.98f));
-            Box(new Rect(0, 76, 1280, 1), new Color(0.14f, 0.25f, 0.29f));
-            Text(new Rect(28, 12, 190, 30), "ASKICH", 27, Ink, TextAnchor.MiddleLeft, true);
-            Text(new Rect(30, 46, 190, 18), LocationName.ToUpperInvariant(), 10, LocationIndex == 0 ? NeonVisual.Cyan : NeonVisual.Gold);
-            Text(new Rect(242, 13, 132, 17), "ПРОЧНОСТЬ", 10, MutedInk);
-            Text(new Rect(376, 12, 74, 18), Mathf.CeilToInt(health) + " / " + maxHealth, 11, Ink, TextAnchor.UpperRight);
-            Box(new Rect(242, 39, 208, 8), new Color(0.1f, 0.17f, 0.21f));
-            Box(new Rect(242, 39, 208 * Mathf.Clamp01(health / maxHealth), 8), health < 30 ? NeonVisual.Coral : NeonVisual.Cyan);
-            Text(new Rect(242, 52, 208, 14), hurtTimer > 0 ? "ЩИТ АКТИВЕН" : "РЕМОНТНЫЕ ЯЧЕЙКИ ЛЕЧАТ", 9, MutedInk);
-            Text(new Rect(490, 12, 112, 18), "ВОЛНА", 10, MutedInk);
-            Text(new Rect(490, 33, 112, 32), wave.ToString("00") + " / 05", 24, Ink, TextAnchor.UpperLeft, true);
-            Text(new Rect(633, 12, 118, 18), "ЦЕЛЕЙ", 10, MutedInk);
-            Text(new Rect(633, 34, 118, 28), (remaining + enemies.Count).ToString("00"), 23, NeonVisual.Coral, TextAnchor.UpperLeft, true);
-            Text(new Rect(776, 12, 132, 18), "СЧЁТ", 10, MutedInk);
-            Text(new Rect(776, 34, 132, 28), score.ToString("N0"), 23, Ink, TextAnchor.UpperLeft, true);
-            Text(new Rect(937, 12, 150, 18), "КРЕДИТЫ  /  +" + runCredits, 10, MutedInk);
-            Text(new Rect(937, 34, 150, 28), credits.ToString("N0"), 23, NeonVisual.Gold, TextAnchor.UpperLeft, true);
-            Text(new Rect(1150, 18, 100, 22), TimeText(elapsed), 19, MutedInk, TextAnchor.MiddleRight);
-            Text(new Rect(1130, 47, 120, 17), sound.Muted ? "M  ЗВУК ВЫКЛ." : "M  ЗВУК ВКЛ.", 9, MutedInk, TextAnchor.MiddleRight);
-            Box(new Rect(0, 651, 1280, 69), new Color(0.018f, 0.032f, 0.055f, 0.98f));
-            Box(new Rect(0, 651, 1280, 1), new Color(0.14f, 0.25f, 0.29f));
-            Key(new Rect(30, 671, 54, 27), "WASD"); Text(new Rect(94, 675, 115, 23), "движение", 12, MutedInk);
-            Key(new Rect(215, 671, 43, 27), "ЛКМ"); Text(new Rect(268, 675, 110, 23), "стрельба", 12, MutedInk);
-            Key(new Rect(382, 671, 67, 27), "ПРОБЕЛ");
-            Text(new Rect(459, 672, 150, 26), dashCooldown > 0 ? "рывок  " + dashCooldown.ToString("0.0") + " с" : "рывок готов", 12, dashCooldown > 0 ? MutedInk : NeonVisual.Cyan);
-            Box(new Rect(459, 698, 100, 3), new Color(0.1f, 0.17f, 0.21f));
-            Box(new Rect(459, 698, 100 * (1 - dashCooldown / 1.8f), 3), NeonVisual.Cyan);
-            Text(new Rect(668, 675, 380, 24), "ИМПУЛЬС " + Mathf.RoundToInt(damage) + "  /  " + (1 / fireInterval).ToString("0.0") + "/С  /  СТВОЛОВ " + (1 + 2 * spread), 11, MutedInk);
-            Key(new Rect(1118, 671, 43, 27), "ESC"); Text(new Rect(1171, 675, 83, 23), "пауза", 12, MutedInk);
-        }
-
         void Menu()
         {
-            Box(new Rect(0, 0, 1280, 720), new Color(0.012f, 0.024f, 0.038f, 0.88f));
-            Box(new Rect(72, 58, 4, 24), NeonVisual.Cyan);
-            Text(new Rect(90, 60, 570, 24), "ASKER323  /  ИСТОРИЯ О ПОСЛЕДНЕМ СИГНАЛЕ", 12, NeonVisual.Cyan);
-            Text(new Rect(66, 133, 710, 112), "ASKICH", 94, Ink, TextAnchor.UpperLeft, true);
-            Text(new Rect(73, 253, 650, 45), "Там, где молчит маяк", 29, NeonVisual.Cyan, TextAnchor.UpperLeft, true);
-            Text(new Rect(74, 316, 578, 82), "Пройди через холодный причал и живую кузницу.\nСражайся, меняй корабль и реши судьбу архива.", 20, MutedInk);
-            if (Button(new Rect(74, 425, 355, 59), "НАЧАТЬ ИСТОРИЮ    →", true)) StartRun();
-            if (Button(new Rect(74, 499, 355, 49), "АНГАР  /  ОБЛИКИ КОРАБЛЯ", false)) OpenShop();
-            Text(new Rect(448, 506, 272, 25), credits.ToString("N0") + " КРЕДИТОВ", 16, NeonVisual.Gold, TextAnchor.MiddleLeft, true);
-            Text(new Rect(448, 532, 272, 19), "ОТКРЫТО ОБЛИКОВ: " + UnlockedSkinCount() + " / 3", 10, MutedInk);
-            Text(new Rect(75, 566, 580, 23), "ENTER — начать    /    WASD — движение    /    ЛКМ — огонь", 12, MutedInk);
-            if (Button(new Rect(74, 605, 168, 35), sound.Muted ? "ЗВУК ВЫКЛ." : "ЗВУК ВКЛ.", false)) sound.Toggle();
-            if (Button(new Rect(258, 605, 171, 35), "ВЫЙТИ", false)) Quit();
-
-            Box(new Rect(801, 131, 1, 460), new Color(0.13f, 0.23f, 0.27f));
-            Text(new Rect(840, 136, 355, 20), "ТВОЙ КОРАБЛЬ", 11, MutedInk, TextAnchor.MiddleCenter);
-            SkinPortrait(new Rect(886, 169, 262, 250), selectedSkin);
-            Text(new Rect(831, 425, 374, 31), SkinNames[Mathf.Clamp(selectedSkin, 0, 2)], 21, Ink, TextAnchor.MiddleCenter, true);
-            Text(new Rect(852, 477, 334, 55), "5 ВОЛН  /  2 ЛОКАЦИИ\nОДИН ВЫБОР, КОТОРЫЙ ОСТАНЕТСЯ", 12, MutedInk, TextAnchor.MiddleCenter);
-            Text(new Rect(847, 559, 344, 25), "ПРОБЕЛ — рывок сквозь опасность", 12, NeonVisual.Cyan, TextAnchor.MiddleCenter);
-            Box(new Rect(72, 662, 1136, 1), new Color(0.13f, 0.23f, 0.27f));
-            Text(new Rect(72, 681, 600, 20), "ПРОТОКОЛ ASKICH     /     РЕКОРД  " + bestScore.ToString("N0"), 11, MutedInk);
-            Text(new Rect(950, 681, 258, 20), "UNITY 6  •  v" + Application.version, 11, MutedInk, TextAnchor.UpperRight);
+            Panel(new Rect(125,65,1030,590));
+            Text(new Rect(150,83,980,70),"ASKICH",titleStyle);
+            Text(new Rect(160,159,960,32),"КЛЯТВА НА ГРАНИЦЕ",new GUIStyle(headingStyle){alignment=TextAnchor.MiddleCenter});
+            MedievalArt.Portrait(new Rect(165,235,250,250),0); MedievalArt.Portrait(new Rect(865,235,250,250),1);
+            Text(new Rect(425,218,430,90),"Три знамени. Одна осаждённая земля.\nКопьё, меч или топор — выбери свой путь.",new GUIStyle(textStyle){alignment=TextAnchor.MiddleCenter});
+            if(Button(new Rect(445,308,390,48),"Начать поход · Enter")) mode=Mode.Faction;
+            if(Button(new Rect(445,365,390,45),"Моё поселение")) OpenTown();
+            if(Button(new Rect(445,418,390,45),"Арсенал · исторические предметы")) mode=Mode.Armory;
+            if(Button(new Rect(445,471,390,42),"Отделка · "+profile.credits+" серебра")) mode=Mode.Shop;
+            if(Button(new Rect(445,521,390,36),"Выйти из игры")) Application.Quit();
+            Text(new Rect(200,568,880,45),"Средневековая фантазия с вымышленными событиями.\n5 заданий · 2 локации · 3 героя · один опасный секрет",new GUIStyle(smallStyle){alignment=TextAnchor.MiddleCenter});
+            Text(new Rect(170,627,940,25),"Asker323  /  2.1.0                                       M — звук: "+(sound.Muted?"выключен":"включён"),smallStyle);
         }
-
+        void FactionScreen()
+        {
+            Text(new Rect(100,35,1080,65),"ПОД КАКИМ ЗНАМЕНЕМ?",titleStyle);
+            for(int i=0;i<3;i++)
+            {
+                Rect r=new Rect(100+i*365,128,350,495); Panel(r); Box(new Rect(r.x+1,r.y+1,348,5),CampaignData.Colors[i]);
+                MedievalArt.Portrait(new Rect(r.x+65,r.y+17,220,220),i);
+                Text(new Rect(r.x+24,r.y+230,300,35),CampaignData.Countries[i].ToUpper(),headingStyle);
+                Text(new Rect(r.x+24,r.y+270,300,28),CampaignData.Classes[i]);
+                Text(new Rect(r.x+24,r.y+307,300,27),CampaignData.Weapons[i],smallStyle);
+                Text(new Rect(r.x+24,r.y+349,300,70),CampaignData.Traits[i],smallStyle);
+                if(Button(new Rect(r.x+24,r.y+430,302,45),(i+1)+" · Выбрать"+((profile.completedFactions&(1<<i))!=0?"  ✓":""))) { faction=i; StartRun(); }
+            }
+            Text(new Rect(110,650,1060,30),"У каждой стороны своя завязка и герой. Задания и карты общие.   Esc — назад",smallStyle);
+        }
+        void StoryScreen()
+        {
+            Panel(new Rect(100,70,1080,580));
+            int portrait=wave==3||orderAlly&&wave==4?6:faction;
+            MedievalArt.Portrait(new Rect(115,180,280,280),portrait);
+            Text(new Rect(140,100,990,42),wave==0?"ПРОЛОГ · "+CampaignData.Countries[faction].ToUpper():wave==3?"ПРЕДЛОЖЕНИЕ ОРДЕНА":"ПОСЛЕ БОЯ · "+wave,headingStyle);
+            Text(new Rect(405,170,730,40),portrait==6?"Брат Матье":CampaignData.Speakers[faction],headingStyle);
+            Text(new Rect(405,225,735,300),CampaignData.Brief(faction,wave,orderAlly));
+            if(wave==3)
+            {
+                if(Button(new Rect(160,548,460,60),"1 · Союз с орденом\nМатье сражается рядом")) ContinueStory(true);
+                if(Button(new Rect(650,548,460,60),"2 · Своими силами\n+15% урона и 30 серебра")) ContinueStory(false);
+            }
+            else if(Button(new Rect(670,555,430,55),wave==0?"В путь · Enter":"К походной кузнице · Enter")) ContinueStory(false);
+        }
         void UpgradeScreen()
         {
-            Overlay();
-            Text(new Rect(150, 123, 980, 27), "ПЕРИМЕТР ОЧИЩЕН  /  ВОЛНА " + wave.ToString("00"), 13, NeonVisual.Cyan, TextAnchor.MiddleCenter, true);
-            Text(new Rect(150, 161, 980, 61), "Выбери преимущество", 39, Ink, TextAnchor.MiddleCenter, true);
-            Text(new Rect(150, 231, 980, 26), "+20 прочности. Один модуль для следующего участка пути.", 15, MutedInk, TextAnchor.MiddleCenter);
-            for (int i = 0; i < 3; i++)
+            Text(new Rect(100,70,1080,65),"ПОХОДНАЯ КУЗНИЦА",titleStyle);
+            Text(new Rect(210,150,860,50),"Припасы за выполненное задание: выбери одно улучшение.",new GUIStyle(textStyle){alignment=TextAnchor.MiddleCenter});
+            string[] names={"Заточить оружие","Укрепить доспех","Облегчить снаряжение"};
+            string[] benefits={"+20% урона\nдля лёгкого и тяжёлого удара","+25 к здоровью\nи полное лечение","+25 к выносливости\n+4 к восстановлению в секунду"};
+            for(int i=0;i<3;i++)
             {
-                float x = 155 + i * 330;
-                Rect card = new Rect(x, 298, 310, 252);
-                bool hover = card.Contains(Event.current.mousePosition);
-                Box(card, hover ? new Color(0.06f, 0.15f, 0.19f) : Panel);
-                Box(new Rect(x, 298, 310, 3), hover ? NeonVisual.Cyan : new Color(0.16f, 0.32f, 0.37f));
-                Key(new Rect(x + 24, 321, 34, 29), (i + 1).ToString());
-                Text(new Rect(x + 24, 368, 263, 40), UpgradeName(offered[i]), 23, Ink, TextAnchor.UpperLeft, true);
-                Text(new Rect(x + 24, 419, 263, 65), UpgradeDescription(offered[i]), 15, MutedInk);
-                Text(new Rect(x + 24, 505, 263, 26), "УСТАНОВИТЬ    →", 12, NeonVisual.Cyan, TextAnchor.UpperLeft, true);
-                if (GUI.Button(card, GUIContent.none, GUIStyle.none)) { ApplyUpgrade(offered[i]); break; }
+                Rect r=new Rect(105+i*365,245,340,290); Panel(r);
+                Text(new Rect(r.x+25,r.y+35,290,70),names[i],headingStyle);
+                Text(new Rect(r.x+25,r.y+122,290,75),benefits[i]);
+                if(Button(new Rect(r.x+25,r.y+218,290,48),(i+1)+" · Улучшить")) Upgrade(i);
             }
-            Text(new Rect(150, 586, 980, 27), "Нажми на карточку или клавишу 1 / 2 / 3", 13, MutedInk, TextAnchor.MiddleCenter);
+            Text(new Rect(200,584,880,60),"Далее: "+CampaignData.Mission(faction,wave+1),new GUIStyle(textStyle){alignment=TextAnchor.MiddleCenter});
         }
-
-        void PauseScreen()
+        void ShopScreen()
         {
-            Overlay(); Box(new Rect(409, 194, 462, 350), Panel);
-            Text(new Rect(435, 226, 410, 22), "СИГНАЛ ПРИОСТАНОВЛЕН", 12, NeonVisual.Cyan, TextAnchor.MiddleCenter);
-            Text(new Rect(435, 269, 410, 57), "Пауза", 44, Ink, TextAnchor.MiddleCenter, true);
-            if (Button(new Rect(455, 356, 370, 53), "ПРОДОЛЖИТЬ", true)) mode = Mode.Playing;
-            if (Button(new Rect(455, 426, 175, 43), sound.Muted ? "ЗВУК ВЫКЛ." : "ЗВУК ВКЛ.", false)) sound.Toggle();
-            if (Button(new Rect(646, 426, 179, 43), "В МЕНЮ", false)) { ClearCombat(); mode = Mode.Menu; playerPos = Vector2.zero; }
-            Text(new Rect(435, 492, 410, 23), "ESC или P — продолжить", 12, MutedInk, TextAnchor.MiddleCenter);
+            Text(new Rect(100,40,1080,65),"СНАРЯЖЕНИЕ",titleStyle);
+            Text(new Rect(150,115,980,50),"Серебро: "+profile.credits+"   ·   Отделка меняет цвет одежды и доспеха. Характеристики героя сохраняются.",smallStyle);
+            string[] names={"Походный доспех","Серебряная отделка","Ветеранская позолота"};
+            for(int i=0;i<3;i++)
+            {
+                Rect r=new Rect(105+i*365,183,340,390); Panel(r);
+                Color old=GUI.color; GUI.color=i==1?new Color(.82f,.91f,1):i==2?new Color(1,.86f,.62f):Color.white;
+                MedievalArt.Portrait(new Rect(r.x+70,r.y+10,200,200),faction); GUI.color=old;
+                Text(new Rect(r.x+20,r.y+220,300,60),names[i],headingStyle);
+                bool owned=(profile.unlockedSkins&(1<<i))!=0; int price=i==1?180:i==2?520:0;
+                if(Button(new Rect(r.x+20,r.y+310,300,55),profile.selectedSkin==i?"Надето":owned?"Надеть":"Открыть · "+price,owned||profile.credits>=price)) BuySkin(i);
+            }
+            if(Button(new Rect(450,615,380,50),"Назад · Esc")) mode=Mode.Menu;
         }
-
+        void Hud()
+        {
+            Box(new Rect(0,0,1280,91),new Color(.07f,.061f,.043f,.96f));
+            Text(new Rect(24,10,320,27),CampaignData.Classes[faction],smallStyle);
+            Bar(new Rect(24,42,235,17),health/maxHealth,new Color(.62f,.18f,.14f));
+            Bar(new Rect(24,65,235,12),stamina/maxStamina,new Color(.55f,.55f,.25f));
+            Text(new Rect(270,40,110,40),Mathf.CeilToInt(health)+" / "+maxHealth,smallStyle);
+            Text(new Rect(390,13,660,30),wave+" / 5 · "+CampaignData.Mission(faction,wave),headingStyle);
+            Text(new Rect(390,54,700,25),CampaignData.Objective(wave),smallStyle);
+            Text(new Rect(1100,12,170,60),"Серебро: "+profile.credits+"\nВраги: "+(remaining+enemies.Count),smallStyle);
+            Box(new Rect(0,649,1280,71),new Color(.07f,.061f,.043f,.96f));
+            Text(new Rect(24,662,1240,25),TouchControls.Enabled?"Джойстик — движение · Цель выбирается автоматически · Удерживай щит для блока · ВЗЯТЬ — предметы и пленные":"WASD — шаг   ЛКМ — удар   ПКМ — щит   Q — тяжёлый удар   Пробел — перекат   E — освободить   Esc — пауза",smallStyle);
+            Text(new Rect(24,691,1200,24),LocationName+"    ·    "+(wave==2?"Обоз: "+Mathf.RoundToInt((objectivePos.x+9)/18*100)+"%   Прочность: "+Mathf.CeilToInt(objectiveHealth):wave==3?"Освобождено: "+rescued+" / 3":wave==4?"Оборона: "+Mathf.Max(0,Mathf.CeilToInt(35-missionTime))+" сек.   Ворота: "+Mathf.CeilToInt(objectiveHealth):"Береги выносливость: щит защищает только спереди"),smallStyle);
+            if(noticeTime>0) Text(new Rect(350,110,580,35),notice,new GUIStyle(textStyle){alignment=TextAnchor.MiddleCenter});
+            foreach(var e in enemies)
+            {
+                if(e.hp>=e.maxHp&&e.kind!=3) continue;
+                Vector3 screen=gameCamera.WorldToScreenPoint(e.pos+Vector2.up*(e.kind==3?2:1.5f));
+                Vector2 canvas=ScreenLayout.ToUI(screen); float x=canvas.x,y=canvas.y;
+                Bar(new Rect(x-30,y,60,6),e.hp/e.maxHp,new Color(.7f,.2f,.12f));
+            }
+            foreach(var drop in gearDrops) if(Vector2.Distance(playerPos,drop.position)<1.5f) Text(new Rect(350,572,580,28),"E — подобрать: "+HistoricalItems.All[drop.item].name,smallStyle);
+            if(wave==3) foreach(var captive in captives)
+            {
+                if(Vector2.Distance(playerPos,captive.transform.position)<1.5f) Text(new Rect(490,600,300,32),"E — освободить пленного",smallStyle);
+            }
+        }
         void ResultScreen()
         {
-            Overlay(); bool win = mode == Mode.Victory;
-            Color accent = win ? NeonVisual.Cyan : NeonVisual.Coral;
-            Box(new Rect(270, 108, 740, 510), Panel);
-            Box(new Rect(270, 108, 740, 3), accent);
-            Text(new Rect(300, 135, 680, 24), win ? "ПОСЛЕДНИЙ СИГНАЛ ПРИНЯТ" : "СИГНАЛ ПОТЕРЯН", 13, accent, TextAnchor.MiddleCenter, true);
-            Text(new Rect(292, 174, 696, 56), win ? "Твоя история осталась" : "Путь ещё не закончен", 35, Ink, TextAnchor.MiddleCenter, true);
-            Text(new Rect(318, 245, 644, 81), win ? EndingText : "Причал помнит каждый вылет. Кредиты, заработанные в бою, помогут выбрать новый облик в ангаре. Попробуй другой маршрут и береги рывок.", 16, MutedInk, TextAnchor.MiddleCenter);
-            ResultFact(315, "СЧЁТ", score.ToString("N0"), accent);
-            ResultFact(483, "ДРОНОВ", kills.ToString(), Ink);
-            ResultFact(651, "ВРЕМЯ", TimeText(elapsed), Ink);
-            ResultFact(819, "ЗА ВЫЛЕТ", "+" + runCredits.ToString("N0"), NeonVisual.Gold);
-            if (Button(new Rect(328, 447, 624, 53), "НОВАЯ ИСТОРИЯ    →", true)) StartRun();
-            if (Button(new Rect(328, 517, 302, 41), "В АНГАР", false)) { ClearCombat(); mode = Mode.Menu; playerPos = Vector2.zero; OpenShop(); }
-            if (Button(new Rect(650, 517, 302, 41), "В ГЛАВНОЕ МЕНЮ", false)) { ClearCombat(); mode = Mode.Menu; playerPos = Vector2.zero; }
-            Text(new Rect(320, 579, 640, 20), "R ИЛИ ENTER — НОВЫЙ ВЫЛЕТ", 10, MutedInk, TextAnchor.MiddleCenter);
-        }
-
-        void ResultFact(float x, string caption, string value, Color color)
-        {
-            Text(new Rect(x, 348, 146, 20), caption, 10, MutedInk, TextAnchor.MiddleCenter);
-            Text(new Rect(x, 377, 146, 39), value, 27, color, TextAnchor.MiddleCenter, true);
-        }
-
-        void Crosshair(float scale, Vector2 offset)
-        {
-            if (Mouse.current == null) return;
-            Vector2 p = Mouse.current.position.ReadValue(); p.y = Screen.height - p.y; p = (p - offset) / scale;
-            Color c = new Color(0.6f, 1, 0.94f, 0.8f);
-            Box(new Rect(p.x - 11, p.y, 6, 1), c); Box(new Rect(p.x + 5, p.y, 6, 1), c);
-            Box(new Rect(p.x, p.y - 11, 1, 6), c); Box(new Rect(p.x, p.y + 5, 1, 6), c);
-        }
-
-        static string UpgradeName(int id)
-        {
-            switch (id) { case 0: return "Перегрузка"; case 1: return "Быстрый цикл"; case 2: return "Новая броня"; case 3: return "Мультивыстрел"; case 4: return "Ускоритель"; default: return "Сквозной импульс"; }
-        }
-        static string UpgradeDescription(int id)
-        {
-            switch (id)
-            {
-                case 0: return "+30% урона\nКаждый импульс бьёт сильнее.";
-                case 1: return "+25% скорострельности\nМеньше пауз между выстрелами.";
-                case 2: return "+30 к максимальной прочности\nИ восстановление 60 прочности.";
-                case 3: return "+2 боковых импульса\nБоковые наносят 72% урона.";
-                case 4: return "+15% скорости\nДержи дистанцию от дронов.";
-                default: return "+1 пробиваемая цель\nПробивай плотные группы.";
-            }
-        }
-        static string TimeText(float seconds) => ((int)seconds / 60).ToString("00") + ":" + ((int)seconds % 60).ToString("00");
-        void Overlay() => Box(new Rect(0, 77, 1280, 574), new Color(0.012f, 0.022f, 0.039f, 0.92f));
-        void Key(Rect rect, string value) { Box(rect, new Color(0.08f, 0.14f, 0.18f)); Text(rect, value, 10, Ink, TextAnchor.MiddleCenter, true); }
-        void Box(Rect rect, Color color) { Color old = GUI.color; GUI.color = color; GUI.DrawTexture(rect, Texture2D.whiteTexture); GUI.color = old; }
-        void Text(Rect rect, string value, int size, Color color, TextAnchor anchor = TextAnchor.UpperLeft, bool bold = false)
-        {
-            label.fontSize = size; label.normal.textColor = color; label.alignment = anchor; label.fontStyle = bold ? FontStyle.Bold : FontStyle.Normal;
-            GUI.Label(rect, value, label);
-        }
-        bool Button(Rect rect, string title, bool primary)
-        {
-            bool hover = rect.Contains(Event.current.mousePosition);
-            Box(rect, primary ? (hover ? new Color(0.55f, 1, 0.93f) : NeonVisual.Cyan) : hover ? new Color(0.1f, 0.2f, 0.24f) : new Color(0.065f, 0.11f, 0.15f));
-            Text(rect, title, primary ? 15 : 11, primary ? new Color(0.02f, 0.09f, 0.1f) : Ink, TextAnchor.MiddleCenter, true);
-            return GUI.Button(rect, GUIContent.none, GUIStyle.none);
-        }
-        static void Quit()
-        {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-            Application.Quit();
-#endif
+            bool won=mode==Mode.Victory;
+            Panel(new Rect(180,95,920,535));
+            Text(new Rect(220,118,840,65),won?"КЛЯТВА ИСПОЛНЕНА":"ПОХОД ПРЕРВАН",titleStyle);
+            string ending=faction==0?"Бережки снова встречают обозы. Воевода получает письмо:\nземлю удержали люди, которым было что защищать.":faction==1?"Над Сен-Рош поднято знамя. Но в новой клятве гарнизона\nесть слова о тех, кто живёт за стенами крепости.":"У фьорда зажглись очаги. Запасов хватит до весны,\nа имя того, кто продал дорогу, уже знает весь берег.";
+            Text(new Rect(255,225,770,140),won?ending+"\n\n"+(orderAlly?"Матье запечатывает реликвию. Ночью колокол молчит.":"Дружина погребает реликвию. Страх больше не правит крепостью."):"Даже верный удар не заменит осторожности.\nИспользуй щит спереди, отходи во время вражеского замаха\nи оставляй силы для переката.\n\n"+notice);
+            Text(new Rect(255,390,770,70),"Задание: "+wave+" / 5     Побеждено: "+kills+"     Очки: "+score+"\nСобрано серебра: "+runCredits+" · Серебро и открытое снаряжение сохранены.");
+            if(Button(new Rect(260,510,360,58),"Новый поход")) mode=Mode.Faction;
+            if(Button(new Rect(655,510,360,58),"К главному меню")) mode=Mode.Menu;
         }
     }
 }

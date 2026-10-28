@@ -7,318 +7,104 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
-
 namespace Askich
 {
-    /// <summary>
-    /// Opt-in rendered playtest using ordinary keyboard/mouse input in this player only.
-    /// Run a development build with -askich-preview -askich-preview-output ABSOLUTE_DIRECTORY.
-    /// It never changes combat stats or actor positions and is absent from release players.
-    /// </summary>
     [DefaultExecutionOrder(-1000)]
     public sealed class ArenaPreview : MonoBehaviour
     {
-        const BindingFlags Fields = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public;
-        ArenaGame game;
-        Camera arenaCamera;
-        Keyboard keyboard;
-        Mouse mouse;
-        readonly List<InputDevice> disabledDevices = new List<InputDevice>();
-        readonly List<string> errors = new List<string>();
-        readonly HashSet<string> validCaptures = new HashSet<string>();
-        string directory;
-        bool started, finished, menuCaptured, gameplayCaptured, upgradeCaptured;
-        bool prologueCaptured, hangarCaptured, secondLocationCaptured;
-        bool originalBackground;
-        float originalVolume;
-        int originalVSync, originalFrameRate;
-        InputSettings.BackgroundBehavior originalInputBackground;
-        float runStarted;
-        int renderedFrames, selectedUpgrade = -1, observedWave;
-        float waveBegan;
-
-        [Serializable]
-        sealed class PlaytestReport
-        {
-            public string kind = "Real-frame development player playtest";
-            public string unityVersion;
-            public bool passed;
-            public string mode;
-            public float seconds;
-            public int frames;
-            public int wave;
-            public int kills;
-            public int score;
-            public float health;
-            public int upgradeChosen;
-            public int currencyCollected;
-            public bool menuScreenshot;
-            public bool gameplayScreenshot;
-            public bool upgradeScreenshot;
-            public bool prologueScreenshot;
-            public bool hangarScreenshot;
-            public bool secondLocationScreenshot;
-            public string[] errors;
-        }
-
+        const BindingFlags Flags=BindingFlags.Instance|BindingFlags.NonPublic|BindingFlags.Public;
+        ArenaGame game; Keyboard keyboard; Mouse mouse; Camera cameraView;
+        string directory; float started,modeSince; string lastMode=""; int lastWave; bool ready,done;
+        readonly HashSet<string> captures=new HashSet<string>();
+        readonly List<string> errors=new List<string>();
+        [Serializable] class Report {public bool passed;public int wave,kills;public float health,seconds;public string mode;public string[] screenshots,errors;}
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        static void Isolate() {if(Array.IndexOf(Environment.GetCommandLineArgs(),"-askich-preview")>=0) AskichProfile.SavePathOverride=Path.Combine(Path.GetTempPath(),"askich-preview-"+Guid.NewGuid().ToString("N")+".json");}
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void Bootstrap()
-        {
-            string[] args = Environment.GetCommandLineArgs();
-            if (Array.IndexOf(args, "-askich-preview") < 0 || Array.IndexOf(args, "-askich-smoke") >= 0) return;
-            new GameObject("Development preview player").AddComponent<ArenaPreview>();
-        }
-
+        static void Bootstrap() {if(Array.IndexOf(Environment.GetCommandLineArgs(),"-askich-preview")>=0)new GameObject("Preview").AddComponent<ArenaPreview>();}
+        T Get<T>(string name)=>(T)typeof(ArenaGame).GetField(name,Flags).GetValue(game);
+        T Field<T>(object o,string name)=>(T)o.GetType().GetField(name).GetValue(o);
         IEnumerator Start()
         {
-            originalBackground = Application.runInBackground;
-            originalInputBackground = InputSystem.settings.backgroundBehavior;
-            originalVolume = AudioListener.volume;
-            originalVSync = QualitySettings.vSyncCount;
-            originalFrameRate = Application.targetFrameRate;
-            AudioListener.volume = 0;
-            QualitySettings.vSyncCount = 0;
-            Application.targetFrameRate = 60;
-            Application.runInBackground = true;
-            InputSystem.settings.backgroundBehavior = InputSettings.BackgroundBehavior.IgnoreFocus;
-            Application.logMessageReceived += OnLog;
-            game = FindFirstObjectByType<ArenaGame>();
-            if (game == null) { Debug.LogError("ASKICH_PREVIEW_FAIL: No ArenaGame scene component."); Application.Quit(1); yield break; }
-            // Preview may read the real cosmetic selection but never writes the player's profile.
-            typeof(ArenaGame).GetField("persistenceEnabled", Fields).SetValue(game, false);
-            arenaCamera = Get<Camera>("gameCamera");
-            directory = OutputDirectory();
-            Directory.CreateDirectory(directory);
-
-            // These are devices inside this Unity process; the OS and other games are untouched.
-            foreach (InputDevice device in InputSystem.devices)
-                if (device.enabled && (device is Keyboard || device is Mouse)) disabledDevices.Add(device);
-            foreach (InputDevice device in disabledDevices) InputSystem.DisableDevice(device);
-            keyboard = InputSystem.AddDevice<Keyboard>("Preview keyboard");
-            mouse = InputSystem.AddDevice<Mouse>("Preview mouse");
-            SetInput(new List<Key>(), new Vector2(Screen.width * 0.5f, Screen.height * 0.5f), false);
-
-            yield return new WaitForSecondsRealtime(0.8f);
-            yield return Capture("menu.png");
-            menuCaptured = validCaptures.Contains("menu.png");
-            Call("OpenShop");
-            yield return new WaitForSecondsRealtime(0.25f);
-            yield return Capture("hangar.png");
-            hangarCaptured = validCaptures.Contains("hangar.png");
-            Call("CloseShop");
-            game.StartRun();
-            yield return new WaitForSecondsRealtime(0.25f);
-            yield return Capture("prologue.png");
-            prologueCaptured = validCaptures.Contains("prologue.png");
-            Call("ContinueStory", 0);
-            runStarted = Time.unscaledTime;
-            observedWave = Get<int>("wave"); waveBegan = runStarted;
-            started = true;
-
-            while (Time.unscaledTime - runStarted < 100f && !finished)
-            {
-                string mode = Mode();
-                float elapsed = Time.unscaledTime - runStarted;
-                if (!gameplayCaptured && elapsed >= 9f && mode == "Playing")
-                {
-                    yield return Capture("location1.png");
-                    gameplayCaptured = validCaptures.Contains("location1.png");
-                }
-                if (mode == "Story")
-                {
-                    yield return new WaitForSecondsRealtime(0.3f);
-                    yield return Capture("dialogue-" + Get<int>("wave") + ".png");
-                    Call("ContinueStory", 0);
-                }
-                if (!secondLocationCaptured && mode == "Playing" && Get<int>("wave") >= 3 && Time.unscaledTime - waveBegan >= 6)
-                {
-                    yield return Capture("location2.png");
-                    secondLocationCaptured = validCaptures.Contains("location2.png");
-                }
-                if (mode == "Upgrade")
-                {
-                    if (!upgradeCaptured)
-                    {
-                        yield return new WaitForSecondsRealtime(0.35f);
-                        yield return Capture("upgrades.png");
-                        upgradeCaptured = validCaptures.Contains("upgrades.png");
-                    }
-                    int[] offered = Get<int[]>("offered");
-                    int choice = offered[0];
-                    foreach (int candidate in offered) if (candidate == 0 || candidate == 1 || candidate == 3) { choice = candidate; break; }
-                    if (Get<float>("health") < 65 && Array.IndexOf(offered, 2) >= 0) choice = 2;
-                    Call("ApplyUpgrade", choice);
-                    selectedUpgrade = choice;
-                }
-                if (mode == "Defeat" || mode == "Victory")
-                {
-                    yield return Capture(mode.ToLowerInvariant() + ".png");
-                    finished = true;
-                }
-                if (menuCaptured && gameplayCaptured && upgradeCaptured && prologueCaptured && hangarCaptured && secondLocationCaptured && selectedUpgrade >= 0) finished = true;
-                yield return null;
-            }
-            if (!gameplayCaptured && Mode() == "Playing")
-            {
-                yield return Capture("location1.png");
-                gameplayCaptured = validCaptures.Contains("location1.png");
-            }
-            finished = true;
-            SetInput(new List<Key>(), new Vector2(Screen.width * 0.5f, Screen.height * 0.5f), false);
-            var report = new PlaytestReport
-            {
-                unityVersion = Application.unityVersion,
-                mode = Mode(),
-                seconds = Time.unscaledTime - runStarted,
-                frames = renderedFrames,
-                wave = Get<int>("wave"),
-                kills = Get<int>("kills"),
-                score = Get<int>("score"),
-                health = Get<float>("health"),
-                upgradeChosen = selectedUpgrade,
-                currencyCollected = Get<int>("runCredits"),
-                menuScreenshot = menuCaptured,
-                gameplayScreenshot = gameplayCaptured,
-                upgradeScreenshot = upgradeCaptured,
-                prologueScreenshot = prologueCaptured,
-                hangarScreenshot = hangarCaptured,
-                secondLocationScreenshot = secondLocationCaptured,
-                errors = errors.ToArray()
-            };
-            report.passed = menuCaptured && gameplayCaptured && upgradeCaptured && prologueCaptured && hangarCaptured && secondLocationCaptured && report.wave >= 3
-                && report.kills > 0 && report.health > 0 && report.currencyCollected > 0 && errors.Count == 0;
-            File.WriteAllText(Path.Combine(directory, "playtest.json"), JsonUtility.ToJson(report, true));
-            Debug.Log(report.passed ? "ASKICH_PREVIEW_PASS" : "ASKICH_PREVIEW_FAIL");
-            yield return new WaitForSecondsRealtime(0.3f);
-            Application.Quit(report.passed ? 0 : 1);
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#endif
+            game=FindFirstObjectByType<ArenaGame>();typeof(ArenaGame).GetField("persistenceEnabled",Flags).SetValue(game,false);
+            Application.runInBackground=true;QualitySettings.vSyncCount=0;Application.targetFrameRate=60;AudioListener.volume=0;
+            InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
+            var devices=new List<InputDevice>(InputSystem.devices);foreach(var d in devices)if(d is Keyboard||d is Mouse)InputSystem.DisableDevice(d);
+            keyboard=InputSystem.AddDevice<Keyboard>();mouse=InputSystem.AddDevice<Mouse>();cameraView=Get<Camera>("gameCamera");
+            string[] args=Environment.GetCommandLineArgs();int at=Array.IndexOf(args,"-askich-preview-output");directory=at>=0?args[at+1]:Application.persistentDataPath;Directory.CreateDirectory(directory);
+            Application.logMessageReceived+=(message,stack,type)=>{if(type==LogType.Error||type==LogType.Exception)errors.Add(message);};
+            started=Time.realtimeSinceStartup; yield return null;ready=true;
         }
-
         void Update()
         {
-            if (!started || finished || keyboard == null || game == null) return;
-            renderedFrames++;
-            int wave = Get<int>("wave");
-            if (wave != observedWave) { observedWave = wave; waveBegan = Time.unscaledTime; }
-            string mode = Mode();
-            if (mode == "Paused")
+            if(!ready||done)return;
+            string mode=Get<object>("mode").ToString();int wave=Get<int>("wave");
+            if(mode!=lastMode||wave!=lastWave){lastMode=mode;lastWave=wave;modeSince=Time.realtimeSinceStartup;}
+            float age=Time.realtimeSinceStartup-modeSince;
+            var keys=new List<Key>();Vector2 pos=Get<Vector2>("playerPos"),aim=pos+Vector2.right; bool attack=false,block=false;
+            if(mode!="Playing")
             {
-                // The normal focus-loss handler pauses; unattended play explicitly resumes it.
-                FieldInfo field = typeof(ArenaGame).GetField("mode", Fields);
-                field.SetValue(game, Enum.Parse(field.FieldType, "Playing"));
-                mode = "Playing";
-            }
-            if (mode != "Playing")
-            {
-                SetInput(new List<Key>(), new Vector2(Screen.width * 0.5f, Screen.height * 0.5f), false);
-                return;
-            }
-            Vector2 pilot = Get<Vector2>("playerPos");
-            float phase = (Time.unscaledTime - runStarted) * 0.48f;
-            Vector2 waypoint = new Vector2(Mathf.Cos(phase) * 8, Mathf.Sin(phase) * 3.5f);
-            Vector2 movement = (waypoint - pilot).normalized;
-            IList enemies = Get<IList>("enemies");
-            Vector2 aim = pilot + Vector2.right;
-            float nearest = float.MaxValue;
-            foreach (object enemy in enemies)
-            {
-                Vector2 position = (Vector2)enemy.GetType().GetField("pos").GetValue(enemy);
-                Vector2 delta = position - pilot;
-                float distance = delta.magnitude;
-                if (distance < nearest) { nearest = distance; aim = position; }
-                if (distance < 2.2f && distance > 0.01f) movement -= delta.normalized * (2.2f - distance) * 1.1f;
-            }
-            // Seek real collectible drops when there is room to do so, while aiming at threats.
-            if (nearest > 3.2f)
-            {
-                IList drops = Get<IList>("shards");
-                float closestDrop = 6f;
-                foreach (object drop in drops)
+                string shot=mode=="Menu"?"01-menu":mode=="Faction"?"02-factions":mode=="Story"?"story-"+wave:mode=="Upgrade"?"camp-"+wave:mode;
+                if(age>.3f&&!captures.Contains(shot)) {captures.Add(shot);StartCoroutine(Capture(shot));}
+                if(age>1.1f)
                 {
-                    Vector2 position = (Vector2)drop.GetType().GetField("pos").GetValue(drop);
-                    float distance = Vector2.Distance(position, pilot);
-                    if (distance < closestDrop) { closestDrop = distance; movement = (position - pilot).normalized; }
+                    if(mode=="Menu")keys.Add(Key.Enter);
+                    if(mode=="Faction")keys.Add(Key.Digit1);
+                    if(mode=="Story")keys.Add(wave==3?Key.Digit1:Key.Enter);
+                    if(mode=="Upgrade")keys.Add(Key.Digit2);
                 }
             }
-            var keys = new List<Key>();
-            if (movement.x > 0.2f) keys.Add(Key.D);
-            else if (movement.x < -0.2f) keys.Add(Key.A);
-            if (movement.y > 0.2f) keys.Add(Key.W);
-            else if (movement.y < -0.2f) keys.Add(Key.S);
-            if (nearest < 1.25f && Get<float>("dashCooldown") <= 0) keys.Add(Key.Space);
-            Vector2 screenAim = arenaCamera.WorldToScreenPoint(aim);
-            SetInput(keys, screenAim, enemies.Count > 0);
-        }
-
-        void SetInput(List<Key> keys, Vector2 position, bool firing)
-        {
-            InputSystem.QueueStateEvent(keyboard, new KeyboardState(keys.ToArray()));
-            InputSystem.QueueStateEvent(mouse, new MouseState { position = position, buttons = (ushort)(firing ? 1 : 0) });
-            InputSystem.Update();
-            keyboard.MakeCurrent();
-            mouse.MakeCurrent();
-        }
-
-        IEnumerator Capture(string fileName)
-        {
-            yield return new WaitForEndOfFrame();
-            Texture2D texture = null;
-            try
+            else
             {
-                texture = ScreenCapture.CaptureScreenshotAsTexture();
-                if (texture == null || texture.width < 16 || texture.height < 16)
-                    throw new InvalidOperationException("The player did not render a usable frame.");
-                Color32[] pixels = texture.GetPixels32();
-                int visibleSamples = 0;
-                int stride = Mathf.Max(1, pixels.Length / 4096);
-                for (int i = 0; i < pixels.Length; i += stride)
-                    if (pixels[i].r > 24 || pixels[i].g > 24 || pixels[i].b > 24) visibleSamples++;
-                if (visibleSamples < 8)
-                    throw new InvalidOperationException("Screenshot is black; launch a visible graphics window.");
-                File.WriteAllBytes(Path.Combine(directory, fileName), texture.EncodeToPNG());
-                validCaptures.Add(fileName);
-            }
-            catch (Exception error)
-            {
-                Debug.LogError("ASKICH_PREVIEW_CAPTURE_ERROR " + fileName + ": " + error.Message);
-            }
-            finally
-            {
-                if (texture != null) Destroy(texture);
-            }
-        }
+                var enemies=Get<IList>("enemies");object nearest=null;float dist=100;
+                float priority=1000;
+                foreach(var e in enemies){Vector2 enemyPos=Field<Vector2>(e,"pos");float d=Vector2.Distance(pos,enemyPos),rating=d;
+                    if(wave==2||wave==4){float danger=Vector2.Distance(enemyPos,Get<Vector2>("objectivePos"));if(danger<4)rating=d*.1f+danger*.5f-10;}
+                    if(rating<priority){priority=rating;dist=d;nearest=e;}}
+                Vector2 target=pos;
+                if(nearest!=null)
+                {
+                    aim=Field<Vector2>(nearest,"pos");Vector2 dir=(aim-pos).normalized;
+                    target=dist>1.7f?aim:pos-dir*.7f;
+                    attack=dist<2.2f;block=Field<bool>(nearest,"winding")&&dist<2.2f;
+                    if(dist<2.3f&&Get<float>("stamina")>65&&!block)keys.Add(Key.Q);
+                    if(block&&Get<float>("stamina")>40&&Field<int>(nearest,"kind")>=2)keys.Add(Key.Space);
+                }
+                else if(wave==2||wave==4)target=Get<Vector2>("objectivePos");
+                else if(wave==3)
+                {
+                    var prisoners=Get<List<SpriteRenderer>>("captives");if(prisoners.Count>0){target=prisoners[0].transform.position;if(Vector2.Distance(pos,target)<1.4f&&Time.frameCount%10==0)keys.Add(Key.E);}
+                }
+                var drops=Get<IList>("gearDrops");
+                if(drops.Count>0)
+                {
+                    Vector2 loot=Field<Vector2>(drops[0],"position");
+                    if(wave!=2&&wave!=4&&(nearest==null||dist>4))target=loot;
+                    if(Vector2.Distance(pos,loot)<1.5f&&Time.frameCount%10==0)keys.Add(Key.E);
+                }
+                Vector2 move=target-pos;
+                if(move.x>.15f)keys.Add(Key.D);if(move.x<-.15f)keys.Add(Key.A);if(move.y>.15f)keys.Add(Key.W);if(move.y<-.15f)keys.Add(Key.S);
+                string name=wave<3?"03-village":"04-fortress";
+                if(age>8&&!captures.Contains(name)){captures.Add(name);StartCoroutine(Capture(name));}
 
-        T Get<T>(string field) => (T)typeof(ArenaGame).GetField(field, Fields).GetValue(game);
-        void Call(string name, params object[] arguments) => typeof(ArenaGame).GetMethod(name, Fields).Invoke(game, arguments);
-        string Mode() => typeof(ArenaGame).GetField("mode", Fields).GetValue(game).ToString();
-        void OnLog(string message, string stack, LogType type)
-        {
-            if ((type == LogType.Error || type == LogType.Exception || type == LogType.Assert) && errors.Count < 20) errors.Add(message);
+            }
+            InputSystem.QueueStateEvent(keyboard,new KeyboardState(keys.ToArray()));
+            var state=new MouseState{position=cameraView.WorldToScreenPoint(aim)};if(attack)state=state.WithButton(MouseButton.Left);if(block)state=state.WithButton(MouseButton.Right);InputSystem.QueueStateEvent(mouse,state);
+            if(!done&&mode=="Victory"){done=true;StartCoroutine(Finish(true));} if(!done&&(mode=="Defeat"||Time.realtimeSinceStartup-started>360)){done=true;StartCoroutine(Finish(false));}
         }
-
-        static string OutputDirectory()
+        IEnumerator Capture(string name)
         {
-            string[] args = Environment.GetCommandLineArgs();
-            int index = Array.IndexOf(args, "-askich-preview-output");
-            if (index < 0) return Path.Combine(Application.persistentDataPath, "Preview");
-            if (index + 1 >= args.Length || !Path.IsPathRooted(args[index + 1]))
-                throw new ArgumentException("-askich-preview-output requires an absolute directory.");
-            return args[index + 1];
+            yield return new WaitForEndOfFrame();var texture=ScreenCapture.CaptureScreenshotAsTexture();
+            if(texture==null){errors.Add("Empty screenshot "+name);yield break;}
+            int bright=0;for(int y=0;y<texture.height;y+=24)for(int x=0;x<texture.width;x+=24)if(texture.GetPixel(x,y).grayscale>.05f)bright++;
+            if(bright<50)errors.Add("Black screenshot "+name);
+            File.WriteAllBytes(Path.Combine(directory,name+".png"),texture.EncodeToPNG());Destroy(texture);
         }
-
-        void OnDestroy()
+        IEnumerator Finish(bool success)
         {
-            Application.logMessageReceived -= OnLog;
-            if (keyboard != null && keyboard.added) InputSystem.RemoveDevice(keyboard);
-            if (mouse != null && mouse.added) InputSystem.RemoveDevice(mouse);
-            foreach (InputDevice device in disabledDevices) if (device.added) InputSystem.EnableDevice(device);
-            Application.runInBackground = originalBackground;
-            InputSystem.settings.backgroundBehavior = originalInputBackground;
-            AudioListener.volume = originalVolume;
-            QualitySettings.vSyncCount = originalVSync;
-            Application.targetFrameRate = originalFrameRate;
+            yield return Capture("05-playtest-end");
+            var report=new Report{passed=success&&errors.Count==0,wave=Get<int>("wave"),kills=Get<int>("kills"),health=Get<float>("health"),seconds=Time.realtimeSinceStartup-started,mode=Get<object>("mode").ToString(),screenshots=new List<string>(captures).ToArray(),errors=errors.ToArray()};
+            File.WriteAllText(Path.Combine(directory,"playtest.json"),JsonUtility.ToJson(report,true));Application.Quit(report.passed?0:1);
         }
     }
 }

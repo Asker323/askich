@@ -19,12 +19,31 @@ namespace Askich.Editor
             PrepareInternal();
         }
 
+        static void ConfigureArt()
+        {
+            foreach(string name in new[]{"warriors", "props", "houses"})
+            {
+                string path = "Assets/Resources/Medieval/"+name+".png";
+                var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                if(importer == null) throw new BuildFailedException("Missing atlas: "+path);
+                importer.textureType = TextureImporterType.Default;
+                importer.npotScale = TextureImporterNPOTScale.None;
+                importer.filterMode = FilterMode.Point;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.maxTextureSize = 2048;
+                importer.alphaIsTransparency = true;
+                importer.mipmapEnabled = false;
+                importer.isReadable = true;
+                importer.SaveAndReimport();
+            }
+        }
         private static bool PrepareInternal()
         {
             if (!Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
                 return false;
 
             Configure();
+            ConfigureArt();
             if (!File.Exists(ScenePath))
             {
                 Directory.CreateDirectory("Assets/Scenes");
@@ -79,16 +98,40 @@ namespace Askich.Editor
                 throw new BuildFailedException(summary);
 
             File.WriteAllText(Path.Combine(directory, "READ-ME.txt"),
-                "ASKICH 1.0.0 — Windows x64\n\n" +
+                "ASKICH 2.1.0 — Windows x64\n\n" +
                 "Run Askich.exe. Keep the entire folder together.\n" +
-                "WASD / arrows: move | Mouse: aim | Left mouse: fire\n" +
-                "Space / Shift: dash | Escape / P: pause | M: mute\n" +
-                "Enter: start / restart | R: restart after defeat or victory\n" +
-                "1 / 2 / 3: choose upgrade | F12: save screenshot\n\n" +
+                "WASD / arrows: move | Mouse: aim | Left mouse: attack | Right mouse: block\n" +
+                "Q: heavy attack | Space: dodge | E: rescue | Escape / P: pause | M: mute\n" +
+                "Enter: continue story | 1 / 2 / 3: faction or upgrade\n" +
+                "1 / 2 / 3: choose upgrade\n\n" +
                 "Unity 6000.3.4f1 | Project: Asker323\n");
             Debug.Log("ASKICH_BUILD_OK\n" + summary);
         }
 
+        [MenuItem("Askich/Build Android APK")]
+        public static void Android()
+        {
+            if(!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android,BuildTarget.Android))
+                throw new BuildFailedException("Install Android Build Support, Android SDK & NDK Tools and OpenJDK for Unity 6000.3.4f1 through Unity Hub.");
+            if(!PrepareInternal())return;
+            VerifyRules();ValidateScene();ValidateShaders();
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android,"com.asker323.askich");
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android,ScriptingImplementation.IL2CPP);
+            PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;
+            PlayerSettings.Android.minSdkVersion=AndroidSdkVersions.AndroidApiLevel26;
+            PlayerSettings.Android.targetSdkVersion=AndroidSdkVersions.AndroidApiLevelAuto;
+            PlayerSettings.Android.bundleVersionCode=210;
+            PlayerSettings.defaultInterfaceOrientation=UIOrientation.AutoRotation;
+            PlayerSettings.allowedAutorotateToPortrait=false;PlayerSettings.allowedAutorotateToPortraitUpsideDown=false;
+            PlayerSettings.allowedAutorotateToLandscapeLeft=true;PlayerSettings.allowedAutorotateToLandscapeRight=true;
+            EditorUserBuildSettings.buildAppBundle=false;
+            string output=Environment.GetEnvironmentVariable("ASKICH_BUILD_DIR");
+            if(string.IsNullOrWhiteSpace(output))output=Path.GetFullPath(Path.Combine(Application.dataPath,"../../Askich-Android"));
+            Directory.CreateDirectory(output);
+            var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{ScenePath},locationPathName=Path.Combine(output,"Askich.apk"),target=BuildTarget.Android,options=BuildOptions.None});
+            File.WriteAllText(Path.Combine(output,"build-report.txt"),"Result: "+report.summary.result+"\nPlatform: Android ARM64\nErrors: "+report.summary.totalErrors+"\nWarnings: "+report.summary.totalWarnings);
+            if(report.summary.result!=BuildResult.Succeeded)throw new BuildFailedException("Android build failed. See build report.");
+        }
         [MenuItem("Askich/Validate Entry Scene")]
         public static void ValidateScene()
         {
@@ -120,8 +163,8 @@ namespace Askich.Editor
                 assertions++;
             }
 
-            Check(ArenaRules.WaveSize(1) == 18, "first wave budget");
-            Check(ArenaRules.WaveSize(ArenaRules.FinalWave) == 42, "final wave budget");
+            Check(ArenaRules.WaveSize(1) == 10, "first wave budget");
+            Check(ArenaRules.WaveSize(ArenaRules.FinalWave) == 18, "final wave budget");
             Check(ArenaRules.WaveSize(-10) == ArenaRules.WaveSize(1), "minimum wave clamp");
             Check(ArenaRules.WaveSize(100) == ArenaRules.WaveSize(ArenaRules.FinalWave), "maximum wave clamp");
             Check(ArenaRules.Clamp(Vector2.zero) == Vector2.zero, "interior position remains unchanged");
@@ -163,7 +206,7 @@ namespace Askich.Editor
         {
             PlayerSettings.companyName = "Asker323";
             PlayerSettings.productName = "Askich";
-            PlayerSettings.bundleVersion = "1.0.0";
+            PlayerSettings.bundleVersion = "2.1.0";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Standalone, "com.asker323.askich");
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
             PlayerSettings.defaultScreenWidth = 1280;

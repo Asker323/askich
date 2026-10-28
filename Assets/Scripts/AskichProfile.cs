@@ -8,11 +8,16 @@ namespace Askich
     [Serializable]
     public sealed class AskichProfile
     {
-        public int version = 1;
+        public int version = 3;
         public int credits;
         public int unlockedSkins = 1;
         public int selectedSkin;
         public int bestScore;
+        public int selectedFaction;
+        public int completedFactions;
+        public int ownedItems;
+        public int[] equippedItems = new int[9];
+        public Settlement[] settlements = new Settlement[3];
 
         // Development tests redirect storage before scene Awake; normal players use their own profile.
         public static string SavePathOverride;
@@ -21,7 +26,14 @@ namespace Askich
 
         public void Validate()
         {
-            version = 1;
+            version = 3;
+            selectedFaction = Mathf.Clamp(selectedFaction, 0, 2);
+            completedFactions &= 7;
+            ownedItems &= 511;
+            if(equippedItems==null||equippedItems.Length!=9) Array.Resize(ref equippedItems,9);
+            for(int i=0;i<9;i++) if(equippedItems[i]!=i+1||(ownedItems&(1<<i))==0) equippedItems[i]=0;
+            if(settlements==null||settlements.Length!=3) Array.Resize(ref settlements,3);
+            for(int i=0;i<3;i++) {if(settlements[i]==null)settlements[i]=new Settlement();settlements[i].Validate();}
             credits = Mathf.Clamp(credits, 0, 10000000);
             bestScore = Mathf.Clamp(bestScore, 0, 100000000);
             unlockedSkins = (unlockedSkins & 7) | 1;
@@ -33,16 +45,16 @@ namespace Askich
         {
             try
             {
-                if (!File.Exists(StoragePath)) return new AskichProfile();
+                if (!File.Exists(StoragePath)) {var fresh = new AskichProfile();fresh.Validate();return fresh;}
                 var profile = JsonUtility.FromJson<AskichProfile>(File.ReadAllText(StoragePath));
-                if (profile == null) return new AskichProfile();
+                if (profile == null) {var fresh = new AskichProfile();fresh.Validate();return fresh;}
                 profile.Validate();
                 return profile;
             }
             catch (Exception error) when (error is IOException || error is UnauthorizedAccessException || error is ArgumentException)
             {
                 Debug.LogWarning("Askich profile could not be read: " + error.GetType().Name);
-                return new AskichProfile();
+                var fresh = new AskichProfile(); fresh.Validate(); return fresh;
             }
         }
 

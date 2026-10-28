@@ -11,10 +11,10 @@ namespace Askich
         void Awake()
         {
             source = GetComponent<AudioSource>(); source.playOnAwake = false; source.volume = 0.3f;
-            shot = Tone("Pulse", 640, 140, 0.075f, 0.2f);
+            shot = Tone("Pulse", 140, 65, 0.09f, 2.5f);
             hit = Tone("Impact", 180, 45, 0.12f, 0.35f);
-            dash = Tone("Dash", 160, 750, 0.18f, 0.14f);
-            upgrade = Tone("Upgrade", 440, 880, 0.32f, 0.1f);
+            dash = Tone("Dash", 110, 55, 0.16f, 1.6f);
+            upgrade = Tone("Upgrade", 330, 440, 0.32f, 0.05f);
             lose = Tone("Shutdown", 260, 35, 0.6f, 0.1f);
         }
         static AudioClip Tone(string name, float start, float end, float seconds, float noise)

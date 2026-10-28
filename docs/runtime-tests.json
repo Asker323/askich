@@ -1,93 +1,166 @@
 {
-    "suite": "Askich runtime smoke",
-    "unityVersion": "6000.3.4f1",
-    "utc": "2026-10-28T05:44:58.1687066Z",
+    "suite": "Askich medieval runtime integration",
     "passed": true,
     "tests": [
         {
-            "name": "prologue_gates_first_wave",
+            "name": "all_atlas_frames_are_available",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "swept_projectile_kills_enemy_and_scores",
+            "name": "prologue_gates_campaign",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "enemy_contact_causes_defeat",
+            "name": "three_factions_have_distinct_stats",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "lethal_hit_stops_scoring_healing_and_spawning_in_same_frame",
+            "name": "light_attack_cone_and_distance",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "dash_input_grants_temporary_invulnerability",
+            "name": "heavy_attack_spends_stamina_and_kills_once",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "pause_stops_simulation_time",
+            "name": "exhaustion_prevents_attack",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "wave_completion_offers_three_unique_upgrades",
+            "name": "shield_is_directional",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "selected_upgrade_changes_stats_and_advances_wave",
+            "name": "dodge_cost_and_invulnerability",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "five_waves_reach_victory",
+            "name": "defeat_stops_damage_and_result_rewrites",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "restart_clears_actors_and_upgrade_state",
+            "name": "wagon_requires_proximity_and_arrival",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "collectible_currency_survives_defeat_and_restart",
+            "name": "rescue_requires_nearby_interaction",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "locked_skins_require_currency_and_equip_without_repaying",
+            "name": "siege_failure_ends_campaign",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "story_choice_changes_stats_and_is_single_use",
+            "name": "temple_choice_is_single_use",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "story_key_does_not_also_select_upgrade",
+            "name": "ally_choice_spawns_companion",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "wave_three_changes_location",
+            "name": "upgrades_apply_once_and_advance",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "profile_round_trip_preserves_wallet_unlocks_and_record",
+            "name": "five_missions_reach_victory_and_save_faction",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
         },
         {
-            "name": "corrupt_profile_falls_back_to_safe_defaults",
+            "name": "wardrobe_wallet_and_no_double_charge",
             "passed": true,
-            "detail": "passed"
+            "detail": "OK"
+        },
+        {
+            "name": "v1_profile_migrates_without_losing_currency",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "corrupt_profile_falls_back",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "restart_resets_campaign_not_wallet",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "equipment_pickup_is_local_and_persistent",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "unowned_equipment_cannot_be_equipped",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "nine_house_sprites_available",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "settlement_queue_debits_once_and_completes",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "settlement_prerequisites_and_insufficient_resources",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "settlement_production_hunger_and_defence",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "settlement_raid_is_single_reward_per_cooldown",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "settlement_reform_constraints_and_cost",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "settlement_profile_roundtrip_isolated_factions",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "settlement_reachable_progression_without_resource_cheats",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "touch_multitouch_and_press_edges",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "viewport_coordinate_roundtrip",
+            "passed": true,
+            "detail": "OK"
         }
     ]
 }
