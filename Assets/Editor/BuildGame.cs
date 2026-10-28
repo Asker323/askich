@@ -21,7 +21,7 @@ namespace Askich.Editor
 
         static void ConfigureArt()
         {
-            foreach(string name in new[]{"warriors", "props", "houses"})
+            foreach(string name in new[]{"warriors", "props", "houses", "village-life", "rus-animation"})
             {
                 string path = "Assets/Resources/Medieval/"+name+".png";
                 var importer = AssetImporter.GetAtPath(path) as TextureImporter;
@@ -72,14 +72,14 @@ namespace Askich.Editor
 
             string overridePath = Environment.GetEnvironmentVariable("ASKICH_BUILD_DIR");
             string directory = string.IsNullOrWhiteSpace(overridePath)
-                ? Path.GetFullPath(Path.Combine(Application.dataPath, "../../Askich-Windows"))
+                ? Path.GetFullPath(Path.Combine(Application.dataPath, "../../GOIDA-Windows"))
                 : Path.GetFullPath(overridePath);
             Directory.CreateDirectory(directory);
 
             var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
                 scenes = new[] { ScenePath },
-                locationPathName = Path.Combine(directory, "Askich.exe"),
+                locationPathName = Path.Combine(directory, "GOIDA.exe"),
                 target = BuildTarget.StandaloneWindows64,
                 options = development ? BuildOptions.Development : BuildOptions.None
             });
@@ -98,10 +98,10 @@ namespace Askich.Editor
                 throw new BuildFailedException(summary);
 
             File.WriteAllText(Path.Combine(directory, "READ-ME.txt"),
-                "ASKICH 2.1.0 — Windows x64\n\n" +
-                "Run Askich.exe. Keep the entire folder together.\n" +
+                "GOIDA 2.2.0 — Windows x64\n\n" +
+                "Run GOIDA.exe. Keep the entire folder together.\n" +
                 "WASD / arrows: move | Mouse: aim | Left mouse: attack | Right mouse: block\n" +
-                "Q: heavy attack | Space: dodge | E: rescue | Escape / P: pause | M: mute\n" +
+                "Q: heavy attack | Space: dodge | E: rescue / pick up | Escape: pause | M: mute\n" +
                 "Enter: continue story | 1 / 2 / 3: faction or upgrade\n" +
                 "1 / 2 / 3: choose upgrade\n\n" +
                 "Unity 6000.3.4f1 | Project: Asker323\n");
@@ -120,15 +120,15 @@ namespace Askich.Editor
             PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion=AndroidSdkVersions.AndroidApiLevel26;
             PlayerSettings.Android.targetSdkVersion=AndroidSdkVersions.AndroidApiLevelAuto;
-            PlayerSettings.Android.bundleVersionCode=210;
+            PlayerSettings.Android.bundleVersionCode=220;
             PlayerSettings.defaultInterfaceOrientation=UIOrientation.AutoRotation;
             PlayerSettings.allowedAutorotateToPortrait=false;PlayerSettings.allowedAutorotateToPortraitUpsideDown=false;
             PlayerSettings.allowedAutorotateToLandscapeLeft=true;PlayerSettings.allowedAutorotateToLandscapeRight=true;
             EditorUserBuildSettings.buildAppBundle=false;
             string output=Environment.GetEnvironmentVariable("ASKICH_BUILD_DIR");
-            if(string.IsNullOrWhiteSpace(output))output=Path.GetFullPath(Path.Combine(Application.dataPath,"../../Askich-Android"));
+            if(string.IsNullOrWhiteSpace(output))output=Path.GetFullPath(Path.Combine(Application.dataPath,"../../GOIDA-Android"));
             Directory.CreateDirectory(output);
-            var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{ScenePath},locationPathName=Path.Combine(output,"Askich.apk"),target=BuildTarget.Android,options=BuildOptions.None});
+            var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{ScenePath},locationPathName=Path.Combine(output,"GOIDA.apk"),target=BuildTarget.Android,options=BuildOptions.None});
             File.WriteAllText(Path.Combine(output,"build-report.txt"),"Result: "+report.summary.result+"\nPlatform: Android ARM64\nErrors: "+report.summary.totalErrors+"\nWarnings: "+report.summary.totalWarnings);
             if(report.summary.result!=BuildResult.Succeeded)throw new BuildFailedException("Android build failed. See build report.");
         }
@@ -205,8 +205,8 @@ namespace Askich.Editor
         private static void Configure()
         {
             PlayerSettings.companyName = "Asker323";
-            PlayerSettings.productName = "Askich";
-            PlayerSettings.bundleVersion = "2.1.0";
+            PlayerSettings.productName = "GOIDA";
+            PlayerSettings.bundleVersion = "2.2.0";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Standalone, "com.asker323.askich");
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
             PlayerSettings.defaultScreenWidth = 1280;
@@ -215,7 +215,7 @@ namespace Askich.Editor
             PlayerSettings.resizableWindow = true;
             PlayerSettings.runInBackground = false;
             PlayerSettings.colorSpace = ColorSpace.Gamma;
-            QualitySettings.vSyncCount = 1;
+            QualitySettings.vSyncCount = 0;
             QualitySettings.antiAliasing = 4;
             EditorSettings.serializationMode = SerializationMode.ForceText;
             EditorUserBuildSettings.development = false;

@@ -8,7 +8,10 @@ namespace Askich
     [Serializable]
     public sealed class AskichProfile
     {
-        public int version = 3;
+        public int version = 4;
+        public int tutorialFlags;
+        public float effectsVolume = .7f, ambienceVolume = .35f;
+        public bool lowEffects;
         public int credits;
         public int unlockedSkins = 1;
         public int selectedSkin;
@@ -26,7 +29,10 @@ namespace Askich
 
         public void Validate()
         {
-            version = 3;
+            if(version<4){effectsVolume=.7f;ambienceVolume=.35f;}
+            version = 4;
+            effectsVolume = float.IsNaN(effectsVolume)? .7f : Mathf.Clamp01(effectsVolume);
+            ambienceVolume = float.IsNaN(ambienceVolume)? .35f : Mathf.Clamp01(ambienceVolume);
             selectedFaction = Mathf.Clamp(selectedFaction, 0, 2);
             completedFactions &= 7;
             ownedItems &= 511;
@@ -41,10 +47,27 @@ namespace Askich
                 selectedSkin = 0;
         }
 
+        public static bool ImportLegacy(string source, string destination)
+        {
+            if(File.Exists(destination)||!File.Exists(source))return false;
+            var old=JsonUtility.FromJson<AskichProfile>(File.ReadAllText(source));
+            if(old==null)return false;
+            old.Validate();
+            Directory.CreateDirectory(Path.GetDirectoryName(destination));
+            // Copy only after parsing. Never modify or remove the original Askich save.
+            File.WriteAllText(destination+".migration",JsonUtility.ToJson(old,true));
+            File.Move(destination+".migration",destination);return true;
+        }
+
         public static AskichProfile Load()
         {
             try
             {
+                if(string.IsNullOrEmpty(SavePathOverride) && Application.productName=="GOIDA")
+                {
+                    string parent=Path.GetDirectoryName(Application.persistentDataPath);
+                    ImportLegacy(Path.Combine(parent,"Askich","profile.json"),StoragePath);
+                }
                 if (!File.Exists(StoragePath)) {var fresh = new AskichProfile();fresh.Validate();return fresh;}
                 var profile = JsonUtility.FromJson<AskichProfile>(File.ReadAllText(StoragePath));
                 if (profile == null) {var fresh = new AskichProfile();fresh.Validate();return fresh;}

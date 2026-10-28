@@ -161,6 +161,41 @@
             "name": "viewport_coordinate_roundtrip",
             "passed": true,
             "detail": "OK"
+        },
+        {
+            "name": "legacy_file_import_preserves_original_and_existing_target",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "all_animation_states_and_alpha",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "heavy_stagger_and_dodge_cancel_windup",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "clock_events_stop_and_resolve_once",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "building_move_preserves_level_and_forbids_capital",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "forge_requires_inputs_and_veche_respects_capacity",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "first_fifteen_minutes_reach_hall_two_without_cheats",
+            "passed": true,
+            "detail": "OK"
         }
     ]
 }

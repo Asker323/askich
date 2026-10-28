@@ -33,12 +33,13 @@ namespace Askich
         {
             Styles(); Matrix4x4 old=GUI.matrix; float scale=ScreenLayout.Scale;
             GUI.matrix=Matrix4x4.TRS(ScreenLayout.Offset,Quaternion.identity,Vector3.one*scale);
-            if(mode==Mode.Playing||mode==Mode.Paused) Hud();
+            if(mode==Mode.Playing||mode==Mode.Paused||mode==Mode.Dying) Hud();
             if(TouchControls.Enabled&&mode==Mode.Playing)TouchHud();
-            if(mode!=Mode.Playing) Box(new Rect(0,0,1280,720),new Color(.025f,.022f,.017f,.72f));
+            if(mode!=Mode.Playing&&mode!=Mode.Dying) Box(new Rect(0,0,1280,720),new Color(.025f,.022f,.017f,.72f));
             switch(mode)
             {
                 case Mode.Menu: Menu(); break;
+                case Mode.Settings: SettingsScreen(); break;
                 case Mode.Settlement: TownScreen(); break;
                 case Mode.Armory: ArmoryScreen(); break;
                 case Mode.Raid: RaidScreen(); break;
@@ -49,6 +50,7 @@ namespace Askich
                 case Mode.Paused:
                     Panel(new Rect(400,210,480,300)); Text(new Rect(430,235,420,60),"ПРИВАЛ",titleStyle);
                     if(Button(new Rect(450,320,380,54),"Продолжить · Esc")) mode=Mode.Playing;
+                    if(Button(new Rect(450,452,380,40),"Настройки")){settingsReturn=mode;mode=Mode.Settings;}
                     if(Button(new Rect(450,390,380,54),"Завершить поход")) { Finish(false); }
                     break;
                 case Mode.Defeat: case Mode.Victory: ResultScreen(); break;
@@ -58,7 +60,7 @@ namespace Askich
         void Menu()
         {
             Panel(new Rect(125,65,1030,590));
-            Text(new Rect(150,83,980,70),"ASKICH",titleStyle);
+            Text(new Rect(150,83,980,70),"GOIDA",titleStyle);
             Text(new Rect(160,159,960,32),"КЛЯТВА НА ГРАНИЦЕ",new GUIStyle(headingStyle){alignment=TextAnchor.MiddleCenter});
             MedievalArt.Portrait(new Rect(165,235,250,250),0); MedievalArt.Portrait(new Rect(865,235,250,250),1);
             Text(new Rect(425,218,430,90),"Три знамени. Одна осаждённая земля.\nКопьё, меч или топор — выбери свой путь.",new GUIStyle(textStyle){alignment=TextAnchor.MiddleCenter});
@@ -66,9 +68,10 @@ namespace Askich
             if(Button(new Rect(445,365,390,45),"Моё поселение")) OpenTown();
             if(Button(new Rect(445,418,390,45),"Арсенал · исторические предметы")) mode=Mode.Armory;
             if(Button(new Rect(445,471,390,42),"Отделка · "+profile.credits+" серебра")) mode=Mode.Shop;
-            if(Button(new Rect(445,521,390,36),"Выйти из игры")) Application.Quit();
+            if(Button(new Rect(445,521,190,36),"Настройки")) {settingsReturn=mode;mode=Mode.Settings;}
+            if(Button(new Rect(645,521,190,36),"Выйти")) Application.Quit();
             Text(new Rect(200,568,880,45),"Средневековая фантазия с вымышленными событиями.\n5 заданий · 2 локации · 3 героя · один опасный секрет",new GUIStyle(smallStyle){alignment=TextAnchor.MiddleCenter});
-            Text(new Rect(170,627,940,25),"Asker323  /  2.1.0                                       M — звук: "+(sound.Muted?"выключен":"включён"),smallStyle);
+            Text(new Rect(170,627,940,25),"Asker323  /  2.2.0                                       M — звук: "+(sound.Muted?"выключен":"включён"),smallStyle);
         }
         void FactionScreen()
         {
@@ -144,6 +147,7 @@ namespace Askich
             Box(new Rect(0,649,1280,71),new Color(.07f,.061f,.043f,.96f));
             Text(new Rect(24,662,1240,25),TouchControls.Enabled?"Джойстик — движение · Цель выбирается автоматически · Удерживай щит для блока · ВЗЯТЬ — предметы и пленные":"WASD — шаг   ЛКМ — удар   ПКМ — щит   Q — тяжёлый удар   Пробел — перекат   E — освободить   Esc — пауза",smallStyle);
             Text(new Rect(24,691,1200,24),LocationName+"    ·    "+(wave==2?"Обоз: "+Mathf.RoundToInt((objectivePos.x+9)/18*100)+"%   Прочность: "+Mathf.CeilToInt(objectiveHealth):wave==3?"Освобождено: "+rescued+" / 3":wave==4?"Оборона: "+Mathf.Max(0,Mathf.CeilToInt(35-missionTime))+" сек.   Ворота: "+Mathf.CeilToInt(objectiveHealth):"Береги выносливость: щит защищает только спереди"),smallStyle);
+            DrawCombatLesson();
             if(noticeTime>0) Text(new Rect(350,110,580,35),notice,new GUIStyle(textStyle){alignment=TextAnchor.MiddleCenter});
             foreach(var e in enemies)
             {

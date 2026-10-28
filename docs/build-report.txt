@@ -1,9 +1,9 @@
 Result: Succeeded
-Product: Askich
-Version: 2.1.0
+Product: GOIDA
+Version: 2.2.0
 Unity: 6000.3.4f1
 Platform: StandaloneWindows64
 Development: False
 Errors: 0
 Warnings: 0
-Bytes: 108372904
+Bytes: 120975223

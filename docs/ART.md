@@ -19,3 +19,5 @@ Production environment sprite atlas for medieval top-down low-fantasy RPG. Exact
 
 
 The additional settlement atlas and its generation prompt are documented in [SETTLEMENT-ART.md](SETTLEMENT-ART.md).
+
+The new GOIDA 2.2 warrior animation and village inhabitants are documented in [GOIDA-ART.md](GOIDA-ART.md).

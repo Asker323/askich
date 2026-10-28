@@ -6,13 +6,13 @@ namespace Askich
 {
     public sealed partial class ArenaGame : MonoBehaviour
     {
-        enum Mode { Menu, Faction, Story, Playing, Upgrade, Paused, Shop, Defeat, Victory, Settlement, Armory, Raid }
+        enum Mode { Menu, Faction, Story, Playing, Upgrade, Paused, Shop, Defeat, Victory, Settlement, Armory, Raid, Settings, Dying }
         sealed class Enemy
         {
             public SpriteRenderer view, warningView;
             public Vector2 pos, direction;
             public int kind;
-            public float hp, maxHp, speed, timer, warning, flash;
+            public float hp, maxHp, speed, timer, warning, flash, stagger;
             public bool winding, objectiveTarget;
         }
         sealed class Arrow { public SpriteRenderer view; public Vector2 pos, velocity; public float life = 4; }
@@ -44,12 +44,14 @@ namespace Askich
         {
             Application.targetFrameRate = 120;
             profile = AskichProfile.Load(); faction = profile.selectedFaction;
+            AnimatedArt.Prewarm();
             gameCamera = new GameObject("Campaign camera", typeof(Camera), typeof(AudioListener)).GetComponent<Camera>();
             gameCamera.clearFlags = CameraClearFlags.SolidColor;
             gameCamera.orthographic = true; gameCamera.orthographicSize = 8.1f;
             gameCamera.transform.position = new Vector3(0, 0, -10);
             gameCamera.backgroundColor = new Color(.075f,.065f,.045f);
             sound = gameObject.AddComponent<SynthAudio>();
+            ApplySettings();
             actors = new GameObject("Warriors").transform; actors.SetParent(transform);
             effects = new GameObject("Effects").transform; effects.SetParent(transform);
             RebuildArena();
@@ -86,11 +88,12 @@ namespace Askich
             }
             if (LocationIndex == 0)
             {
-                Prop(0,new Vector2(-8,3),4.2f,1.15f); Prop(0,new Vector2(7,3.4f),3.8f,1);
-                Prop(0,new Vector2(-8,-5.3f),3.7f,.9f); Prop(6,new Vector2(4,1),2,.55f);
+                VillageHouse(new Vector2(-8,3),4.2f,1.15f); VillageHouse(new Vector2(7,3.4f),3.8f,1);
+                VillageHouse(new Vector2(-8,-5.3f),3.7f,.9f); Prop(6,new Vector2(4,1),2,.55f);
                 Prop(12,new Vector2(8,-5),3,.8f); Prop(7,new Vector2(-4,3.8f),1.4f,.4f);
                 for(int i=0;i<6;i++) Prop(i%2==0?3:4,new Vector2(i%2==0?-12:12,-5+i*1.8f),3.4f);
                 Prop(10,new Vector2(3,-5.4f),1.5f,.45f);
+                PopulateVillage();
             }
             else
             {
@@ -112,6 +115,7 @@ namespace Askich
             damage = faction==0?28:faction==1?26:34; moveSpeed = faction==1?3.65f:faction==0?4.1f:4.3f;
             reach = faction==0?2.2f:1.65f; ApplyEquipment();
             attackTimer = attackPose = dodgeTimer = dodgeCooldown = hurtTimer = regenDelay = elapsed = allyTimer = 0;
+            pendingStrike=false; playerVelocity=Vector2.zero; impactFlash=blockFlash=nextFootstep=0;
             blocking = orderAlly = savedResult = false; notice = ""; noticeTime = 0;
             playerPos = new Vector2(0,-1); facing = Vector2.right;
             player.sprite = MedievalArt.Warrior(faction,0); player.color = SkinColor(); player.transform.position = playerPos;
@@ -120,6 +124,8 @@ namespace Askich
         }
         void ClearCombat()
         {
+            pendingStrike=false; playerVelocity=Vector2.zero;
+            foreach(var corpse in corpses)if(corpse!=null)Destroy(corpse.gameObject);corpses.Clear();
             foreach(var drop in gearDrops)Destroy(drop.view.gameObject);gearDrops.Clear();
             foreach(var e in enemies) { Destroy(e.view.gameObject); Destroy(e.warningView.gameObject); } enemies.Clear();
             foreach(var a in arrows) Destroy(a.view.gameObject); arrows.Clear();
@@ -154,6 +160,7 @@ namespace Askich
         void Update()
         {
             ScreenLayout.Fit(gameCamera);
+            if(mode==Mode.Dying){TickDeath(Time.deltaTime);return;}
             if(TouchControls.Enabled) {
                 touchControls.Read();
                 if(touchControls.pause&&(mode==Mode.Playing||mode==Mode.Paused)){mode=mode==Mode.Playing?Mode.Paused:Mode.Playing;return;}
@@ -163,7 +170,7 @@ namespace Askich
             {
                 if(k.mKey.wasPressedThisFrame) sound.Toggle();
                 if(k.escapeKey.wasPressedThisFrame)
-                { if(mode==Mode.Playing) mode=Mode.Paused; else if(mode==Mode.Paused) mode=Mode.Playing; else if(mode==Mode.Shop||mode==Mode.Faction||mode==Mode.Settlement||mode==Mode.Armory) mode=Mode.Menu; return; }
+                { if(mode==Mode.Settings){Save();mode=settingsReturn;return;} if(mode==Mode.Settlement)Save(); if(mode==Mode.Playing) mode=Mode.Paused; else if(mode==Mode.Paused) mode=Mode.Playing; else if(mode==Mode.Shop||mode==Mode.Faction||mode==Mode.Settlement||mode==Mode.Armory) mode=Mode.Menu; return; }
                 if(mode==Mode.Menu && k.enterKey.wasPressedThisFrame) { mode=Mode.Faction; return; }
                 if(mode==Mode.Faction)
                 {
@@ -177,6 +184,7 @@ namespace Askich
                 }
                 if(mode==Mode.Upgrade) { for(int i=0;i<3;i++) if(ChoiceKey(k,i)) { Upgrade(i); return; } }
             }
+            if(mode==Mode.Settlement) { TickTown(Mathf.Min(Time.deltaTime,.1f)); return; }
             if(mode==Mode.Raid) { TickRaid(Time.deltaTime); return; }
             if(mode!=Mode.Playing) return;
             Tick(Mathf.Min(Time.deltaTime,.05f));
@@ -185,7 +193,8 @@ namespace Askich
         void Tick(float dt)
         {
             elapsed+=dt; missionTime+=dt; noticeTime-=dt;
-            attackTimer-=dt; attackPose-=dt; dodgeTimer-=dt; dodgeCooldown-=dt; hurtTimer-=dt; regenDelay-=dt;
+            attackTimer-=dt; attackPose-=dt; dodgeTimer-=dt; dodgeCooldown-=dt; hurtTimer-=dt; regenDelay-=dt; impactFlash-=dt; blockFlash-=dt;
+            TickStrike(dt);
             if(regenDelay<=0) stamina=Mathf.Min(maxStamina,stamina+staminaRegen*dt*(blocking?.3f:1));
             var k=Keyboard.current; var mouse=Mouse.current;
             Vector2 move=Vector2.zero;
@@ -208,12 +217,16 @@ namespace Askich
                 foreach(var enemy in enemies){float d=(enemy.pos-playerPos).sqrMagnitude;if(d<range){range=d;closest=enemy;}}
                 if(closest!=null)facing=(closest.pos-playerPos).normalized;else if(move.sqrMagnitude>.01f)facing=move;
             }
-            blocking=(TouchControls.Enabled?touchControls.block:mouse!=null&&mouse.rightButton.isPressed)&&dodgeTimer<=0&&stamina>0;
-            playerPos=MoveBody(playerPos,(dodgeTimer>0?dodgeDirection*12:move*moveSpeed*(blocking?.52f:1))*dt);
+            blocking=(TouchControls.Enabled?touchControls.block:mouse!=null&&mouse.rightButton.isPressed)&&dodgeTimer<=0&&attackPose<=0&&stamina>0;
+            playerVelocity=Vector2.MoveTowards(playerVelocity,move*moveSpeed*(blocking?.52f:1)*(pendingStrike?.7f:1),dt*32);
+            playerPos=MoveBody(playerPos,(dodgeTimer>0?dodgeDirection*12:playerVelocity)*dt);
+            if(move.sqrMagnitude>.1f)Learn(1);
+            if(move.sqrMagnitude>.1f && dodgeTimer<=0 && elapsed>=nextFootstep){nextFootstep=elapsed+(blocking?.42f:.3f);sound.Play("step");}
             if(TouchControls.Enabled?touchControls.heavy:k!=null&&k.qKey.wasPressedThisFrame) Attack(true);
             if(TouchControls.Enabled?touchControls.attack:mouse!=null&&mouse.leftButton.isPressed) Attack(false);
             Animate(player,faction,playerPos,move.sqrMagnitude>0,attackPose>0,facing.x);
-            player.color=hurtTimer>0?new Color(1,.55f,.5f):SkinColor();
+            UpdatePlayerPose(move.sqrMagnitude>.01f);
+            player.color=impactFlash>0?new Color(1,.55f,.5f):SkinColor();
             marker.transform.position=playerPos; marker.color=blocking?new Color(.95f,.85f,.55f):CampaignData.Colors[faction];
             if(remaining>0)
             {
@@ -251,13 +264,20 @@ namespace Askich
         void Dodge(Vector2 direction)
         {
             if(dodgeCooldown>0 || !Spend(25)) return;
-            dodgeDirection=direction.sqrMagnitude>.01f?direction:facing; dodgeTimer=.19f; dodgeCooldown=.75f; hurtTimer=.28f; sound.Play("dash");
+            dodgeDirection=direction.sqrMagnitude>.01f?direction:facing; dodgeTimer=.19f; dodgeCooldown=.75f; hurtTimer=.28f; pendingStrike=false; attackPose=0; Learn(8); sound.Play("dash");
         }
         void Attack(bool heavy)
         {
             if(mode!=Mode.Playing || attackTimer>0 || dodgeTimer>0 || !Spend(heavy?28:8)) return;
-            attackTimer=heavy?.8f:.38f; attackPose=.23f; blocking=false;
-            float range=reach+(heavy?.3f:0), cone=heavy?-.15f:faction==0?.55f:.1f;
+            attackTimer=heavy?(faction==2?.96f:.8f):(faction==0?.44f:faction==1?.38f:.5f);
+            attackDuration=heavy?.55f:.32f; attackPose=attackDuration; blocking=false;
+            pendingStrike=true; strikeHeavy=heavy; strikeDirection=facing; strikeDelay=heavy?.23f:.1f;
+            Learn(2);
+        }
+        void ResolveStrike(bool heavy)
+        {
+            float range=reach+(heavy?.3f:0), cone=faction==0?(heavy?.6f:.7f):heavy?-.15f:.1f;
+            Vector2 facing=strikeDirection;
             Swing(playerPos,facing,range,cone,new Color(.9f,.8f,.5f,.65f));
             for(int i=enemies.Count-1;i>=0;i--)
             {
@@ -265,7 +285,10 @@ namespace Askich
                 if(to.magnitude<=range && (to.sqrMagnitude<.1f||Vector2.Dot(facing,to.normalized)>=cone))
                 {
                     e.hp-=damage*(heavy?(faction==2?2.3f:1.8f):1); e.flash=.12f;
+                    if(heavy&&e.kind!=3){e.stagger=.35f;e.winding=false;e.warningView.enabled=false;e.timer=.55f;}
+                    Impact(e.pos+Vector2.up*.6f,new Color(.85f,.72f,.45f)); sound.Play("hit");
                     e.pos=MoveBody(e.pos,to.normalized*(heavy?.6f:.2f));
+                    e.view.transform.position=e.pos;e.view.sortingOrder=Sort(e.pos);
                     if(e.hp<=0) Kill(e);
                 }
             }
@@ -295,7 +318,8 @@ namespace Askich
         {
             foreach(var e in enemies)
             {
-                e.timer-=dt; e.flash-=dt;
+                e.timer-=dt; e.flash-=dt; e.stagger-=dt;
+                if(e.stagger>0){e.view.color=new Color(1,.7f,.5f);continue;}
                 Vector2 target=playerPos;
                 bool siege=objective!=null && Vector2.Distance(e.pos,objectivePos)<Vector2.Distance(e.pos,playerPos)-1;
                 if(siege) target=objectivePos;
@@ -303,6 +327,7 @@ namespace Askich
                 if(e.winding)
                 {
                     e.warning-=dt;
+                    e.warningView.color=Color.Lerp(new Color(.95f,.24f,.12f,.85f),new Color(.95f,.68f,.2f,.5f),Mathf.Clamp01(e.warning/.6f));
                     if(e.warning<=0)
                     {
                         e.winding=false; e.warningView.enabled=false; e.timer=e.kind==3?1.5f:1.05f;
@@ -339,7 +364,8 @@ namespace Askich
         {
             if(mode!=Mode.Playing || hurtTimer>0) return;
             if(blocking && Vector2.Dot(facing,(source-playerPos).normalized)>.15f && Spend(amount*(faction==1?.45f:.8f)))
-            { amount*=.12f; notice="Удар принят щитом"; noticeTime=.7f; }
+            { amount*=.12f; blockFlash=.18f; Learn(4); Impact(playerPos+facing*.5f+Vector2.up*.6f,new Color(.8f,.9f,1)); sound.Play("block"); notice="Удар принят щитом"; noticeTime=.7f; }
+            else { impactFlash=.22f; pendingStrike=false; attackPose=0; }
             health=Mathf.Max(0,health-amount); hurtTimer=.45f; sound.Play("hit");
             if(health<=0) Finish(false);
         }
@@ -370,7 +396,7 @@ namespace Askich
             kills++; score+=e.kind==3?500:50; DropGear(e.pos);
             var c=new Coin {pos=e.pos,value=e.kind==3?50:5+e.kind*3};
             c.view=NeonVisual.Make("Silver","circle",new Color(.8f,.82f,.76f),c.pos,Vector2.one*.2f,160,actors); coins.Add(c);
-            Destroy(e.view.gameObject); Destroy(e.warningView.gameObject);
+            e.view.gameObject.AddComponent<FallenWarrior>();corpses.Add(e.view); Destroy(e.warningView.gameObject);
         }
         void UpdateCoins(float dt)
         {
@@ -409,7 +435,8 @@ namespace Askich
         void Finish(bool victory)
         {
             if(savedResult) return; savedResult=true;
-            mode=victory?Mode.Victory:Mode.Defeat;
+            deathElapsed=0; pendingStrike=false;
+            mode=victory?Mode.Victory:health<=0?Mode.Dying:Mode.Defeat;
             profile.bestScore=Mathf.Max(profile.bestScore,score);
             if(victory) profile.completedFactions|=1<<faction;
             Save(); sound.Play(victory?"upgrade":"lose"); Debug.Log(victory?"ASKICH_VICTORY":"ASKICH_DEFEAT");
