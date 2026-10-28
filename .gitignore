@@ -1,0 +1,56 @@
+# Unity-generated folders
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# Player builds and generated tooling
+/[Bb]uild/
+/[Bb]uilds/
+/*_BackUpThisFolder_ButDontShipItWithYourGame/
+/*_BurstDebugInformation_DoNotShip/
+/.vs/
+/.idea/
+/.vscode/
+*.csproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.booproj
+*.svd
+*.tmp
+*.log
+*.stackdump
+sysinfo.txt
+*.apk
+*.aab
+*.app
+*.unitypackage
+
+# Local credentials and machine-specific configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.keystore
+*.jks
+/Assets/StreamingAssets/aa/
+/Assets/AddressableAssetsData/*/*.bin*
+/Assets/AddressableAssetsData/*/*.json*
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

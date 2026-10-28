@@ -1,0 +1,93 @@
+{
+    "suite": "Askich runtime smoke",
+    "unityVersion": "6000.3.4f1",
+    "utc": "2026-10-28T05:44:58.1687066Z",
+    "passed": true,
+    "tests": [
+        {
+            "name": "prologue_gates_first_wave",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "swept_projectile_kills_enemy_and_scores",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "enemy_contact_causes_defeat",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "lethal_hit_stops_scoring_healing_and_spawning_in_same_frame",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "dash_input_grants_temporary_invulnerability",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "pause_stops_simulation_time",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "wave_completion_offers_three_unique_upgrades",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "selected_upgrade_changes_stats_and_advances_wave",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "five_waves_reach_victory",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "restart_clears_actors_and_upgrade_state",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "collectible_currency_survives_defeat_and_restart",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "locked_skins_require_currency_and_equip_without_repaying",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "story_choice_changes_stats_and_is_single_use",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "story_key_does_not_also_select_upgrade",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "wave_three_changes_location",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "profile_round_trip_preserves_wallet_unlocks_and_record",
+            "passed": true,
+            "detail": "passed"
+        },
+        {
+            "name": "corrupt_profile_falls_back_to_safe_defaults",
+            "passed": true,
+            "detail": "passed"
+        }
+    ]
+}

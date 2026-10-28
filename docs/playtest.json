@@ -1,0 +1,21 @@
+{
+    "kind": "Real-frame development player playtest",
+    "unityVersion": "6000.3.4f1",
+    "passed": true,
+    "mode": "Playing",
+    "seconds": 40.7630500793457,
+    "frames": 2436,
+    "wave": 3,
+    "kills": 45,
+    "score": 6475,
+    "health": 145.0,
+    "upgradeChosen": 3,
+    "currencyCollected": 438,
+    "menuScreenshot": true,
+    "gameplayScreenshot": true,
+    "upgradeScreenshot": true,
+    "prologueScreenshot": true,
+    "hangarScreenshot": true,
+    "secondLocationScreenshot": true,
+    "errors": []
+}
