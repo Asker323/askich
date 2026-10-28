@@ -1,0 +1,9 @@
+# Хозяйственные здания · GOIDA 2.3
+
+`Assets/Resources/Medieval/workshops.png` — новый атлас, созданный встроенным ImageGen для этой игры. Исходный результат: `exec-fe36f2d8-2d05-4999-8ae0-bedd97dc80bb.png`, 1774×887, RGBA. Файл скопирован в проект без ретуши. Альфа проверена, восемь отдельных областей заданы в `WorkshopArt.cs`; результат просмотрен в Windows-player.
+
+Вместо условных колодцев, бочек, камней, жаровен и палаток теперь отображаются пашня с амбаром, лесной двор, каменоломня, кузница, казармы, дозорная башня, рынок и дом собраний. Это общие художественные прототипы для трёх сторон. Они не выдаются за точные исторические реконструкции. Жилища сохраняют отдельные культурные атласы; полные культурные и уровневые варианты мастерских ещё предстоит сделать.
+
+## Запрос генератору
+
+Transparent PNG game asset atlas, TRUE alpha transparency. Eight separate medieval rural buildings in exactly 4 columns x 2 rows. Three-quarter overhead view, detailed earthy pixel art, no cell borders, no text, no backdrop, generous transparent margins. Every icon entirely isolated. Modest timber and stone architecture inspired by a 13th-century Eastern European frontier village, no fantasy neon. Top row left to right: 1 cultivated farm plot with six golden crop rows and small thatched granary; 2 lumber yard with wooden shed, stacked logs, stump and hand saw; 3 open stone quarry with stone piles, timber hoist and cart; 4 blacksmith workshop with stone chimney, anvil, sheltered glowing forge and firewood. Bottom row: 5 timber barracks lodge with weapon rack and round shields; 6 roofed wooden watchtower with ladder, no stone castle; 7 village market stalls with cloth awnings, sacks and baskets; 8 timber communal meeting hall with benches at entrance. Every building faces down-right. Readable at 100 pixels tall. No modern machines or characters. Landscape canvas, equal cell dimensions, 20% empty padding, weapons and buildings do not overlap cells.

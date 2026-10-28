@@ -45,7 +45,7 @@ namespace Askich
             Set("faction",0);Mode("Settlement");yield return Shot("settlement-new");
             var t=p.settlements[0];
             if(!t.Build(0,3))throw new Exception("First farm rejected");
-            yield return Shot("construction");t.AdvanceClock(30);
+            Set("selectedPlot",0);yield return Shot("construction");t.AdvanceClock(30);Set("selectedPlot",7);
             while(t.day<7)t.AdvanceClock(30);
             yield return Shot("village-event");if(!t.ChooseEvent(0))t.ChooseEvent(1);
             Build(t,1,5);Build(t,2,2);Build(t,3,6);Build(t,4,7);Build(t,5,8);Build(t,7,1);
@@ -57,6 +57,9 @@ namespace Askich
             while(t.legitimacy<50||t.food<40)t.AdvanceDay();
             if(!t.Reform(false,2))throw new Exception("Veche unreachable");
             Set("selectedPlot",6);yield return Shot("settlement-tier3");
+            Set("settlementTab",3);yield return Shot("economy");
+            while(t.wood<150)t.AdvanceDay();if(!t.TradeBatch(3,5))throw new Exception("Trade rejected");
+            yield return Shot("trade-result");
             Set("settlementTab",1);yield return Shot("constitution");
             Set("settlementTab",2);yield return Shot("raids");
             while(t.soldiers<6){if(!t.Recruit())t.AdvanceDay();}

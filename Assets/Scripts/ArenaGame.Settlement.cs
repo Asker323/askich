@@ -20,8 +20,8 @@ namespace Askich
         Sprite BuildingSprite(int type,int level)
         {
             if(type==1||type==2)return MedievalArt.House(faction,level-1);
-            int index=type==3?6:type==4?7:type==5?10:type==6?9:type==7?(level==1?12:level==2?13:1):type==8?(level==1?13:level==2?14:2):type==9?5:15;
-            return MedievalArt.Prop(index);
+
+            return WorkshopArt.Building(type);
         }
         void TownScreen()
         {
@@ -29,18 +29,19 @@ namespace Askich
             bool priorEnabled=GUI.enabled;GUI.enabled=priorEnabled && town.pendingEvent==0;
             Box(new Rect(0,0,1280,720),new Color(.09f,.1f,.065f));
             Text(new Rect(27,17,780,45),"ЗЕМЛИ · "+CampaignData.Countries[faction].ToUpper(),headingStyle);
-            for(int f=0;f<3;f++)if(Button(new Rect(855+f*130,13,120,36),CampaignData.Countries[f])){faction=f;profile.selectedFaction=f;Save();}
+            for(int f=0;f<3;f++)if(Button(new Rect(855+f*130,13,120,36),CampaignData.Countries[f])){faction=f;profile.selectedFaction=f;movePlot=-1;selectedPlot=7;Save();}
             Panel(new Rect(22,67,1236,69));
             Text(new Rect(40,77,1200,28),"День "+town.day+"     Дерево "+town.wood+"     Камень "+town.stone+"     Руда "+town.ore+"     Железо "+town.iron+"     Еда "+town.food+"     Жители "+town.population+" / "+town.Capacity,new GUIStyle(textStyle){fontSize=18});
             Text(new Rect(40,108,1200,25),"Отряд: "+town.soldiers+" / "+town.ArmyCapacity+"     Довольство: "+town.morale+"     Легитимность: "+town.legitimacy+"     "+GovernmentNames[town.government]+" · "+(town.constitution==0?"единое управление":"конфедерация"),smallStyle);
             DrawVillageMap(town);
             Text(new Rect(27,610,770,88),settlementTab==1?"Игровая модель власти: единоличная власть (диктатура) требует казарм II, даёт +20% силы отряду, но -4 довольства в день. Вече ускоряет рост и повышает довольство. Средневековое вече не тождественно современной демократии.":town.chronicle,smallStyle);
             Panel(new Rect(825,151,433,555));
-            string[] tabs={"Стройка","Хартия","Набеги"};for(int i=0;i<3;i++)if(Button(new Rect(839+i*137,165,128,36),tabs[i]))settlementTab=i;
+            string[] tabs={"Стройка","Хартия","Набеги","Хозяйство"};for(int i=0;i<4;i++)if(Button(new Rect(837+i*103,165,98,36),tabs[i]))settlementTab=i;
             if(settlementTab==0)TownBuild(town);
             if(settlementTab==1)TownGovernment(town);
             if(settlementTab==2)TownRaids(town);
-            if(Button(new Rect(845,598,120,45),townPaused?"Продолжить":"Пауза"))townPaused=!townPaused;
+            if(settlementTab==3)TownEconomy(town);
+            if(Button(new Rect(845,598,120,45),townPaused?"Пуск":"Пауза"))townPaused=!townPaused;
             if(Button(new Rect(975,598,120,45),"Скорость ×"+townSpeed))townSpeed=townSpeed==1?3:1;
             if(Button(new Rect(1105,598,132,45),"Закончить день",town.pendingEvent==0)){town.AdvanceClock(30);Save();}
             Bar(new Rect(845,646,392,4),town.dayProgress,gold);
@@ -49,6 +50,16 @@ namespace Askich
         }
         void TownBuild(Settlement town)
         {
+            if(selectedPlot==town.pendingPlot)
+            {
+                Text(new Rect(845,214,390,54),"СТРОИТСЯ · "+Settlement.Names[town.pendingType],headingStyle);
+                DrawSprite(new Rect(900,278,270,150),BuildingSprite(town.pendingType,town.pendingLevel));
+                Bar(new Rect(845,443,392,12),1-(town.pendingDays-town.dayProgress)/town.pendingLevel,gold);
+                Text(new Rect(845,471,392,51),"До завершения: "+Mathf.CeilToInt((town.pendingDays-town.dayProgress)*30/townSpeed)+" сек. при текущей скорости.\nПауза и события останавливают стройку.",smallStyle);
+                string cancelReason=town.CancelReason();
+                if(Button(new Rect(845,534,392,44),cancelReason==""?"Отменить · вернуть все материалы":cancelReason,cancelReason=="")){town.CancelConstruction();Save();}
+                return;
+            }
             int type=town.buildings[selectedPlot];
             Text(new Rect(845,214,390,45),"Участок "+(selectedPlot+1)+" · "+Settlement.Names[type],headingStyle);
             if(type==0)
@@ -69,7 +80,7 @@ namespace Askich
             int next=town.levels[selectedPlot]+1;string reason=town.BuildReason(selectedPlot,type);
             Vector3Int cost=Settlement.Cost(type,Mathf.Min(next,3));
             Text(new Rect(845,477,390,48),next>3?"Постройка полностью улучшена.":"Цена: "+cost.x+" дерева · "+cost.y+" камня · "+cost.z+" железа\nСрок: "+next+" дн. · ступень "+next,smallStyle);
-            if(Button(new Rect(845,534,392,44),reason==""?(next==1?"Построить":"Улучшить"):reason,reason=="")){town.Build(selectedPlot,type);Save();}
+            if(Button(new Rect(845,534,392,44),reason==""?(next==1?"Построить":"Улучшить"):reason,reason=="")){town.Build(selectedPlot,type);movePlot=-1;Save();}
         }
         void TownGovernment(Settlement town)
         {
@@ -92,7 +103,7 @@ namespace Askich
             Text(new Rect(845,215,390,38),"Соседи под управлением ИИ",headingStyle);
             Text(new Rect(845,260,390,45),"Новый воин: 10 еды и 2 железа.\nНужны казармы и место в отряде.",smallStyle);
             if(Button(new Rect(845,312,190,38),"Нанять воина",town.Sum(7)>0&&town.soldiers<town.ArmyCapacity&&town.food>=10&&town.iron>=2)){town.Recruit();Save();}
-            if(Button(new Rect(1045,312,190,38),"Обмен 30Д → 10Ж",town.Sum(9)>0&&town.wood>=30)){town.Trade(1);Save();}
+            if(Button(new Rect(1045,312,190,38),"К торговцу"))settlementTab=3;
             for(int i=0;i<3;i++)if(Button(new Rect(845,365+i*39,392,34),(raidTarget==i?"• ":"")+Settlement.Rivals[i]+" · "+Settlement.Strength[i]))raidTarget=i;
             if(Button(new Rect(845,490,392,35),"Тактика: "+Tactics[raidTactic]))raidTactic=(raidTactic+1)%3;
             string reason=town.RaidReason(raidTarget);

@@ -104,6 +104,11 @@ namespace Askich
                 }
                 Check(t.Hall>=2&&task==7&&t.population>=18&&t.Sum(8)>0,"15-minute path stalled: day "+t.day+" / task "+task+" / "+t.NextObjective);
             });
+            Test("workshop_atlas_contains_eight_buildings",()=>{for(int type=3;type<=10;type++)Check(WorkshopArt.Building(type)!=null,"workshop "+type);});
+            Test("trade_batches_require_market_and_debit_atomically",()=>{var t=new Settlement();t.Validate();Check(!t.TradeBatch(0,1),"trade before market");t.buildings[0]=9;t.levels[0]=1;t.wood=149;int stone=t.stone;Check(!t.TradeBatch(0,5)&&t.wood==149&&t.stone==stone,"partial trade");t.wood=150;Check(t.TradeBatch(0,5)&&t.wood==0&&t.stone==stone+100,"batch cost");Check(!t.TradeBatch(-1,1)&&!t.TradeBatch(0,0)&&!t.TradeBatch(0,11),"invalid offer");});
+            Test("trade_all_goods_and_capacity_guard",()=>{var t=new Settlement();t.Validate();t.buildings[0]=9;t.levels[0]=1;int iron=t.iron,food=t.food,ore=t.ore;t.wood=120;Check(t.Trade(1)&&t.iron==iron+10,"iron");Check(t.Trade(2)&&t.food==food+30,"food");Check(t.Trade(3)&&t.ore==ore+20,"ore");t.stone=99990;int wood=t.wood;Check(!t.Trade(0)&&t.wood==wood,"warehouse overflow charged");});
+            Test("construction_cancel_refunds_once_and_keeps_previous_level",()=>{var t=new Settlement();t.Validate();int wood=t.wood,stone=t.stone;Check(t.Build(0,2)&&t.CancelConstruction(),"cancel");Check(t.wood==wood&&t.stone==stone&&t.buildings[0]==0&&!t.CancelConstruction(),"duplicate refund");t.levels[7]=2;Check(t.Build(6,2)&&t.CancelConstruction()&&t.levels[6]==1,"upgrade lost old house");});
+            Test("construction_cancel_respects_storage_capacity",()=>{var t=new Settlement();t.Validate();Check(t.Build(0,2),"build");t.wood=99999;int plot=t.pendingPlot;Check(!t.CancelConstruction()&&t.pendingPlot==plot&&t.wood==99999,"overflow cancellation lost materials");});
             bool passed=results.TrueForAll(r=>r.passed);
             string[] args=Environment.GetCommandLineArgs();int at=Array.IndexOf(args,"-askich-test-output");string output=at>=0?args[at+1]:Path.Combine(Application.persistentDataPath,"smoke.json");
             File.WriteAllText(output,JsonUtility.ToJson(new Report{passed=passed,tests=results.ToArray()},true));

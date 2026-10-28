@@ -86,6 +86,20 @@ namespace Askich
             pendingPlot=plot;pendingType=type;pendingLevel=tier;pendingDays=tier;
             chronicle=Names[type]+": строительство, дней до завершения — "+pendingDays;return true;
         }
+        public bool CancelConstruction()
+        {
+            if(CancelReason()!="")return false;
+            Vector3Int refund=Cost(pendingType,pendingLevel);
+            wood+=refund.x;stone+=refund.y;iron+=refund.z;
+            chronicle="Стройка отменена. Материалы возвращены; прежняя постройка сохранена.";
+            pendingPlot=-1;pendingType=pendingLevel=pendingDays=0;Validate();return true;
+        }
+        public string CancelReason()
+        {
+            if(pendingPlot<0)return "Нет незавершённой стройки";
+            Vector3Int refund=Cost(pendingType,pendingLevel);
+            return wood+refund.x>99999||stone+refund.y>99999||iron+refund.z>99999?"На складе нет места для возврата":"";
+        }
         public void AdvanceDay()
         {
             day++;string note="День "+day+". ";
@@ -111,10 +125,24 @@ namespace Askich
             if(Sum(7)==0||soldiers>=ArmyCapacity||food<10||iron<2)return false;
             soldiers++;food-=10;iron-=2;chronicle="В отряд принят новый воин.";return true;
         }
-        public bool Trade(int kind)
+        public static readonly string[] TradeGoods={"камня","железа","еды","руды"};
+        public static readonly int[] TradeYield={20,10,30,20};
+        public string TradeReason(int kind,int batches)
         {
-            if(Sum(9)==0||wood<30||kind<0||kind>2)return false;
-            wood-=30;if(kind==0)stone+=20;if(kind==1)iron+=10;if(kind==2)food+=30;return true;
+            if(kind<0||kind>=TradeYield.Length||batches<1||batches>10)return "Недопустимый обмен";
+            if(Sum(9)==0)return "Построй торговый двор после двора II";
+            if(wood<30*batches)return "Нужно ещё "+(30*batches-wood)+" дерева";
+            int stock=kind==0?stone:kind==1?iron:kind==2?food:ore;
+            if(stock+TradeYield[kind]*batches>99999)return "Склад этого ресурса заполнен";
+            return "";
+        }
+        public bool Trade(int kind)=>TradeBatch(kind,1);
+        public bool TradeBatch(int kind,int batches)
+        {
+            if(TradeReason(kind,batches)!="")return false;
+            int amount=TradeYield[kind]*batches;wood-=30*batches;
+            if(kind==0)stone+=amount;else if(kind==1)iron+=amount;else if(kind==2)food+=amount;else ore+=amount;
+            chronicle="Обмен: "+(30*batches)+" дерева → "+amount+" "+TradeGoods[kind]+".";return true;
         }
         public string ReformReason(bool structure,int option)
         {

@@ -1,0 +1,16 @@
+{
+  "version": "2.3.0",
+  "platform": "Windows x64",
+  "method": "Real mouse clicks through Computer Use in a development player, isolated profile prepared with normal economy commands",
+  "passed": true,
+  "observations": [
+    "Opened settlement from the main menu and paused time; day remained 36 throughout the following checks.",
+    "Opened Economy, selected five deliveries, exchanged 150 wood for 100 ore: wood 212 -> 62, ore 74 -> 174.",
+    "Exchange buttons became unavailable with insufficient wood and displayed the missing amount.",
+    "Selected empty plot 20 and started a house: wood 62 -> 17, stone 288 -> 273; construction panel appeared.",
+    "Cancelled construction: wood restored to 62, stone to 288; plot returned to empty.",
+    "Selected the house on plot 7, activated relocation, selected highlighted empty plot 20; house moved, population capacity remained 28 and resources were unchanged.",
+    "Closed the isolated player normally with Alt+F4. No runtime exceptions were logged."
+  ],
+  "limitations": "Android hardware and touchscreen menu clicks were not tested. The pause caption was shortened and quantity wording corrected after these clicks; final screenshots cover these text-only changes."
+}

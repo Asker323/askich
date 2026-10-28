@@ -1,9 +1,9 @@
 Result: Succeeded
 Product: GOIDA
-Version: 2.2.0
+Version: 2.3.0
 Unity: 6000.3.4f1
 Platform: StandaloneWindows64
 Development: False
 Errors: 0
 Warnings: 0
-Bytes: 120975223
+Bytes: 127274851

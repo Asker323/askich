@@ -13,17 +13,16 @@ namespace Askich
         void DrawVillageMap(Settlement town)
         {
             var ground=MedievalArt.Ground(false);GUI.DrawTexture(new Rect(22,191,780,393),ground.texture,ScaleMode.StretchToFill);
-            Panel(new Rect(22,145,780,42));Text(new Rect(34,153,755,32),town.NextObjective,new GUIStyle(smallStyle){fontSize=17});
+            Panel(new Rect(22,145,780,42));Text(new Rect(34,153,755,32),movePlot>=0?"Перенос: "+Settlement.Names[town.buildings[movePlot]]+". Выбери свободный участок.":town.NextObjective,new GUIStyle(smallStyle){fontSize=17});
             for(int r=0;r<4;r++)Box(new Rect(23,280+r*93,778,9),new Color(.37f,.31f,.2f,.85f));
             for(int i=0;i<20;i++)
             {
                 Rect r=PlotArea(i);int type=town.buildings[i],level=town.levels[i];
                 bool hovered=r.Contains(Event.current.mousePosition);
+                if(movePlot>=0&&type==0)Box(new Rect(r.x+7,r.y+43,r.width-14,36),new Color(.3f,.7f,.32f,.22f));
                 if(i==selectedPlot||hovered)Box(new Rect(r.x+7,r.y+43,r.width-14,36),new Color(.72f,.64f,.32f,i==selectedPlot?.26f:.12f));
                 if(type!=0)
                 {
-                    if(type==3){Box(new Rect(r.x+3,r.y+30,74,43),new Color(.37f,.25f,.11f));for(int n=0;n<6;n++)Box(new Rect(r.x+7,r.y+33+n*6,66,3),new Color(.55f,.53f,.19f));}
-                    if(type==4)DrawSprite(new Rect(r.x,r.y-12,50,84),MedievalArt.Prop(3));
                     DrawSprite(new Rect(r.x+16,r.y-8,110,89),BuildingSprite(type,level));
                     if(type>=3&&type<=6&&level>=2)DrawSprite(new Rect(r.x+1,r.y+39,36,37),MedievalArt.Prop(8));
                     if(type>=3&&type<=6&&level>=3)DrawSprite(new Rect(r.x+101,r.y+30,35,46),MedievalArt.Prop(7));
@@ -46,6 +45,7 @@ namespace Askich
                 {
                     if(movePlot>=0){if(town.MoveBuilding(movePlot,i)){movePlot=-1;Save();}}
                     selectedPlot=i;
+                    if(movePlot<0)settlementTab=0;
                 }
             }
             // Workers travel between homes and productive buildings; no extra economy is hidden here.
@@ -58,6 +58,7 @@ namespace Askich
             for(int i=0;i<3;i++){float x=100+i*230+Mathf.Sin(Time.time*.4f+i)*23;DrawSprite(new Rect(x,550,23,23),AnimatedArt.Villager(2,(int)(Time.time*4+i)%4));}
             string balance=(town.FoodBalance>=0?"+":"")+town.FoodBalance;
             Text(new Rect(28,588,775,25),"За день: дерево +"+(town.Sum(4)*22-town.ForgeBatches*4)+" · камень +"+town.Sum(5)*16+" · железо +"+town.ForgeBatches*8+" · еда "+balance+" после снабжения",smallStyle);
+            if(movePlot>=0&&Button(new Rect(600,656,200,38),"Отменить перенос"))movePlot=-1;
         }
         void TownEvent(Settlement town)
         {

@@ -71,7 +71,7 @@ namespace Askich
             if(Button(new Rect(445,521,190,36),"Настройки")) {settingsReturn=mode;mode=Mode.Settings;}
             if(Button(new Rect(645,521,190,36),"Выйти")) Application.Quit();
             Text(new Rect(200,568,880,45),"Средневековая фантазия с вымышленными событиями.\n5 заданий · 2 локации · 3 героя · один опасный секрет",new GUIStyle(smallStyle){alignment=TextAnchor.MiddleCenter});
-            Text(new Rect(170,627,940,25),"Asker323  /  2.2.0                                       M — звук: "+(sound.Muted?"выключен":"включён"),smallStyle);
+            Text(new Rect(170,627,940,25),"Asker323  /  2.3.0                                       M — звук: "+(sound.Muted?"выключен":"включён"),smallStyle);
         }
         void FactionScreen()
         {

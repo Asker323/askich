@@ -21,7 +21,7 @@ namespace Askich.Editor
 
         static void ConfigureArt()
         {
-            foreach(string name in new[]{"warriors", "props", "houses", "village-life", "rus-animation"})
+            foreach(string name in new[]{"warriors", "props", "houses", "village-life", "rus-animation", "workshops"})
             {
                 string path = "Assets/Resources/Medieval/"+name+".png";
                 var importer = AssetImporter.GetAtPath(path) as TextureImporter;
@@ -98,7 +98,7 @@ namespace Askich.Editor
                 throw new BuildFailedException(summary);
 
             File.WriteAllText(Path.Combine(directory, "READ-ME.txt"),
-                "GOIDA 2.2.0 — Windows x64\n\n" +
+                "GOIDA 2.3.0 — Windows x64\n\n" +
                 "Run GOIDA.exe. Keep the entire folder together.\n" +
                 "WASD / arrows: move | Mouse: aim | Left mouse: attack | Right mouse: block\n" +
                 "Q: heavy attack | Space: dodge | E: rescue / pick up | Escape: pause | M: mute\n" +
@@ -120,7 +120,7 @@ namespace Askich.Editor
             PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion=AndroidSdkVersions.AndroidApiLevel26;
             PlayerSettings.Android.targetSdkVersion=AndroidSdkVersions.AndroidApiLevelAuto;
-            PlayerSettings.Android.bundleVersionCode=220;
+            PlayerSettings.Android.bundleVersionCode=230;
             PlayerSettings.defaultInterfaceOrientation=UIOrientation.AutoRotation;
             PlayerSettings.allowedAutorotateToPortrait=false;PlayerSettings.allowedAutorotateToPortraitUpsideDown=false;
             PlayerSettings.allowedAutorotateToLandscapeLeft=true;PlayerSettings.allowedAutorotateToLandscapeRight=true;
@@ -206,7 +206,7 @@ namespace Askich.Editor
         {
             PlayerSettings.companyName = "Asker323";
             PlayerSettings.productName = "GOIDA";
-            PlayerSettings.bundleVersion = "2.2.0";
+            PlayerSettings.bundleVersion = "2.3.0";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Standalone, "com.asker323.askich");
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
             PlayerSettings.defaultScreenWidth = 1280;

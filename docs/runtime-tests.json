@@ -196,6 +196,31 @@
             "name": "first_fifteen_minutes_reach_hall_two_without_cheats",
             "passed": true,
             "detail": "OK"
+        },
+        {
+            "name": "workshop_atlas_contains_eight_buildings",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "trade_batches_require_market_and_debit_atomically",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "trade_all_goods_and_capacity_guard",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "construction_cancel_refunds_once_and_keeps_previous_level",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "construction_cancel_respects_storage_capacity",
+            "passed": true,
+            "detail": "OK"
         }
     ]
 }
