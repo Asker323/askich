@@ -98,7 +98,7 @@ namespace Askich.Editor
                 throw new BuildFailedException(summary);
 
             File.WriteAllText(Path.Combine(directory, "READ-ME.txt"),
-                "GOIDA 2.3.0 — Windows x64\n\n" +
+                "GOIDA 2.4.0 — Windows x64\n\n" +
                 "Run GOIDA.exe. Keep the entire folder together.\n" +
                 "WASD / arrows: move | Mouse: aim | Left mouse: attack | Right mouse: block\n" +
                 "Q: heavy attack | Space: dodge | E: rescue / pick up | Escape: pause | M: mute\n" +
@@ -113,6 +113,18 @@ namespace Askich.Editor
         {
             if(!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Android,BuildTarget.Android))
                 throw new BuildFailedException("Install Android Build Support, Android SDK & NDK Tools and OpenJDK for Unity 6000.3.4f1 through Unity Hub.");
+            string toolsRoot=Environment.GetEnvironmentVariable("GOIDA_ANDROID_TOOLS");
+            if(!string.IsNullOrWhiteSpace(toolsRoot))
+            {
+                // Reflection keeps Windows-only installations able to compile this editor script.
+                var settings=Type.GetType("UnityEditor.Android.AndroidExternalToolsSettings, UnityEditor.Android.Extensions",true);
+                foreach(var pair in new[]{new[]{"jdkRootPath","OpenJDK"},new[]{"sdkRootPath","SDK"},new[]{"ndkRootPath","NDK"}})
+                {
+                    string path=Path.GetFullPath(Path.Combine(toolsRoot,pair[1]));
+                    if(!Directory.Exists(path))throw new BuildFailedException("Missing Android tool directory: "+path);
+                    settings.GetProperty(pair[0]).SetValue(null,path);
+                }
+            }
             if(!PrepareInternal())return;
             VerifyRules();ValidateScene();ValidateShaders();
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android,"com.asker323.askich");
@@ -120,16 +132,21 @@ namespace Askich.Editor
             PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;
             PlayerSettings.Android.minSdkVersion=AndroidSdkVersions.AndroidApiLevel26;
             PlayerSettings.Android.targetSdkVersion=AndroidSdkVersions.AndroidApiLevelAuto;
-            PlayerSettings.Android.bundleVersionCode=230;
+            PlayerSettings.Android.bundleVersionCode=240;
+            PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android,false);
+            PlayerSettings.SetGraphicsAPIs(BuildTarget.Android,new[]{UnityEngine.Rendering.GraphicsDeviceType.OpenGLES3});
+            PlayerSettings.Android.forceInternetPermission=false;
+            PlayerSettings.Android.useCustomKeystore=false;
             PlayerSettings.defaultInterfaceOrientation=UIOrientation.AutoRotation;
             PlayerSettings.allowedAutorotateToPortrait=false;PlayerSettings.allowedAutorotateToPortraitUpsideDown=false;
             PlayerSettings.allowedAutorotateToLandscapeLeft=true;PlayerSettings.allowedAutorotateToLandscapeRight=true;
             EditorUserBuildSettings.buildAppBundle=false;
+            EditorUserBuildSettings.development=false;
             string output=Environment.GetEnvironmentVariable("ASKICH_BUILD_DIR");
             if(string.IsNullOrWhiteSpace(output))output=Path.GetFullPath(Path.Combine(Application.dataPath,"../../GOIDA-Android"));
             Directory.CreateDirectory(output);
             var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{ScenePath},locationPathName=Path.Combine(output,"GOIDA.apk"),target=BuildTarget.Android,options=BuildOptions.None});
-            File.WriteAllText(Path.Combine(output,"build-report.txt"),"Result: "+report.summary.result+"\nPlatform: Android ARM64\nErrors: "+report.summary.totalErrors+"\nWarnings: "+report.summary.totalWarnings);
+            File.WriteAllText(Path.Combine(output,"build-report.txt"),"Result: "+report.summary.result+"\nProduct: "+PlayerSettings.productName+"\nVersion: "+PlayerSettings.bundleVersion+"\nUnity: "+Application.unityVersion+"\nPlatform: Android ARM64\nDevelopment: False\nMin SDK: 26\nVersion code: "+PlayerSettings.Android.bundleVersionCode+"\nGraphics: OpenGLES3\nSigning: local debug key (test APK)\nErrors: "+report.summary.totalErrors+"\nWarnings: "+report.summary.totalWarnings+"\nBytes: "+report.summary.totalSize);
             if(report.summary.result!=BuildResult.Succeeded)throw new BuildFailedException("Android build failed. See build report.");
         }
         [MenuItem("Askich/Validate Entry Scene")]
@@ -206,9 +223,11 @@ namespace Askich.Editor
         {
             PlayerSettings.companyName = "Asker323";
             PlayerSettings.productName = "GOIDA";
-            PlayerSettings.bundleVersion = "2.3.0";
+            PlayerSettings.bundleVersion = "2.4.0";
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Standalone, "com.asker323.askich");
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
+            PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.StandaloneWindows64,false);
+            PlayerSettings.SetGraphicsAPIs(BuildTarget.StandaloneWindows64,new[]{UnityEngine.Rendering.GraphicsDeviceType.Direct3D11});
             PlayerSettings.defaultScreenWidth = 1280;
             PlayerSettings.defaultScreenHeight = 720;
             PlayerSettings.fullScreenMode = FullScreenMode.Windowed;

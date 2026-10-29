@@ -5,6 +5,15 @@ namespace Askich
     public sealed partial class ArenaGame
     {
         GUIStyle titleStyle, headingStyle, textStyle, smallStyle, buttonStyle;
+        readonly MenuPointer menuPointer = new MenuPointer();
+        bool ClickArea(Rect area) => GUI.enabled && Event.current.type == EventType.Repaint && menuPointer.TakeClick(area);
+        float VolumeSlider(Rect area, float value)
+        {
+            if(GUI.enabled && Event.current.type == EventType.Repaint)value=menuPointer.Slider(area,value);
+            Bar(new Rect(area.x,area.center.y-5,area.width,10),value,gold);
+            Box(new Rect(area.x+area.width*value-12,area.y,24,area.height),parchment);
+            return value;
+        }
         readonly Color parchment=new Color(.91f,.85f,.69f);
         readonly Color gold=new Color(.75f,.57f,.29f);
         void Styles()
@@ -26,7 +35,7 @@ namespace Askich
             Box(r,enabled?(hover?new Color(.36f,.28f,.16f):new Color(.24f,.2f,.13f)):new Color(.15f,.14f,.12f));
             Box(new Rect(r.x,r.y+r.height-2,r.width,2),enabled?gold:Color.gray);
             Color old=GUI.color; if(!enabled) GUI.color=new Color(.6f,.6f,.6f);
-            bool clicked=GUI.Button(r,value,new GUIStyle(buttonStyle){fontSize=r.height<40?15:value.Length>35?16:20}); GUI.color=old; return enabled&&clicked;
+            GUI.Label(r,value,new GUIStyle(buttonStyle){fontSize=r.height<40?15:value.Length>35?16:20}); GUI.color=old; return enabled&&ClickArea(r);
         }
         void Bar(Rect r,float fraction,Color color) { Box(r,new Color(.055f,.05f,.04f)); Box(new Rect(r.x+2,r.y+2,(r.width-4)*Mathf.Clamp01(fraction),r.height-4),color); }
         void OnGUI()
@@ -71,7 +80,7 @@ namespace Askich
             if(Button(new Rect(445,521,190,36),"Настройки")) {settingsReturn=mode;mode=Mode.Settings;}
             if(Button(new Rect(645,521,190,36),"Выйти")) Application.Quit();
             Text(new Rect(200,568,880,45),"Средневековая фантазия с вымышленными событиями.\n5 заданий · 2 локации · 3 героя · один опасный секрет",new GUIStyle(smallStyle){alignment=TextAnchor.MiddleCenter});
-            Text(new Rect(170,627,940,25),"Asker323  /  2.3.0                                       M — звук: "+(sound.Muted?"выключен":"включён"),smallStyle);
+            Text(new Rect(170,627,940,25),"Asker323  /  2.4.0                                       M — звук: "+(sound.Muted?"выключен":"включён"),smallStyle);
         }
         void FactionScreen()
         {

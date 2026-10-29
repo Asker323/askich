@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using EnhancedTouch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 namespace Askich {
 public sealed class TouchControls {
 public static bool ForceEnabled;
@@ -13,10 +14,12 @@ bool priorHeavy,priorDodge,priorInteract,priorPause;
 readonly List<Vector2> points=new List<Vector2>(10);
 public static readonly Vector2 Stick=new Vector2(115,535),Attack=new Vector2(1130,505),Shield=new Vector2(1010,535),Heavy=new Vector2(1125,610),Dodge=new Vector2(1220,585),Interact=new Vector2(920,605),Pause=new Vector2(1220,125);
 public void Read() {
-points.Clear();var screen=Touchscreen.current;
-if(screen!=null)foreach(var touch in screen.touches)if(touch.press.isPressed)points.Add(ScreenLayout.ToUI(touch.position.ReadValue()));
+points.Clear();
+foreach(var touch in EnhancedTouch.activeTouches)if(touch.phase!=UnityEngine.InputSystem.TouchPhase.Ended&&touch.phase!=UnityEngine.InputSystem.TouchPhase.Canceled)points.Add(ScreenLayout.ToUI(touch.screenPosition));
+if(!Application.isMobilePlatform&&Enabled&&points.Count==0&&Mouse.current!=null&&Mouse.current.leftButton.isPressed)points.Add(ScreenLayout.ToUI(Mouse.current.position.ReadValue()));
 Evaluate(points);
 }
+public void Reset(){move=Vector2.zero;attack=block=heavy=dodge=interact=pause=priorHeavy=priorDodge=priorInteract=priorPause=false;points.Clear();}
 public void Evaluate(IReadOnlyList<Vector2> touches) {
 move=Vector2.zero;attack=block=false;bool h=false,d=false,e=false,p=false;
 foreach(var point in touches) {

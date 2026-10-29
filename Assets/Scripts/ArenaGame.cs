@@ -42,6 +42,7 @@ namespace Askich
 
         void Awake()
         {
+            UnityEngine.InputSystem.EnhancedTouch.EnhancedTouchSupport.Enable();
             Application.targetFrameRate = 120;
             profile = AskichProfile.Load(); faction = profile.selectedFaction;
             AnimatedArt.Prewarm();
@@ -159,6 +160,7 @@ namespace Askich
         }
         void Update()
         {
+            menuPointer.Read();
             ScreenLayout.Fit(gameCamera);
             if(mode==Mode.Dying){TickDeath(Time.deltaTime);return;}
             if(TouchControls.Enabled) {

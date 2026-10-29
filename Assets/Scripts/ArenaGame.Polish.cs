@@ -67,7 +67,7 @@ namespace Askich
         {if(mode!=Mode.Playing)return false;foreach(var e in enemies)if((e.pos-position).sqrMagnitude<12)return true;return false;}
         void ApplySettings()
         {
-            Application.targetFrameRate=profile.lowEffects?60:120;QualitySettings.vSyncCount=0;
+            Application.targetFrameRate=Application.isMobilePlatform?(profile.lowEffects?30:60):(profile.lowEffects?60:120);QualitySettings.vSyncCount=0;
             QualitySettings.antiAliasing=profile.lowEffects?0:2;
             sound.SetVolumes(profile.effectsVolume,profile.ambienceVolume);
         }
@@ -75,16 +75,26 @@ namespace Askich
         {
             Panel(new Rect(260,110,760,510));Text(new Rect(300,140,680,60),"НАСТРОЙКИ",titleStyle);
             Text(new Rect(310,230,640,32),"Звуки боя и шаги: "+Mathf.RoundToInt(profile.effectsVolume*100)+"%",textStyle);
-            float fx=GUI.HorizontalSlider(new Rect(310,275,660,35),profile.effectsVolume,0,1);
+            float fx=VolumeSlider(new Rect(310,275,660,35),profile.effectsVolume);
             Text(new Rect(310,320,640,32),"Ветер: "+Mathf.RoundToInt(profile.ambienceVolume*100)+"%",textStyle);
-            float ambience=GUI.HorizontalSlider(new Rect(310,365,660,35),profile.ambienceVolume,0,1);
+            float ambience=VolumeSlider(new Rect(310,365,660,35),profile.ambienceVolume);
             if(fx!=profile.effectsVolume||ambience!=profile.ambienceVolume){profile.effectsVolume=fx;profile.ambienceVolume=ambience;ApplySettings();}
-            if(Button(new Rect(310,415,660,45),profile.lowEffects?"Графика: экономная · 60 кадров/с":"Графика: полная · до 120 кадров/с")){profile.lowEffects=!profile.lowEffects;ApplySettings();Save();}
+            string budget=Application.isMobilePlatform?(profile.lowEffects?"30":"60"):(profile.lowEffects?"60":"120");
+            if(Button(new Rect(310,415,660,45),(profile.lowEffects?"Графика: экономная":"Графика: полная")+" · до "+budget+" кадров/с")){profile.lowEffects=!profile.lowEffects;ApplySettings();Save();}
             if(Button(new Rect(310,480,320,42),"Повторить подсказки")){profile.tutorialFlags=0;Save();}
             if(Button(new Rect(650,480,320,42),sound.Muted?"Включить звук":"Выключить звук"))sound.Toggle();
             if(Button(new Rect(440,550,400,45),"Сохранить и вернуться")){Save();mode=settingsReturn;}
         }
-        void OnApplicationPause(bool paused){if(paused)Save();}
+        void SuspendSession()
+        {
+            if(profile==null)return;
+            if(mode==Mode.Playing)mode=Mode.Paused;
+            if(mode==Mode.Settlement)townPaused=true;
+            blocking=false;playerVelocity=Vector2.zero;touchControls.Reset();menuPointer.Reset();Save();
+        }
+        void OnApplicationPause(bool paused){if(paused)SuspendSession();}
+        void OnApplicationFocus(bool focused){if(!focused&&!Application.runInBackground)SuspendSession();}
+        void OnDestroy(){UnityEngine.InputSystem.EnhancedTouch.EnhancedTouchSupport.Disable();}
         void OnApplicationQuit(){Save();}
     }
     public sealed class ImpactSpark:MonoBehaviour

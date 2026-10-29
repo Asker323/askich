@@ -41,7 +41,7 @@ namespace Askich
                     Bar(new Rect(r.x+18,r.y+2,100,7),1-(town.pendingDays-town.dayProgress)/town.pendingLevel,gold);
                     Text(new Rect(r.x+9,r.y+9,120,22),"СТРОИТСЯ",new GUIStyle(smallStyle){fontSize=12,alignment=TextAnchor.MiddleCenter});
                 }
-                if(GUI.Button(r,GUIContent.none,GUIStyle.none))
+                if(ClickArea(r))
                 {
                     if(movePlot>=0){if(town.MoveBuilding(movePlot,i)){movePlot=-1;Save();}}
                     selectedPlot=i;

@@ -221,6 +221,36 @@
             "name": "construction_cancel_respects_storage_capacity",
             "passed": true,
             "detail": "OK"
+        },
+        {
+            "name": "menu_tap_releases_once_and_requires_same_button",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "menu_drag_and_cancel_cannot_activate_button",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "volume_drag_clamps_and_requires_start_on_slider",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "notch_viewports_preserve_aspect_and_safe_bounds",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "background_pauses_combat_and_clears_held_controls",
+            "passed": true,
+            "detail": "OK"
+        },
+        {
+            "name": "background_preserves_town_fraction_and_pauses_clock",
+            "passed": true,
+            "detail": "OK"
         }
     ]
 }
