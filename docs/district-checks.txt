@@ -1,0 +1,13 @@
+PASS
+unarmed start
+16 accessible houses
+closed door blocks
+open door traversable
+infected path enters open house
+weapon found
+no duplicate loot
+radio voice and objective
+radio attracts infected
+radio switches off
+isolated save roundtrip
+keyboard movement through Update
