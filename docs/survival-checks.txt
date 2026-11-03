@@ -1,0 +1,10 @@
+PASS
+starts unarmed
+empty containers exist
+house walls block
+noise alerts infected
+door enters interior
+workshop contains axe
+loot collected once
+door exits interior
+supplies secure shelter
