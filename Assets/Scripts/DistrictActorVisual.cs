@@ -72,6 +72,7 @@ namespace Askich {
   }
   public void Hurt(){if(dead)return;if(clips.ContainsKey("HitReact")){state=null;Play("HitReact",false,1.4f);actionRemaining=.26f;}}
   public void Revive(){dead=false;actionRemaining=0;state=null;Play("Idle",true,1);}
+  public void Restore(bool corpse){Revive();if(!corpse)return;Die();var clip=animationPlayer[clips["Death"]];animationPlayer.Play(clips["Death"]);clip.time=clip.length;clip.speed=0;animationPlayer.Sample();}
   public void Die(){if(dead)return;dead=true;state=null;Play("Death",false,1);if(vocal)vocal.Stop();}
  }
 }
