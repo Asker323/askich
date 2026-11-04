@@ -1,0 +1,29 @@
+PASS
+survivor rendered at human scale
+weapon grip follows right hand bone
+survivor skeletal animations loaded
+all infected have skeletal animations
+24 spatial infected recordings loaded
+audio listener follows player, not distant camera
+dusk shader included and supported
+weathered material shader survives build
+HUD clicks excluded from world attacks
+touch action does not overlap attack
+touch movement and attack can coexist
+flashlight toggles
+unarmed start
+16 accessible houses
+closed door blocks
+open door traversable
+infected path enters open house
+weapon found
+no duplicate loot
+radio voice and objective
+radio attracts infected
+radio switches off
+isolated save roundtrip
+keyboard movement through Update
+axe drives slash animation
+attack animation moves hand bone in player
+infected hit reaction
+infected death animation

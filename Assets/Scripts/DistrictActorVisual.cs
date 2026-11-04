@@ -1,0 +1,77 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace Askich {
+ // Presentation only: movement, damage and hearing remain owned by DistrictGame.
+ public sealed class DistrictActorVisual : MonoBehaviour {
+  static AudioClip[] voices;
+  readonly Dictionary<string,string> clips=new Dictionary<string,string>();
+  Animation animationPlayer;
+  AudioSource vocal;
+  AudioLowPassFilter occlusion;
+  string state;
+  float actionRemaining,nextVoice;
+  bool zombie,dead,crawler;
+  Transform head;
+  Vector3 headScale;
+  public Transform Hand {get;private set;}
+  public bool Ready=>animationPlayer&&clips.ContainsKey("Idle")&&clips.ContainsKey("Walk")&&clips.ContainsKey("Death");
+  public string State=>state;
+  public int VoiceCount=>voices==null?0:voices.Length;
+
+  public bool Initialize(bool infected,int variant){
+   zombie=infected;crawler=infected&&variant%3==2;
+   string name=infected?new[]{"Zombie_Basic","Zombie_Chubby","Zombie_Ribcage"}[variant%3]:"Characters_Matt";
+   var prefab=Resources.Load<GameObject>("Survival/Art/"+name);
+   if(!prefab)return false;
+   var model=Instantiate(prefab,transform,false);
+   animationPlayer=model.GetComponentInChildren<Animation>();
+   if(!animationPlayer){Destroy(model);return false;}
+   foreach(AnimationState s in animationPlayer){string key=s.name.Substring(s.name.LastIndexOf('|')+1);if(!clips.ContainsKey(key))clips[key]=s.name;}
+   foreach(var bone in model.GetComponentsInChildren<Transform>()){
+    string n=bone.name.ToLowerInvariant();
+    if(n=="head"){head=bone;headScale=bone.localScale;}
+    if((n.Contains("hand")&&(n.Contains("right")||n.EndsWith(".r")||n.EndsWith("_r")))||n=="index1.r")Hand=bone;
+    if(!infected&&Array.IndexOf(new[]{"knife","woodenbat_barbed","woodenbat_saw","pistol","shotgun","guitar","smg","spear","rifle","axe"},n)>=0)bone.gameObject.SetActive(false);
+   }
+   Play("Idle",true,1);
+   animationPlayer[clips["Idle"]].normalizedTime=(variant*.173f)%1;
+   if(zombie){
+    if(voices==null)voices=Resources.LoadAll<AudioClip>("Survival/ZombieAudio");
+    var emitter=new GameObject("Infected voice");emitter.transform.SetParent(transform,false);emitter.transform.localPosition=Vector3.up*1.5f;
+    vocal=emitter.AddComponent<AudioSource>();vocal.playOnAwake=false;vocal.spatialBlend=1;vocal.dopplerLevel=0;vocal.rolloffMode=AudioRolloffMode.Linear;vocal.minDistance=1.5f;vocal.maxDistance=23;vocal.volume=.45f;if(voices.Length>0)vocal.clip=voices[variant%voices.Length];vocal.pitch=.88f+(variant%5)*.055f;
+    occlusion=emitter.AddComponent<AudioLowPassFilter>();occlusion.cutoffFrequency=12000;
+    nextVoice=2+(variant*.83f)%8;
+   }
+   return Ready;
+  }
+  void LateUpdate(){if(head)head.localScale=headScale*.84f;}
+  void Play(string key,bool loop,float speed){
+   if(!clips.TryGetValue(key,out string name))return;
+   var s=animationPlayer[name];s.wrapMode=loop?WrapMode.Loop:WrapMode.ClampForever;s.speed=speed;
+   if(state==key)return;
+   s.time=0;animationPlayer.CrossFade(name,.12f);state=key;
+  }
+  public void SetPaused(bool pause){if(animationPlayer)animationPlayer.enabled=!pause;}
+  public void Tick(float speed,float dt,float distance,bool clear){
+   if(dead)return;
+   actionRemaining-=dt;
+   if(actionRemaining<=0)Play(speed>.1f?(crawler?"Crawl":speed>3.5f&&!zombie?"Run":"Walk"):"Idle",true,speed>.1f?Mathf.Clamp(speed/(zombie?1.45f:2.6f),.55f,1.7f):1);
+   if(!zombie)return;
+   vocal.volume=Mathf.Lerp(vocal.volume,clear?.48f:.16f,dt*4);
+   occlusion.cutoffFrequency=Mathf.Lerp(occlusion.cutoffFrequency,clear?12000:1300,dt*4);
+   nextVoice-=dt;
+   if(nextVoice<=0){nextVoice=UnityEngine.Random.Range(6,14);if(distance<22&&!vocal.isPlaying&&voices.Length>0){vocal.clip=voices[UnityEngine.Random.Range(0,voices.Length)];vocal.Play();}}
+  }
+  public void Attack(int weapon,float duration){
+   if(dead)return;
+   string key=zombie?(clips.ContainsKey("Punch")?"Punch":"Crawl"):weapon==1?"Slash":weapon==2?"Stab":"Punch";
+   if(!clips.ContainsKey(key))return;
+   state=null;Play(key,false,animationPlayer[clips[key]].length/duration);actionRemaining=duration;
+  }
+  public void Hurt(){if(dead)return;if(clips.ContainsKey("HitReact")){state=null;Play("HitReact",false,1.4f);actionRemaining=.26f;}}
+  public void Revive(){dead=false;actionRemaining=0;state=null;Play("Idle",true,1);}
+  public void Die(){if(dead)return;dead=true;state=null;Play("Death",false,1);if(vocal)vocal.Stop();}
+ }
+}
