@@ -14,6 +14,10 @@ namespace Askich {
   float actionRemaining,nextVoice;
   bool zombie,dead,crawler;
   Transform head;
+  GameObject nativeAxe,nativeSpear;
+  float hurtFlash;bool paused;Renderer[] bodyRenderers;MaterialPropertyBlock tint;
+  public int EquippedWeapon {get;private set;}
+  public bool NativeEquipmentReady=>nativeAxe&&nativeSpear;
   Vector3 headScale;
   public Transform Hand {get;private set;}
   public bool Ready=>animationPlayer&&clips.ContainsKey("Idle")&&clips.ContainsKey("Walk")&&clips.ContainsKey("Death");
@@ -29,12 +33,15 @@ namespace Askich {
    animationPlayer=model.GetComponentInChildren<Animation>();
    if(!animationPlayer){Destroy(model);return false;}
    foreach(AnimationState s in animationPlayer){string key=s.name.Substring(s.name.LastIndexOf('|')+1);if(!clips.ContainsKey(key))clips[key]=s.name;}
-   foreach(var bone in model.GetComponentsInChildren<Transform>()){
+   foreach(var bone in model.GetComponentsInChildren<Transform>(true)){
     string n=bone.name.ToLowerInvariant();
     if(n=="head"){head=bone;headScale=bone.localScale;}
-    if((n.Contains("hand")&&(n.Contains("right")||n.EndsWith(".r")||n.EndsWith("_r")))||n=="index1.r")Hand=bone;
+    if(n==(infected?"index1.r":"index1.l"))Hand=bone;
+    if(!infected&&n=="axe")nativeAxe=bone.gameObject;if(!infected&&n=="spear")nativeSpear=bone.gameObject;
     if(!infected&&Array.IndexOf(new[]{"knife","woodenbat_barbed","woodenbat_saw","pistol","shotgun","guitar","smg","spear","rifle","axe"},n)>=0)bone.gameObject.SetActive(false);
    }
+   bodyRenderers=model.GetComponentsInChildren<Renderer>();tint=new MaterialPropertyBlock();
+   if(!infected&&bodyRenderers.Length>0)foreach(var tool in new[]{nativeAxe,nativeSpear})if(tool)foreach(var r in tool.GetComponentsInChildren<Renderer>(true)){var materials=r.sharedMaterials;for(int i=0;i<materials.Length;i++)materials[i]=bodyRenderers[0].sharedMaterial;r.sharedMaterials=materials;}
    Play("Idle",true,1);
    animationPlayer[clips["Idle"]].normalizedTime=(variant*.173f)%1;
    if(zombie){
@@ -46,18 +53,19 @@ namespace Askich {
    }
    return Ready;
   }
-  void LateUpdate(){if(head)head.localScale=headScale*.84f;}
+  void LateUpdate(){if(head)head.localScale=headScale*.84f;if(paused)return;hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
+  public bool Equip(int weapon){EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
   void Play(string key,bool loop,float speed){
    if(!clips.TryGetValue(key,out string name))return;
    var s=animationPlayer[name];s.wrapMode=loop?WrapMode.Loop:WrapMode.ClampForever;s.speed=speed;
    if(state==key)return;
    s.time=0;animationPlayer.CrossFade(name,.12f);state=key;
   }
-  public void SetPaused(bool pause){if(animationPlayer)animationPlayer.enabled=!pause;}
+  public void SetPaused(bool pause){paused=pause;if(animationPlayer)animationPlayer.enabled=!pause;}
   public void Tick(float speed,float dt,float distance,bool clear){
    if(dead)return;
    actionRemaining-=dt;
-   if(actionRemaining<=0)Play(speed>.1f?(crawler?"Crawl":speed>3.5f&&!zombie?"Run":"Walk"):"Idle",true,speed>.1f?Mathf.Clamp(speed/(zombie?1.45f:2.6f),.55f,1.7f):1);
+   if(actionRemaining<=0)Play(speed>.1f?(crawler?"Crawl":speed>3.5f&&!zombie?"Run":"Walk"):"Idle",true,speed>.1f?Mathf.Clamp(speed/(crawler?1.1f:zombie?1.45f:speed>3.5f?5f:2.6f),.35f,1.9f):1);
    if(!zombie)return;
    vocal.volume=Mathf.Lerp(vocal.volume,clear?.48f:.16f,dt*4);
    occlusion.cutoffFrequency=Mathf.Lerp(occlusion.cutoffFrequency,clear?12000:1300,dt*4);
@@ -70,8 +78,8 @@ namespace Askich {
    if(!clips.ContainsKey(key))return;
    state=null;Play(key,false,animationPlayer[clips[key]].length/duration);actionRemaining=duration;
   }
-  public void Hurt(){if(dead)return;if(clips.ContainsKey("HitReact")){state=null;Play("HitReact",false,1.4f);actionRemaining=.26f;}}
-  public void Revive(){dead=false;actionRemaining=0;state=null;Play("Idle",true,1);}
+  public void Hurt(){if(dead)return;hurtFlash=.14f;if(clips.ContainsKey("HitReact")){state=null;Play("HitReact",false,1.4f);actionRemaining=.26f;}}
+  public void Revive(){dead=false;hurtFlash=0;actionRemaining=0;state=null;Play("Idle",true,1);}
   public void Restore(bool corpse){Revive();if(!corpse)return;Die();var clip=animationPlayer[clips["Death"]];animationPlayer.Play(clips["Death"]);clip.time=clip.length;clip.speed=0;animationPlayer.Sample();}
   public void Die(){if(dead)return;dead=true;state=null;Play("Death",false,1);if(vocal)vocal.Stop();}
  }

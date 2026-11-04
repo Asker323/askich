@@ -42,12 +42,12 @@ namespace Askich {
     try{s=ReadSave(SavePath+".bak");recovered=true;}catch{Say("Сохранение и резервная копия недоступны. Можно начать новую игру.");return false;}
    }
    // No world state changes until the complete snapshot has passed validation.
-   worldGeneration++;searchSlot=-1;attack=0;damageDelay=0;radioOn=false;voice.Stop();staticSound.Stop();
+   worldGeneration++;heroVelocity=Vector2.zero;heroStagger=0;searchSlot=-1;attack=0;damageDelay=0;radioOn=false;voice.Stop();staticSound.Stop();
    for(int n=0;n<homes.Count;n++){var h=homes[n];h.open=n<s.doors.Length&&s.doors[n];h.gate.active=!h.open;h.door.SetActive(!h.open);for(int i=0;i<3;i++)h.taken[i]=n*3+i<s.taken.Length&&s.taken[n*3+i];RefreshContainers(h);}
    foreach(var actor in infected){
     var e=s.version>=2?Array.Find(s.enemies,v=>v.id==actor.id):null;
     actor.p=e==null?actor.spawn:new Vector2(e.x,e.z);actor.hp=e==null?actor.maxHp:e.hp;
-    actor.goal=actor.p;actor.alert=actor.wind=actor.rest=actor.repath=0;actor.striking=false;actor.path.Clear();actor.root.position=V(actor.p);actor.root.rotation=Quaternion.Euler(0,e==null?0:e.yaw,0);
+    actor.goal=actor.p;actor.alert=actor.wind=actor.rest=actor.repath=actor.stagger=actor.recovery=0;actor.striking=false;actor.path.Clear();actor.root.position=V(actor.p);actor.root.rotation=Quaternion.Euler(0,e==null?0:e.yaw,0);
     if(actor.visual)actor.visual.Restore(actor.hp<=0);
    }
    hero.p=new Vector2(s.x,s.z);if(Blocked(hero.p))hero.p=new Vector2(-12,-20);
