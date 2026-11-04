@@ -1,0 +1,102 @@
+PASS
+survivor rendered at human scale
+weapon grip follows authored left hand bone
+survivor skeletal animations loaded
+all infected have skeletal animations
+24 spatial infected recordings loaded
+audio listener follows player, not distant camera
+dusk shader included and supported
+weathered material shader survives build
+HUD clicks excluded from world attacks
+touch action does not overlap attack
+touch movement and attack can coexist
+flashlight toggles
+unarmed start
+22 accessible houses across continuous district
+old eastern boundary is traversable
+infected navigation crosses district seam
+closed door blocks
+open door traversable
+infected path enters open house
+weapon found
+no duplicate loot
+radio voice and objective
+radio attracts infected
+radio switches off
+isolated save roundtrip
+shelter permits continued exploration
+shelter consumes supplies once
+established shelter does not consume another bandage
+world restores dead infected and shelter
+corrupt main save recovers backup
+invalid saves do not revive or mutate world
+version one save migrates with initial infected
+non finite health rejected without mutation
+valid snapshot reloads after rejection
+keyboard movement through Update
+axe drives slash animation
+attack animation moves hand bone in player
+infected hit reaction
+infected death animation
+old v2 save preserves district and initializes new outskirts
+supply crate blocks movement with accessible interaction point
+road worker supplies collected
+depot cannot be looted twice
+outskirts position and supplies persist
+radio home and clinic have distinct container identities
+toolbox trades longer exposure and noise for weapon
+container approach accessible: Ящик с инструментами
+container approach accessible: Кухонный ящик
+container approach accessible: Дорожная аптечка
+container approach accessible: Перевязочный ящик
+container approach accessible: Медицинская сумка
+container approach accessible: Опустевший шкаф
+using toolbox starts search and alerts distant infected
+interrupted search does not grant loot
+quiet medical bag leaves distant infected unaware
+timed search completes through player Update
+searched container appearance restored from existing save data
+authored axe and spear meshes available with original skin binding
+axe attack starts with enough stamina
+windup causes no early damage
+pause freezes attack timer and prevents delayed damage
+axe damage lands at sampled swing phase in committed direction
+hit interrupts enemy and applies stagger
+attack recovery prevents attack spam
+spear rejects off axis target
+spear reaches beyond axe distance
+stepping behind committed enemy attack avoids damage
+enemy contact damages and interrupts at impact phase
+exhaustion prevents attack
+closed door blocks melee damage
+blocked movement no longer plays walking animation
+attack warning shader survives Windows build
+alcohol bottle grants exactly three doses
+bottle cannot be picked up twice
+untreated bleeding and infection continue over time
+shelter and food do not cure wounds
+bandage can treat bleeding at full health
+interrupted treatment consumes no bandage
+ordinary bandage stops blood but leaves infection
+craft dose 1
+craft dose 2
+craft dose 3
+three dose bottle supports three crafts without negative inventory
+drinking spends dose and intoxicates without curing wound
+sterile bandage cures wound and bleeding but not intoxication
+craft completes through real player Update
+wounds intoxication doses and pickup state survive save load
+invalid medical inventory rejected without mutation
+v3 saves migrate without invented wounds and with new pickups
+legacy enemy health fraction migrates to hardcore balance
+visible hero starts pursuit
+closed door breaks sight and keeps last seen position
+hidden movement does not update enemy goal
+enemy searches after reaching lost trail
+unsuccessful search eventually calms enemy
+noise directs investigation to sound location
+visible hero is not abandoned for distraction
+throw consumes one stone
+landed stone attracts nearby infected
+inventory touch target is isolated from world attack
+inventory clicks cannot trigger melee attacks

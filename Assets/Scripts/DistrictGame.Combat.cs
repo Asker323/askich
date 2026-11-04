@@ -23,9 +23,9 @@ namespace Askich {
 
   bool TryAttack(Vector2 direction){
    var strike=WeaponStrike(weapon);
-   if(!playing||paused||dead||attack>0||heroStagger>0||stamina<strike.cost)return false;
-   activeStrike=strike;attack=strike.duration;stamina-=strike.cost;heroVelocity=Vector2.zero;searchSlot=-1;
-   heroStrikeDirection=direction.sqrMagnitude>.001f?direction.normalized:Vector2.up;
+   if(!playing||paused||dead||suppliesOpen||attack>0||heroStagger>0||stamina<strike.cost)return false;
+   CancelMedical();activeStrike=strike;attack=strike.duration;stamina-=strike.cost;heroVelocity=Vector2.zero;searchSlot=-1;
+   heroStrikeDirection=DrunkDirection(direction.sqrMagnitude>.001f?direction.normalized:Vector2.up);
    hero.root.rotation=Quaternion.LookRotation(V(heroStrikeDirection));
    if(hero.visual)hero.visual.Attack(weapon,strike.duration);
    Alert(hero.p,weapon==0?6:13);StartCoroutine(Hit(heroStrikeDirection,strike,++strikeSequence));return true;
@@ -63,7 +63,7 @@ namespace Askich {
     z.striking=false;z.recovery=EnemyDuration-EnemyImpact;z.rest=1.2f;
     Vector2 offset=hero.p-z.p;
     if(offset.magnitude<1.55f&&Vector2.Dot(offset.normalized,z.strikeDirection)>.55f&&damageDelay<=0&&Sight(z.p,hero.p)){
-     health-=17;damageDelay=.8f;heroStagger=.28f;heroVelocity=Vector2.zero;attack=0;strikeSequence++;searchSlot=-1;sound.Play("hit");
+     health-=EnemyDamage(z);WoundHero();damageDelay=.8f;heroStagger=.28f;heroVelocity=Vector2.zero;attack=0;strikeSequence++;searchSlot=-1;sound.Play("hit");
      if(hero.visual)hero.visual.Hurt();
      if(health<=0){dead=true;if(hero.visual)hero.visual.Die();else hero.root.rotation=Quaternion.Euler(0,0,80);}
     }
@@ -89,7 +89,7 @@ namespace Askich {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
   IEnumerator CheckCombat(Action<bool,string> check,string folder){
    foreach(var e in infected){e.hp=0;e.striking=false;e.stagger=e.recovery=0;}
-   var enemy=infected.Find(e=>e.id%3==0);hero.p=new Vector2(-24,-24);heroVelocity=Vector2.zero;health=100;damageDelay=0;attack=0;heroStagger=0;weapon=1;stamina=100;
+   var enemy=infected.Find(e=>e.id%3==0);bleeding=false;infection=0;hero.p=new Vector2(-24,-24);heroVelocity=Vector2.zero;health=100;damageDelay=0;attack=0;heroStagger=0;weapon=1;stamina=100;
    enemy.hp=enemy.maxHp;enemy.visual.Revive();enemy.p=hero.p+Vector2.up*1.3f;enemy.alert=0;enemy.rest=100;enemy.stagger=100;
    check(hero.visual.NativeEquipmentReady&&hero.visual.Equip(1),"authored axe and spear meshes available with original skin binding");
    check(TryAttack(Vector2.up),"axe attack starts with enough stamina");float before=enemy.hp;
@@ -102,8 +102,8 @@ namespace Askich {
    check(ResolveStrike(Vector2.up,WeaponStrike(2))==0,"spear rejects off axis target");
    enemy.p=hero.p+Vector2.up*2.3f;check(ResolveStrike(Vector2.up,WeaponStrike(2))==1,"spear reaches beyond axe distance");
    enemy.hp=enemy.maxHp;enemy.p=new Vector2(-24,-23);hero.p=new Vector2(-24,-24);enemy.stagger=enemy.recovery=0;enemy.rest=100;BeginEnemyAttack(enemy);hero.p=enemy.p+Vector2.up;float hp=health;TickEnemyAttack(enemy,EnemyImpact+.01f);check(health==hp,"stepping behind committed enemy attack avoids damage");
-   enemy.recovery=0;hero.p=enemy.p+Vector2.down;BeginEnemyAttack(enemy);TickEnemyAttack(enemy,EnemyImpact+.01f);check(health==hp-17&&heroStagger>0,"enemy contact damages and interrupts at impact phase");
-   heroStagger=0;attack=0;stamina=0;check(!TryAttack(Vector2.up),"exhaustion prevents attack");stamina=100;
+   enemy.recovery=0;hero.p=enemy.p+Vector2.down;BeginEnemyAttack(enemy);TickEnemyAttack(enemy,EnemyImpact+.01f);check(health<=hp-EnemyDamage(enemy)&&heroStagger>0,"enemy contact damages and interrupts at impact phase");
+   bleeding=false;infection=0;heroStagger=0;attack=0;stamina=0;check(!TryAttack(Vector2.up),"exhaustion prevents attack");stamina=100;
    // Real input into a closed door: locomotion must stop when position cannot advance.
    enemy.hp=0;enemy.visual.Die();var h=homes[0];h.open=false;h.gate.active=true;h.door.SetActive(true);hero.p=h.p+Vector2.down*5;enemy.hp=enemy.maxHp;enemy.p=h.p+Vector2.down*3.5f;check(ResolveStrike(Vector2.up,WeaponStrike(1))==0,"closed door blocks melee damage");enemy.hp=0;hero.p=h.p+new Vector2(0,-4.49f);heroVelocity=Vector2.zero;
    var keys=UnityEngine.InputSystem.InputSystem.AddDevice<UnityEngine.InputSystem.Keyboard>();
