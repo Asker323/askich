@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 namespace Askich {
- public enum DistrictItemKind {Empty,Axe,Spear,Food,Bandage,Sterile,Alcohol,Stone,Backpack,Water}
+ public enum DistrictItemKind {Empty,Axe,Spear,Food,Bandage,Sterile,Alcohol,Stone,Backpack,Water,EmptyBottle}
  [Serializable] public struct DistrictItem {
   public int kind,amount;
   public DistrictItem(DistrictItemKind type,int count){kind=(int)type;amount=count;}
@@ -25,7 +25,7 @@ namespace Askich {
   public int Capacity=>Data.backpack?18:6;
   public int Count(DistrictItemKind kind){int total=0;for(int i=0;i<Capacity;i++)if(Data.slots[i].kind==(int)kind)total+=Data.slots[i].amount;return total;}
   public static int Limit(int kind){switch((DistrictItemKind)kind){case DistrictItemKind.Food:case DistrictItemKind.Bandage:case DistrictItemKind.Sterile:return 5;case DistrictItemKind.Alcohol:case DistrictItemKind.Water:return 3;case DistrictItemKind.Stone:return 10;default:return 1;}}
-  static bool ValidItem(DistrictItem item)=>item.kind>=0&&item.kind<=9&&(item.kind==0?item.amount==0:item.amount>0&&item.amount<=Limit(item.kind));
+  static bool ValidItem(DistrictItem item)=>item.kind>=0&&item.kind<=10&&(item.kind==0?item.amount==0:item.amount>0&&item.amount<=Limit(item.kind));
   public static void Validate(DistrictInventoryData data,int containerCount){
    if(data==null||data.slots==null||data.slots.Length!=18||data.overflow==null||data.overflow.Count>60000||data.containers==null||data.containers.Count>containerCount||data.weapon<0||data.weapon>2)throw new System.IO.InvalidDataException("Повреждён инвентарь");
    int capacity=data.backpack?18:6;
@@ -40,7 +40,7 @@ namespace Askich {
   }
   public void Load(DistrictInventoryData data){Data=data;Preferred=-1;}
   static int AddTo(DistrictItem[] slots,int capacity,DistrictItem item){
-   for(int i=0;i<capacity;i++)if(slots[i].kind==item.kind&&slots[i].amount<Limit(item.kind)){
+   for(int i=0;i<capacity;i++)if(item.kind!=9&&slots[i].kind==item.kind&&slots[i].amount<Limit(item.kind)){
     int n=Math.Min(item.amount,Limit(item.kind)-slots[i].amount);slots[i].amount+=n;item.amount-=n;
    }
    for(int i=0;i<capacity&&item.amount>0;i++)if(slots[i].Empty){
@@ -68,6 +68,21 @@ namespace Askich {
    for(int i=0;i<Capacity&&amount>0;i++)if(i!=Preferred)Take(i);
    return true;
   }
+  public int WaterSlot(bool refill){
+   bool Match(int i)=>refill?(Data.slots[i].kind==10||Data.slots[i].kind==9&&Data.slots[i].amount<3):Data.slots[i].kind==9;
+   if(Preferred>=0&&Preferred<Capacity&&Match(Preferred))return Preferred;
+   for(int i=0;i<Capacity;i++)if(Match(i))return i;
+   return -1;
+  }
+  public bool DrinkWater(){
+   int slot=WaterSlot(false);if(slot<0)return false;
+   if(--Data.slots[slot].amount==0)Data.slots[slot]=new DistrictItem(DistrictItemKind.EmptyBottle,1);
+   return true;
+  }
+  public bool RefillWater(){
+   int slot=WaterSlot(true);if(slot<0)return false;
+   Data.slots[slot]=new DistrictItem(DistrictItemKind.Water,3);return true;
+  }
   public bool CanCraft(){var candidate=new DistrictInventory();candidate.Data.slots=(DistrictItem[])Data.slots.Clone();candidate.Data.backpack=Data.backpack;return candidate.Craft();}
   public bool Craft(){
    var copy=new DistrictInventory();copy.Data.slots=(DistrictItem[])Data.slots.Clone();copy.Data.backpack=Data.backpack;copy.Preferred=Preferred;
@@ -77,7 +92,7 @@ namespace Askich {
   public static bool Transfer(DistrictItem[] from,int source,DistrictItem[] to,int target){
    if(source<0||source>=from.Length||target<0||target>=to.Length||ReferenceEquals(from,to)&&source==target||from[source].Empty)return false;
    var item=from[source];
-   if(to[target].kind==item.kind&&to[target].amount<Limit(item.kind)){
+   if(item.kind!=9&&to[target].kind==item.kind&&to[target].amount<Limit(item.kind)){
     int n=Math.Min(item.amount,Limit(item.kind)-to[target].amount);to[target].amount+=n;from[source].amount-=n;if(from[source].amount==0)from[source]=default;
    }else{from[source]=to[target];to[target]=item;}
    return true;

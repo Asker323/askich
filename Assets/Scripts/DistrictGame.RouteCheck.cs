@@ -112,6 +112,8 @@ namespace Askich {
    }
    yield return RouteUse();RouteRequire(campEstablished,"established shelter using collected supplies");yield return RoutePhoto("route-shelter");
    if(SafeToRest()&&tiredness>5){float before=tiredness;RouteRequire(BeginMedical(MedicalAction.Rest),"started safe shelter rest");yield return RouteWait(6.3f);RouteRequire(tiredness<before,"shelter rest restores energy");}
+   yield return RouteWalk(cistern);yield return RouteUse();yield return RouteWait(3.3f);
+   RouteRequire(inventory.Count(DistrictItemKind.Water)>=3,"refilled carried bottle at shelter reserve");
    Save();RouteNote("COMPLETE automated ordinary-rules route; not a manual playthrough");Application.Quit();
   }
  }

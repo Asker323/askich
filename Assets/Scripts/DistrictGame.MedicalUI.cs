@@ -20,6 +20,8 @@ namespace Askich {
    if(attack>0||heroStagger>0)return "После удара";
    if(action==MedicalAction.Eat&&food==0)return "Нужна еда";
    if(action==MedicalAction.Water&&inventory.Count(DistrictItemKind.Water)==0)return "Нужна питьевая вода";
+   if(action==MedicalAction.Refill&&!NearCistern)return "Подойди к резервуару";
+   if(action==MedicalAction.Refill&&inventory.WaterSlot(true)<0)return "Нужна неполная бутылка";
    if(action==MedicalAction.Rest&&!SafeToRest())return bleeding?"Сначала останови кровь":"Отдых доступен в безопасном убежище";
    if((action==MedicalAction.Bandage||action==MedicalAction.Craft)&&bandages==0)return "Нужен обычный бинт";
    if(action==MedicalAction.Sterile&&sterileBandages==0)return "Нет стерильных бинтов";
@@ -63,7 +65,7 @@ namespace Askich {
    if(medicalAction==MedicalAction.None)return;
    float progress=Mathf.Clamp01(medicalTime/MedicalDuration(medicalAction));
    Panel(MedicalProgressArea);
-   string label=medicalAction==MedicalAction.Craft?"Стерилизация":medicalAction==MedicalAction.Drink||medicalAction==MedicalAction.Water?"Питьё":medicalAction==MedicalAction.Eat?"Еда":medicalAction==MedicalAction.Rest?"Отдых":"Перевязка";
+   string label=medicalAction==MedicalAction.Craft?"Стерилизация":medicalAction==MedicalAction.Drink||medicalAction==MedicalAction.Water?"Питьё":medicalAction==MedicalAction.Eat?"Еда":medicalAction==MedicalAction.Rest?"Отдых":medicalAction==MedicalAction.Refill?"Набираю воду":"Перевязка";
    GUI.Label(new Rect(344,558,290,30),label+" · "+Mathf.RoundToInt(progress*100)+"%",small);
    FillRect(new Rect(344,596,280,7),new Color(.17f,.22f,.20f));
    FillRect(new Rect(344,596,280*progress,7),MedicalAccent);

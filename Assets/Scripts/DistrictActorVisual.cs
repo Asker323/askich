@@ -9,6 +9,7 @@ namespace Askich {
   readonly Dictionary<string,string> clips=new Dictionary<string,string>();
   Animation animationPlayer;
   AnimationClip crawlerLunge;
+  readonly AnimationClip[] provisions=new AnimationClip[3];int provisionMode;float provisionTime;
   float lungeTime;
   AudioSource vocal;
   AudioLowPassFilter occlusion;
@@ -44,6 +45,7 @@ namespace Askich {
     clips["CrawlerLunge"]="CrawlerLunge";
    }
    if(!zombie){
+    for(int i=0;i<3;i++){provisions[i]=Resources.Load<AnimationClip>("Survival/"+new[]{"DrinkProvision","EatProvision","RestProvision"}[i]);if(!provisions[i])throw new InvalidOperationException("Missing provision animation");animationPlayer.AddClip(provisions[i],provisions[i].name);clips[provisions[i].name]=provisions[i].name;}
     var search=Resources.Load<AnimationClip>("Survival/Search");
     if(!search)throw new InvalidOperationException("Missing survivor search clip");
     animationPlayer.AddClip(search,"Search");clips["Search"]="Search";
@@ -72,6 +74,7 @@ namespace Askich {
    // Legacy Animation can restore its bind pose when disabled on pause. Keep the committed pose
    // at the same simulation time, including the frame before resuming gameplay.
    if(state=="CrawlerLunge"&&lungeTime>=.12f) crawlerLunge.SampleAnimation(animationPlayer.gameObject,lungeTime);
+   if(!zombie&&provisionMode>0&&provisionMode<=3&&state==provisions[provisionMode-1].name)provisions[provisionMode-1].SampleAnimation(animationPlayer.gameObject,provisionTime);
    if(head)head.localScale=headScale*.84f;if(paused)return;hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
   public bool Equip(int weapon){EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
   void Play(string key,bool loop,float speed){
@@ -81,6 +84,11 @@ namespace Askich {
    s.time=0;animationPlayer.CrossFade(name,.12f);state=key;
   }
   public void SetPaused(bool pause){paused=pause;if(animationPlayer)animationPlayer.enabled=!pause;}
+  public void SetSurvivalPose(int mode,float progress){
+   if(mode==0){if(provisionMode>0&&state!=null&&(state.EndsWith("Provision")||state=="Search")){state=null;actionRemaining=0;}provisionMode=0;return;}
+   if(provisionMode!=mode){state=null;Play(mode==4?"Search":provisions[mode-1].name,false,0);}
+   provisionMode=mode;provisionTime=Mathf.Clamp01(progress);actionRemaining=.2f;
+  }
   public void SetSearching(bool active){searching=active;}
   public void Tick(float speed,float dt,float distance,bool clear){
    if(dead)return;

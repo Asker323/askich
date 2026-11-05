@@ -38,3 +38,5 @@ Interaction stage: hinged doors, handles and frames are project geometry. The Se
 Inventory stage: item icons are rendered at runtime from project-authored item geometry. The school backpack and status icons are project-generated. The body portrait reuses the existing licensed Matt model. No new third-party assets were acquired.
 
 Needs stage: water bottle, tin geometry and additional needs icons are project-generated. No new external assets were acquired.
+
+Provisions stage: DrinkProvision, EatProvision and RestProvision are baked from the existing licensed Matt Idle/Duck clips with project-generated arm posing. Bottle, tin and refill-reserve geometry are project-generated. No new third-party assets were acquired.

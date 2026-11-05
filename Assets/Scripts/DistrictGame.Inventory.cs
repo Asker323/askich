@@ -30,7 +30,7 @@ namespace Askich {
   static readonly Rect GridPanel=new Rect(100,100,1080,530),HandSlot=new Rect(155,454,80,80),BagSlot=new Rect(265,454,80,80);
   static Rect ItemCell(int i)=>new Rect(400+i%6*80,190+i/6*80,72,72);
   static Rect StoreCell(int i)=>new Rect(400+i*80,470,72,72);
-  static readonly string[] ItemNames={"","Топор","Копьё","Консервы","Бинт","Стерильный бинт","Этиловый спирт","Камни","Школьный рюкзак","Питьевая вода"};
+  static readonly string[] ItemNames={"","Топор","Копьё","Консервы","Бинт","Стерильный бинт","Этиловый спирт","Камни","Школьный рюкзак","Питьевая вода","Пустая бутылка"};
   bool TryCarry(DistrictItemKind kind,int amount){
    if((kind==DistrictItemKind.Axe||kind==DistrictItemKind.Spear)&&weapon==0&&amount==1){weapon=(int)kind;return true;}
    return inventory.TryAdd(kind,amount);
@@ -97,7 +97,8 @@ namespace Askich {
      GUI.Label(new Rect(905,260,245,80),item.kind==8?"+12 ячеек. Освободи карманы, чтобы снять.":"Перенеси на силуэт или возьми в руки.",small);
      if(Button(new Rect(905,355,245,58),item.kind==8?"Надеть":"Взять в руки")&&medicalAction==MedicalAction.None&&inventory.Equip(inventorySelection)){inventorySelection=-1;Save();}
     }else{
-     GUI.Label(new Rect(905,257,245,60),item.kind==9?"В бутылке "+item.amount+" из 3 глотков":item.kind==6?"В бутылке "+item.amount+" из 3 доз":item.kind==7?"Отвлекают заражённых":item.kind==3?"Утоляет голод · 1,8 с":"Перевязка занимает 2,5 с",small);
+     GUI.Label(new Rect(905,257,245,60),item.kind==10?"Сохрани, чтобы набрать воду":item.kind==9?"В бутылке "+item.amount+" из 3 глотков":item.kind==6?"В бутылке "+item.amount+" из 3 доз":item.kind==7?"Отвлекают заражённых":item.kind==3?"Утоляет голод · 1,8 с":"Перевязка занимает 2,5 с",small);
+     if(item.kind==10||item.kind==9)MedicalButton(new Rect(905,402,245,56),"Наполнить у убежища",MedicalAction.Refill);
      if(item.kind==3)MedicalButton(new Rect(905,334,245,56),"Поесть",MedicalAction.Eat);
      if(item.kind==9)MedicalButton(new Rect(905,334,245,56),"Выпить воды",MedicalAction.Water);
      if(item.kind==4)MedicalButton(new Rect(905,334,245,56),"Перевязать · B",MedicalAction.Bandage);

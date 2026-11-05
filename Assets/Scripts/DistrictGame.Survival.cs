@@ -5,7 +5,7 @@ using System.IO;
 using UnityEngine;
 namespace Askich {
  public sealed partial class DistrictGame {
-  enum MedicalAction {None,Bandage,Sterile,Craft,Drink,Eat,Water,Rest}
+  enum MedicalAction {None,Bandage,Sterile,Craft,Drink,Eat,Water,Rest,Refill}
   sealed class Supply {public Vector2 p;public string label;public int kind;public bool taken;public GameObject model;}
   readonly List<Supply> supplies=new List<Supply>();
 
@@ -47,7 +47,7 @@ namespace Askich {
    if(health<=0&&!dead){health=0;dead=true;attack=0;strikeSequence++;CancelMedical();if(hero.visual)hero.visual.Die();Say("Ранения оказались смертельными.");}
   }
   void CancelMedical(){if(foley)foley.StopTask();medicalAction=MedicalAction.None;medicalTime=0;}
-  float MedicalDuration(MedicalAction action)=>action==MedicalAction.Craft?3:action==MedicalAction.Drink?1.2f:action==MedicalAction.Eat?1.8f:action==MedicalAction.Water?1.5f:action==MedicalAction.Rest?6:2.5f;
+  float MedicalDuration(MedicalAction action)=>action==MedicalAction.Craft?3:action==MedicalAction.Drink?1.2f:action==MedicalAction.Eat?1.8f:action==MedicalAction.Water?1.5f:action==MedicalAction.Rest?6:action==MedicalAction.Refill?3:2.5f;
   bool CanTreat(MedicalAction action){
    switch(action){
     case MedicalAction.Bandage:return bandages>0&&(bleeding||health<100);
@@ -55,6 +55,7 @@ namespace Askich {
     case MedicalAction.Craft:return inventory.CanCraft();
     case MedicalAction.Eat:return food>0&&nourishment<95;
     case MedicalAction.Water:return inventory.Count(DistrictItemKind.Water)>0&&hydration<98;
+    case MedicalAction.Refill:return NearCistern&&inventory.WaterSlot(true)>=0;
     case MedicalAction.Rest:return tiredness>5&&SafeToRest();
     case MedicalAction.Drink:return alcoholDoses>0;
     default:return false;
@@ -67,11 +68,13 @@ namespace Askich {
   }
   void TickMedical(float dt){
    if(medicalAction==MedicalAction.None)return;
+   if(medicalAction==MedicalAction.Refill&&!NearCistern){CancelMedical();Say("Наполнение прервано.");return;}
    if(medicalAction==MedicalAction.Rest&&!SafeToRest()){CancelMedical();Say("Отдых прерван. Сначала обеспечь безопасность.");return;}
    medicalTime+=dt;if(medicalTime<MedicalDuration(medicalAction))return;
    var action=medicalAction;CancelMedical();if(!CanTreat(action))return;if(foley)foley.FinishTask(action==MedicalAction.Drink||action==MedicalAction.Water);
    if(action==MedicalAction.Eat){food--;nourishment=Mathf.Min(100,nourishment+35);stamina=Mathf.Min(StaminaLimit,stamina+8);Say("Поел. Голод отступил.");}
-   if(action==MedicalAction.Water){inventory.Remove(DistrictItemKind.Water,1);hydration=Mathf.Min(100,hydration+28);Say("Выпил воды. В бутылке осталось "+inventory.Count(DistrictItemKind.Water)+" глотков в запасе.");}
+   if(action==MedicalAction.Water){if(!inventory.DrinkWater())return;hydration=Mathf.Min(100,hydration+28);Say("Выпил воды. В бутылке осталось "+inventory.Count(DistrictItemKind.Water)+" глотков в запасе.");}
+   if(action==MedicalAction.Refill){if(!inventory.RefillWater())return;Say("Бутылка наполнена. Три глотка питьевой воды.");}
    if(action==MedicalAction.Rest){tiredness=Mathf.Max(0,tiredness-45);stamina=Mathf.Min(StaminaLimit,stamina+40);Say("Отдохнул. Можно готовиться к новой вылазке.");}
    if(action==MedicalAction.Craft){if(!inventory.Craft())return;Say("Создан стерильный бинт: 1 бинт + 1 доза спирта.");}
    if(action==MedicalAction.Bandage){bandages--;bleeding=false;health=Mathf.Min(100,health+8);Say(infection>0?"Кровотечение остановлено. Заражение осталось: нужен стерильный бинт.":"Перевязка завершена.");}

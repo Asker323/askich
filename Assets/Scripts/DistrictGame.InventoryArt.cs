@@ -7,18 +7,18 @@ namespace Askich {
   Camera inventoryCamera;GameObject inventoryStage,bodyModel,portraitBackpack;
   int previewWeapon=-1;bool previewBag;
   float vitalTipTime;int vitalTip=-1;
-  Texture2D ItemIcon(int kind){EnsureInventoryArt();return inventoryIcons[Mathf.Clamp(kind,0,9)];}
+  Texture2D ItemIcon(int kind){EnsureInventoryArt();return inventoryIcons[Mathf.Clamp(kind,0,10)];}
   void EnsureInventoryArt(){
    if(inventoryIcons!=null)return;
-   inventoryIcons=new Texture2D[10];
+   inventoryIcons=new Texture2D[11];
    inventoryStage=new GameObject("Inventory portrait studio");inventoryStage.transform.position=Vector3.down*200;
    inventoryCamera=new GameObject("Inventory portrait camera",typeof(Camera)).GetComponent<Camera>();
    inventoryCamera.enabled=false;inventoryCamera.cullingMask=1<<31;inventoryCamera.clearFlags=CameraClearFlags.SolidColor;inventoryCamera.backgroundColor=Color.clear;inventoryCamera.orthographic=true;
    var key=new GameObject("Inventory studio key",typeof(Light));key.transform.SetParent(inventoryStage.transform,false);key.transform.rotation=Quaternion.Euler(35,-25,0);var light=key.GetComponent<Light>();light.type=LightType.Directional;light.intensity=1.4f;light.cullingMask=1<<31;
-   for(int kind=1;kind<=9;kind++){
+   for(int kind=1;kind<=10;kind++){
     var root=new GameObject(ItemNames[kind]);root.transform.SetParent(inventoryStage.transform,false);
     void Part(string name,Vector3 pos,Vector3 scale,Color color){Cube(name,pos,scale,color,root.transform);}
-    if(kind==9)MakeWaterModel(root.transform);
+    if(kind==9||kind==10){MakeWaterModel(root.transform);if(kind==10)foreach(var renderer in root.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=Mat(new Color(.49f,.58f,.59f));}
     else if(kind==8){var bag=MakeBackpack("School bag portrait",Vector3.zero,root.transform);bag.transform.localRotation=Quaternion.Euler(0,180,0);}
     else if(kind==1||kind==2){
      Part("Wooden shaft",Vector3.zero,new Vector3(.055f,kind==1?.7f:1.1f,.055f),new Color(.35f,.25f,.15f));

@@ -17,7 +17,14 @@ namespace Askich {
   }
   bool SafeToRest()=>campEstablished&&Vector2.Distance(hero.p,refuge)<4&&!bleeding&&infection<50&&!infected.Exists(z=>z.hp>0&&Vector2.Distance(z.p,hero.p)<10&&Sight(z.p,hero.p));
   string NeedsAdvice=>hydration<35?"Пора выпить воды":nourishment<35?"Пора поесть":tiredness>=60?"Нужен отдых у убежища":"Силы для вылазки есть";
+  Vector2 cistern=>refuge+new Vector2(3,-2);
+  bool NearCistern=>Vector2.Distance(hero.p,cistern)<2&&Sight(hero.p,cistern);
+  bool UseCistern(){if(!NearCistern)return false;BeginMedical(MedicalAction.Refill);return true;}
   void BuildWaterFinds(){
+   var reservoir=new GameObject("Drinking water reserve");reservoir.transform.position=V(cistern,.7f);
+   var barrel=GameObject.CreatePrimitive(PrimitiveType.Cylinder);Destroy(barrel.GetComponent<Collider>());barrel.transform.SetParent(reservoir.transform,false);barrel.transform.localScale=new Vector3(1,.7f,1);barrel.GetComponent<Renderer>().sharedMaterial=Mat(new Color(.25f,.4f,.44f));
+   Cube("Water tap",new Vector3(0,-.3f,-.58f),new Vector3(.15f,.1f,.23f),new Color(.6f,.6f,.5f),reservoir.transform);
+   Cube("Blue water marker",new Vector3(0,.2f,-.51f),new Vector3(.38f,.4f,.025f),new Color(.48f,.69f,.77f),reservoir.transform);
    for(int i=0;i<waterPositions.Length;i++){
     var root=new GameObject("Drinking water bottle");root.transform.position=V(waterPositions[i],.45f);
     MakeWaterModel(root.transform);waterModels.Add(root);
@@ -41,6 +48,7 @@ namespace Askich {
   }
   void DrawNeedsAction(){
    if(suppliesOpen)return;
+   if(NearCistern)GUI.Label(new Rect(35,235,720,30),"Запас питьевой воды · наполнить бутылку / E",small);
    if(NearbyWater()>=0)GUI.Label(new Rect(35,235,720,30),"Питьевая вода · действие / E",small);
    if(campEstablished&&Vector2.Distance(hero.p,refuge)<4){
     if(Button(RestButton,"Отдохнуть · R · 6 с"))BeginMedical(MedicalAction.Rest);
