@@ -32,7 +32,7 @@ namespace Askich {
    check(Load()&&!bleeding&&infection==0&&alcoholDoses==0&&supplies.TrueForAll(s=>!s.taken),"v3 saves migrate without invented wounds and with new pickups");
    var foe=infected.Find(z=>z.id%3==0);check(Mathf.Abs(foe.hp-foe.maxHp/2)<.01f,"legacy enemy health fraction migrates to hardcore balance");
    foreach(var z in infected){z.hp=0;z.striking=false;z.stagger=z.recovery=0;}
-   foe.hp=foe.maxHp;foe.visual.Revive();var house=homes[0];house.open=false;house.gate.active=true;house.door.SetActive(true);
+   foe.hp=foe.maxHp;foe.visual.Revive();var house=homes[0];house.open=false;SnapDoor(house);
    foe.p=house.p+Vector2.down*6;foe.root.rotation=Quaternion.identity;hero.p=house.p+Vector2.down*5;ObserveEnemy(foe,0);Vector2 last=foe.goal;
    check(foe.awareness==Awareness.Chase,"visible hero starts pursuit");hero.p=house.p+Vector2.down*2;ObserveEnemy(foe,.1f);
    check(foe.awareness==Awareness.Investigate&&foe.goal==last&&foe.goal!=hero.p,"closed door breaks sight and keeps last seen position");

@@ -79,7 +79,7 @@ namespace Askich {
    check(crawler.hp==crawler.maxHp-45,"touch counter targets reachable crawler after lateral dodge");
    TouchControls.ForceEnabled=false;InputSystem.RemoveDevice(screen);
 
-   var home=homes[5];if(home.open)Door(home);
+   var home=homes[5];home.open=false;SnapDoor(home);
    var doorway=home.p+Vector2.down*4;
    crawler.p=doorway+Vector2.down*.9f;hero.p=doorway+Vector2.up*.75f;
    crawler.recovery=crawler.stagger=0;damageDelay=0;BeginEnemyAttack(crawler);

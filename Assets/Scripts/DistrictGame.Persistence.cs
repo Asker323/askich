@@ -9,7 +9,7 @@ namespace Askich {
   static bool ValidPosition(float x,float z)=>Finite(x)&&Finite(z)&&InsideWorld(new Vector2(x,z));
   SaveData CaptureSave(){
    var s=new SaveData{weapon=weapon,food=food,bandages=bandages,x=hero.p.x,z=hero.p.y,hp=health,stamina=stamina,heard=heard,camp=campEstablished,depot=depotLooted,bleeding=bleeding,infection=infection,drunk=drunkSeconds,alcohol=alcoholDoses,sterile=sterileBandages,stones=stones,supplies=new bool[supplies.Count],taken=new bool[homes.Count*3],doors=new bool[homes.Count],enemies=new EnemySave[infected.Count]};
-   for(int n=0;n<homes.Count;n++){s.doors[n]=homes[n].open;for(int i=0;i<3;i++)s.taken[n*3+i]=homes[n].taken[i];}
+   for(int n=0;n<homes.Count;n++){s.doors[n]=homes[n].open||DoorwayOccupied(homes[n]);for(int i=0;i<3;i++)s.taken[n*3+i]=homes[n].taken[i];}
    for(int n=0;n<infected.Count;n++){var e=infected[n];s.enemies[n]=new EnemySave{id=e.id,x=e.p.x,z=e.p.y,hp=Mathf.Max(0,e.hp),yaw=e.root.eulerAngles.y};}
    for(int n=0;n<supplies.Count;n++)s.supplies[n]=supplies[n].taken;
    return s;
@@ -44,8 +44,8 @@ namespace Askich {
     try{s=ReadSave(SavePath+".bak");recovered=true;}catch{Say("Сохранение и резервная копия недоступны. Можно начать новую игру.");return false;}
    }
    // No world state changes until the complete snapshot has passed validation.
-   worldGeneration++;CancelMedical();suppliesOpen=false;throwCooldown=0;heroVelocity=Vector2.zero;heroStagger=0;searchSlot=-1;attack=0;damageDelay=0;radioOn=false;voice.Stop();staticSound.Stop();
-   for(int n=0;n<homes.Count;n++){var h=homes[n];h.open=n<s.doors.Length&&s.doors[n];h.gate.active=!h.open;h.door.SetActive(!h.open);for(int i=0;i<3;i++)h.taken[i]=n*3+i<s.taken.Length&&s.taken[n*3+i];RefreshContainers(h);}
+   worldGeneration++;containerAudio.SetSearching(false);CancelMedical();suppliesOpen=false;throwCooldown=0;heroVelocity=Vector2.zero;heroStagger=0;searchSlot=-1;attack=0;damageDelay=0;radioOn=false;voice.Stop();staticSound.Stop();
+   for(int n=0;n<homes.Count;n++){var h=homes[n];h.open=n<s.doors.Length&&s.doors[n];SnapDoor(h);for(int i=0;i<3;i++)h.taken[i]=n*3+i<s.taken.Length&&s.taken[n*3+i];RefreshContainers(h);}
    foreach(var actor in infected){
     var e=s.version>=2?Array.Find(s.enemies,v=>v.id==actor.id):null;
     actor.p=e==null?actor.spawn:e.hp>0?ResolveStreetPosition(new Vector2(e.x,e.z)):new Vector2(e.x,e.z);actor.hp=e==null?actor.maxHp:s.version<=3?e.hp/LegacyEnemyHealth(actor.id)*actor.maxHp:e.hp;

@@ -32,3 +32,5 @@ Combat stage (2026-11-04): the already included Matt Axe and Spear skinned meshe
 Radio story stage: message0.wav, message1.wav and message2.wav were generated locally with Microsoft Irina Desktop using System.Speech. These are temporary synthetic recordings. The prior redistribution caveat applies to these files as well. Porch scraping is project-generated procedural audio.
 
 Street stage: StreetSurface and VergeGrass shaders, ground patches, grass meshes and fence geometry are project-generated. Existing licensed vehicles and street props are reused. No new external assets were acquired.
+
+Interaction stage: hinged doors, handles and frames are project geometry. The Search clip is baked on the existing Matt skeleton using its Idle pose and project-generated arm motion. Container rummage remains project-generated procedural audio. No new external assets were acquired.

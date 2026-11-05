@@ -33,13 +33,24 @@ namespace Askich {
   void RefreshContainers(Home h){for(int i=0;i<3;i++)if(h.lids[i])h.lids[i].localRotation=Quaternion.Euler(h.taken[i]?105:0,0,0);}
   void BeginSearch(Home h,int slot){
    if(searchSlot==slot&&searchHome==h)return;
-   searchHome=h;searchSlot=slot;searchTime=0;Alert(h.p+h.containers[slot],h.noise[slot]);
+   searchHome=h;searchSlot=slot;searchTime=0;heroVelocity=Vector2.zero;
+   Vector2 direction=h.p+h.containers[slot]-hero.p;
+   if(direction.sqrMagnitude>.001f)hero.root.rotation=Quaternion.LookRotation(V(direction.normalized));Alert(h.p+h.containers[slot],h.noise[slot]);
    if(containerAudio)containerAudio.Play(V(h.p+h.containers[slot],1),h.noise[slot],false);
+  }
+  int NearbyContainer(Home h){
+   int found=-1;float nearest=1.6f;
+   for(int i=0;i<3;i++){
+    Vector2 position=h.p+h.containers[i];float distance=Vector2.Distance(hero.p,position);
+    if(distance>=nearest||!Sight(hero.p,position))continue;
+    nearest=distance;found=i;
+   }
+   return found;
   }
   void DrawInteriorHint(){
    if(current==null)return;
    GUI.Label(new Rect(35,174,700,30),current.title, text);
-   for(int i=0;i<3;i++)if(Vector2.Distance(hero.p,current.p+current.containers[i])<1.6f){
+   int i=NearbyContainer(current);if(i>=0){
     string risk=current.noise[i]>=9?"громко":current.noise[i]<=3?"тихо":"умеренный шум";
     GUI.Label(new Rect(35,210,800,42),current.labels[i]+(current.taken[i]?" · обыскано":" · действие / E · "+current.seconds[i].ToString("0.0")+" с · "+risk),small);return;
    }
@@ -101,7 +112,7 @@ namespace Askich {
    var home=homes[5];var clinic=homes[6];
    check(home.title!=clinic.title&&home.labels[0]!=clinic.labels[0],"radio home and clinic have distinct container identities");
    check(home.noise[0]>clinic.noise[1]&&home.seconds[0]>clinic.seconds[1],"toolbox trades longer exposure and noise for weapon");
-   foreach(var h in new[]{home,clinic}){h.open=true;h.gate.active=false;h.door.SetActive(false);for(int i=0;i<3;i++)check(FindPath(h.p+new Vector2(0,-2),h.p+h.containers[i]+Vector2.down).Count>0,"container approach accessible: "+h.labels[i]);}
+   foreach(var h in new[]{home,clinic}){h.open=true;SnapDoor(h);for(int i=0;i<3;i++)check(FindPath(h.p+new Vector2(0,-2),h.p+h.containers[i]+Vector2.down).Count>0,"container approach accessible: "+h.labels[i]);}
    foreach(var e in infected){e.rest=100;e.alert=0;}
    var witness=infected[0];witness.hp=witness.maxHp;witness.p=home.p+new Vector2(2,8);witness.path.Clear();
    home.taken[0]=false;hero.p=home.p+home.containers[0]+Vector2.up;current=home;Use();
@@ -130,7 +141,12 @@ namespace Askich {
    for(int i=0;i<data.Length;i++){float t=(float)i/rate;filtered=Mathf.Lerp(filtered,(float)random.NextDouble()*2-1,.13f);float envelope=Mathf.Sin(Mathf.PI*t/duration);float pulse=.25f+.75f*Mathf.Pow(Mathf.Sin(t*24),2);data[i]=(filtered*.6f+(ring>0?Mathf.Sin(t*ring*6.283f)*.12f*Mathf.Exp(-t*6):0))*envelope*pulse;}
    var clip=AudioClip.Create(name,data.Length,1,rate,false);clip.SetData(data,0);return clip;
   }
-  public void Play(Vector3 position,float noise,bool complete){source.transform.position=position;source.PlayOneShot(complete?close:noise>=9?metal:soft,complete?.35f:noise>=9?.7f:.4f);}
+  public bool Searching=>source&&source.loop&&source.isPlaying;
+  public void SetSearching(bool active){if(!active&&source.loop){source.Stop();source.loop=false;}}
+  public void Play(Vector3 position,float noise,bool complete){
+   source.Stop();source.transform.position=position;source.loop=!complete;
+   source.clip=complete?close:noise>=9?metal:soft;source.volume=complete?.35f:noise>=9?.7f:.4f;source.Play();
+  }
   void OnDestroy(){if(soft)Destroy(soft);if(metal)Destroy(metal);if(close)Destroy(close);}
  }
 }

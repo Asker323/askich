@@ -14,7 +14,7 @@ namespace Askich {
   AudioLowPassFilter occlusion;
   string state;
   float actionRemaining,nextVoice;
-  bool zombie,dead,crawler;
+  bool zombie,dead,crawler,searching;
   Transform head;
   GameObject nativeAxe,nativeSpear;
   float hurtFlash;bool paused;Renderer[] bodyRenderers;MaterialPropertyBlock tint;
@@ -42,6 +42,11 @@ namespace Askich {
     if(!crawlerLunge)throw new InvalidOperationException("Missing crawler lunge clip");
     animationPlayer.AddClip(crawlerLunge,"CrawlerLunge");
     clips["CrawlerLunge"]="CrawlerLunge";
+   }
+   if(!zombie){
+    var search=Resources.Load<AnimationClip>("Survival/Search");
+    if(!search)throw new InvalidOperationException("Missing survivor search clip");
+    animationPlayer.AddClip(search,"Search");clips["Search"]="Search";
    }
    foreach(var bone in model.GetComponentsInChildren<Transform>(true)){
     string n=bone.name.ToLowerInvariant();
@@ -76,9 +81,11 @@ namespace Askich {
    s.time=0;animationPlayer.CrossFade(name,.12f);state=key;
   }
   public void SetPaused(bool pause){paused=pause;if(animationPlayer)animationPlayer.enabled=!pause;}
+  public void SetSearching(bool active){searching=active;}
   public void Tick(float speed,float dt,float distance,bool clear){
    if(dead)return;
    actionRemaining-=dt;
+   if(!zombie&&searching&&actionRemaining<=0){Play("Search",true,1);return;}
    if(actionRemaining<=0&&crawler&&speed<=.1f)Play("Crawl",true,0);
    else if(actionRemaining<=0)Play(speed>.1f?(crawler?"Crawl":speed>3.5f&&!zombie?"Run":"Walk"):"Idle",true,speed>.1f?Mathf.Clamp(speed/(crawler?1.1f:zombie?1.45f:speed>3.5f?5f:2.6f),.35f,1.9f):1);
    if(!zombie)return;

@@ -144,7 +144,7 @@ namespace Askich {
    enemy.recovery=0;hero.p=enemy.p+Vector2.down;BeginEnemyAttack(enemy);TickEnemyAttack(enemy,EnemyImpact+.01f);check(health<=hp-EnemyDamage(enemy)&&heroStagger>0,"enemy contact damages and interrupts at impact phase");
    bleeding=false;infection=0;heroStagger=0;attack=0;stamina=0;check(!TryAttack(Vector2.up),"exhaustion prevents attack");stamina=100;
    // Real input into a closed door: locomotion must stop when position cannot advance.
-   enemy.hp=0;enemy.visual.Die();var h=homes[0];h.open=false;h.gate.active=true;h.door.SetActive(true);hero.p=h.p+Vector2.down*5;enemy.hp=enemy.maxHp;enemy.p=h.p+Vector2.down*3.5f;check(ResolveStrike(Vector2.up,WeaponStrike(1))==0,"closed door blocks melee damage");enemy.hp=0;hero.p=h.p+new Vector2(0,-4.49f);heroVelocity=Vector2.zero;
+   enemy.hp=0;enemy.visual.Die();var h=homes[0];h.open=false;SnapDoor(h);hero.p=h.p+Vector2.down*5;enemy.hp=enemy.maxHp;enemy.p=h.p+Vector2.down*3.5f;check(ResolveStrike(Vector2.up,WeaponStrike(1))==0,"closed door blocks melee damage");enemy.hp=0;hero.p=h.p+new Vector2(0,-4.49f);heroVelocity=Vector2.zero;
    var keys=UnityEngine.InputSystem.InputSystem.AddDevice<UnityEngine.InputSystem.Keyboard>();
    UnityEngine.InputSystem.InputSystem.QueueStateEvent(keys,new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.W,UnityEngine.InputSystem.Key.A));
    yield return new WaitForSeconds(.45f);check(hero.visual.State=="Idle","blocked movement no longer plays walking animation");

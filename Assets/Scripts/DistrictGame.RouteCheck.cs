@@ -26,6 +26,13 @@ namespace Askich {
    }
    yield return RouteWait(.2f);
   }
+  IEnumerator SecureRouteDoor(Home home){
+   float until=Time.time+12;
+   while(!home.gate.active&&Time.time<until){
+    RouteRequireAlive();RouteDefend();RouteKeys();yield return null;
+   }
+   RouteRequire(home.gate.active,"cleared occupied threshold and secured door");
+  }
   IEnumerator RouteUse(float wait=.3f){RouteKeys(Key.E);yield return new WaitForSeconds(.12f);yield return RouteWait(wait);}
   IEnumerator RoutePhoto(string name)=>CaptureGameCamera(Path.Combine(routeFolder,name+".png"));
   IEnumerator CaptureGameCamera(string file){
@@ -69,7 +76,7 @@ namespace Askich {
    testSave=Path.Combine(Application.temporaryCachePath,"berezki-route-"+Guid.NewGuid().ToString("N")+".json");routeFolder=Environment.GetEnvironmentVariable("GOIDA_ROUTE_CHECK");Directory.CreateDirectory(routeFolder);Application.runInBackground=true;playing=true;paused=false;routeStart=Time.time;routeKeyboard=InputSystem.AddDevice<Keyboard>();
    RouteNote("fresh ordinary start");yield return RoutePhoto("route-street-start");yield return RouteWalk(new Vector2(-14,-20));yield return RouteUse();RouteRequire(stones==3,"picked up roadside stones");
    yield return RouteWalk(new Vector2(-12,-17));yield return RouteUse();RouteRequire(homes[5].open,"opened radio house");
-   yield return RouteWalk(new Vector2(-12,-15));yield return RouteUse();RouteRequire(!homes[5].open,"closed door from inside");
+   yield return RouteWalk(new Vector2(-12,-15));yield return RouteUse();RouteRequire(!homes[5].open,"closed door from inside");yield return SecureRouteDoor(homes[5]);
    yield return RouteWalk(new Vector2(-10,-13));yield return RouteUse(3.7f);RouteRequire(weapon==1,"found axe through timed search");yield return RoutePhoto("route-first-weapon");
    yield return RouteWalk(new Vector2(-10,-10.6f));yield return RouteUse(2.5f);RouteRequire(food>0,"found food");
    yield return RouteWalk(new Vector2(-12,-10.6f));yield return RouteUse(1.6f);RouteRequire(bandages>0,"found first bandage");
@@ -79,8 +86,10 @@ namespace Askich {
    yield return RouteWalk(new Vector2(-14,-9));yield return RouteUse();float radioDeadline=Time.time+65;while(!heard&&Time.time<radioDeadline)yield return RouteWait(.1f);RouteRequire(heard,"heard radio objective");yield return RoutePhoto("route-radio");yield return RouteUse();RouteRequire(!radioOn,"switched off radio before leaving");
    yield return RouteWalk(new Vector2(-12,-15));yield return RouteUse();yield return RouteWalk(new Vector2(-12,-17));yield return RouteUse();
    yield return RouteWalk(new Vector2(-12,-24),true);yield return RoutePhoto("route-street-crossing");yield return RouteWalk(new Vector2(4,-24),true);face=Vector2.up;RouteRequire(ThrowStone(),"threw collected stone toward clinic flank");yield return RouteWait(.65f);
-   yield return FaceClinicGuard();yield return RouteWalk(new Vector2(12,-17),true);yield return RouteUse();RouteRequire(homes[6].open,"entered guarded clinic");
-   yield return RouteWalk(new Vector2(12,-15));yield return RouteUse();yield return RouteWalk(new Vector2(9,-14));yield return RouteUse();RouteRequire(bandages>=2,"picked up medical supplies");
+   yield return FaceClinicGuard();
+   foreach(var coverTurn in new[]{new Vector2(20,-22),new Vector2(20,-17),new Vector2(14,-17)})yield return RouteWalk(coverTurn,true);
+   yield return RouteWalk(new Vector2(12,-17),true);yield return RouteUse();RouteRequire(homes[6].open,"entered guarded clinic");
+   yield return RouteWalk(new Vector2(12,-15));yield return RouteUse();yield return SecureRouteDoor(homes[6]);yield return RouteWalk(new Vector2(9,-14));yield return RouteUse();RouteRequire(bandages>=2,"picked up medical supplies");
    if(bleeding||infection>0){if(sterileBandages==0){BeginMedical(MedicalAction.Craft);yield return RouteWait(3.3f);}RouteRequire(BeginMedical(MedicalAction.Sterile),"began dressing actual wound");yield return RouteWait(2.8f);RouteRequire(!bleeding&&infection==0,"completed treatment inside clinic");}
    if(sterileBandages==0&&bandages>1&&alcoholDoses>0){RouteRequire(BeginMedical(MedicalAction.Craft),"prepared spare dressing inside clinic");yield return RouteWait(3.3f);}
    yield return RoutePhoto("route-clinic");yield return RouteWalk(new Vector2(12,-15));yield return RouteUse();yield return RouteWalk(new Vector2(12,-17));yield return RouteUse();
