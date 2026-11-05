@@ -41,7 +41,9 @@ namespace Askich {
   bool UseDepot(){
    if(Vector2.Distance(hero.p,depot)>=2)return false;
    if(depotLooted){Say("Груз дорожников уже разобран.");return true;}
-   depotLooted=true;food+=2;bandages++;Alert(depot,12);Save();Say("Груз дорожников: 2 еды и бинт. Шум ящика мог привлечь заражённых.");return true;
+   var snapshot=JsonUtility.ToJson(inventory.Data);
+   if(!inventory.TryAdd(DistrictItemKind.Food,2)||!inventory.TryAdd(DistrictItemKind.Bandage,1)){inventory.Load(JsonUtility.FromJson<DistrictInventoryData>(snapshot));Say("Освободи ячейки для груза.");return true;}
+   depotLooted=true;Alert(depot,12);Save();Say("Груз дорожников: 2 еды и бинт. Шум ящика мог привлечь заражённых.");return true;
   }
  }
 }

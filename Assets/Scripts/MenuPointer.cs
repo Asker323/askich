@@ -11,12 +11,16 @@ namespace Askich
     {
         public Vector2 Position { get; private set; }
         Vector2 origin;
-        bool held, released, dragged;
+        bool held, released, dragged, dropped;
+        public bool Held=>held;
+        public bool Dragged=>dragged;
+        public Vector2 Origin=>origin;
+        public bool TakeDrop(){if(!dropped)return false;dropped=released=false;return true;}
         int finger = -1;
 
         public void Read()
         {
-            released = false;
+            released = dropped = false;
             foreach (var touch in Touch.activeTouches)
             {
                 if (finger < 0 && touch.phase == TouchPhase.Began) finger = touch.touchId;
@@ -39,18 +43,18 @@ namespace Askich
 
         public void Sample(Vector2 position, bool down)
         {
-            released = false;
+            released = dropped = false;
             Position = position;
             if (down && !held) { origin = position; dragged = false; }
             if (held && Vector2.Distance(origin, position) > 25) dragged = true;
-            if (!down && held) released = !dragged;
+            if (!down && held) {released = !dragged;dropped=true;}
             held = down;
         }
 
         public bool TakeClick(Rect area)
         {
             if (!released || !area.Contains(origin) || !area.Contains(Position)) return false;
-            released = false;
+            released = dropped = false;
             return true;
         }
 
@@ -61,6 +65,6 @@ namespace Askich
             return value;
         }
 
-        public void Reset() { held = released = dragged = false; finger = -1; }
+        public void Reset() { held = released = dragged = dropped = false; finger = -1; }
     }
 }

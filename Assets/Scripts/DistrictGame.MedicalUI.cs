@@ -21,6 +21,7 @@ namespace Askich {
    if((action==MedicalAction.Bandage||action==MedicalAction.Craft)&&bandages==0)return "Нужен обычный бинт";
    if(action==MedicalAction.Sterile&&sterileBandages==0)return "Нет стерильных бинтов";
    if((action==MedicalAction.Craft||action==MedicalAction.Drink)&&alcoholDoses==0)return "Нужен спирт";
+   if(action==MedicalAction.Craft&&!inventory.CanCraft())return "Освободи ячейку";
    return CanTreat(action)?null:"Сейчас не требуется";
   }
   string TreatmentAdvice(){
@@ -54,42 +55,6 @@ namespace Askich {
    GUI.color=new Color(.66f,.71f,.65f);
    GUI.Label(new Rect(area.x+15,area.y+44,285,45),detail,small);
    GUI.color=Color.white;
-  }
-  void DrawSuppliesMenu(){
-   if(!suppliesOpen)return;
-   FillRect(new Rect(0,0,1280,720),new Color(.01f,.02f,.025f,.68f));
-   FillRect(SuppliesArea,new Color(.045f,.073f,.075f));
-   GUI.Label(new Rect(190,148,600,45),"РЮКЗАК",large);
-   if(Button(SuppliesClose,"Закрыть · I"))suppliesOpen=false;
-   GUI.color=MedicalWarning;
-   GUI.Label(new Rect(190,207,880,30),"Мир продолжает жить · сначала закрой вход",small);
-   GUI.color=Color.white;
-
-   GUI.Label(new Rect(190,248,295,35),"Здоровье · "+Mathf.CeilToInt(health)+" / 100",text);
-   FillRect(new Rect(190,289,290,9),new Color(.15f,.20f,.19f));
-   FillRect(new Rect(190,289,290*Mathf.Clamp01(health/100),9),health<35?MedicalWarning:MedicalAccent);
-   GUI.color=bleeding?MedicalWarning:MedicalAccent;
-   GUI.Label(new Rect(190,316,300,30),bleeding?"Кровотечение · идёт":"Кровотечение · остановлено",small);
-   GUI.color=infection>0?MedicalWarning:MedicalAccent;
-   GUI.Label(new Rect(190,352,300,30),"Заражение раны · "+Mathf.CeilToInt(infection)+"%",small);
-   GUI.color=drunkSeconds>0?MedicalWarning:new Color(.66f,.71f,.65f);
-   GUI.Label(new Rect(190,388,300,30),drunkSeconds>0?"Опьянение · "+Mathf.CeilToInt(drunkSeconds)+" с":"Координация · в порядке",small);
-   GUI.color=Color.white;
-   GUI.Label(new Rect(190,441,295,125),TreatmentAdvice(),small);
-   GUI.color=new Color(.66f,.71f,.65f);
-   GUI.Label(new Rect(190,575,300,32),"Еда "+food+" · Камни "+stones,small);
-   GUI.color=Color.white;
-
-   MedicalCard(new Rect(530,243,570,95),"Обычные бинты · "+bandages,"Остановить кровь · 2,5 с");
-   MedicalButton(PlainAction,"Перевязать · B",MedicalAction.Bandage);
-   MedicalCard(new Rect(530,345,570,95),"Стерильные бинты · "+sterileBandages,"Кровь и обработка раны · 2,5 с");
-   MedicalButton(SterileAction,"Обработать рану · H",MedicalAction.Sterile);
-   MedicalCard(new Rect(530,447,570,158),"Этиловый спирт · "+alcoholDoses+" доз",AlcoholSummary());
-   int remaining=alcoholDoses==0?0:(alcoholDoses-1)%3+1;
-   for(int i=0;i<3;i++)FillRect(new Rect(545+i*31,522,24,7),i<remaining?MedicalAccent:new Color(.2f,.25f,.23f));
-   GUI.Label(new Rect(545,545,285,48),"Рецепт · бинт + 1 доза спирта",small);
-   MedicalButton(CraftAction,"Стерилизовать · 3 с",MedicalAction.Craft);
-   MedicalButton(DrinkAction,"Выпить · опьянение",MedicalAction.Drink);
   }
   void DrawMedicalProgress(){
    if(medicalAction==MedicalAction.None)return;

@@ -81,6 +81,11 @@ namespace Askich {
    yield return RouteWalk(new Vector2(-10,-10.6f));yield return RouteUse(2.5f);RouteRequire(food>0,"found food");
    yield return RouteWalk(new Vector2(-12,-10.6f));yield return RouteUse(1.6f);RouteRequire(bandages>0,"found first bandage");
    yield return RouteWalk(new Vector2(-15,-14));yield return RouteUse();RouteRequire(alcoholDoses==3,"found alcohol bottle");
+   yield return RouteWalk(backpackPosition);yield return RouteUse();
+   RouteRequire(inventory.Data.bagFound,"found school backpack in the house");
+   int bagSlot=Array.FindIndex(inventory.Data.slots,item=>item.kind==8);
+   RouteRequire(inventory.Equip(bagSlot)&&inventory.Capacity==18,"equipped found backpack and expanded capacity");
+   Save();yield return RoutePhoto("route-found-backpack");
    RouteRequire(BeginMedical(MedicalAction.Craft),"craft command accepted");yield return RouteWait(3.3f);RouteRequire(sterileBandages>0,"crafted from collected materials");
    if(bleeding||infection>0){BeginMedical(MedicalAction.Sterile);yield return RouteWait(2.8f);RouteRequire(!bleeding&&infection==0,"treated actual route wound");}
    yield return RouteWalk(new Vector2(-14,-9));yield return RouteUse();float radioDeadline=Time.time+65;while(!heard&&Time.time<radioDeadline)yield return RouteWait(.1f);RouteRequire(heard,"heard radio objective");yield return RoutePhoto("route-radio");yield return RouteUse();RouteRequire(!radioOn,"switched off radio before leaving");

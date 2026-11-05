@@ -13,7 +13,7 @@ namespace Askich {
    Application.runInBackground=true;playing=true;paused=false;
    foreach(var enemy in infected){enemy.hp=0;enemy.visual.Die();}
    hero.p=homes[6].p;health=68;bleeding=true;infection=26;
-   bandages=2;sterileBandages=1;alcoholDoses=2;suppliesOpen=true;
+   bandages=2;sterileBandages=1;alcoholDoses=2;inventory.TryAdd(DistrictItemKind.Backpack,1);inventory.Data.bagFound=true;hero.p=homes[6].p+homes[6].containers[0]+Vector2.down;homes[6].taken[0]=true;suppliesOpen=true;
    yield return null;
   }
   IEnumerator CheckMedicalUI(Action<bool,string> check,string folder){
@@ -33,6 +33,11 @@ namespace Askich {
     yield return new WaitForSeconds(.09f);
    }
    IEnumerator Invoke(Rect area,MedicalAction action=MedicalAction.None){
+    if(!Application.isBatchMode&&area!=CancelTreatment){
+     DistrictItemKind kind=action==MedicalAction.Sterile?DistrictItemKind.Sterile:action==MedicalAction.Drink?DistrictItemKind.Alcohol:DistrictItemKind.Bandage;
+     inventorySelection=System.Array.FindIndex(inventory.Data.slots,i=>i.kind==(int)kind);
+     area=action==MedicalAction.Craft?new Rect(905,402,245,56):action==MedicalAction.Drink?new Rect(905,470,245,56):new Rect(905,334,245,56);
+    }
     if(Application.isBatchMode){
      if(area==CancelTreatment)CancelMedical();
      else if(MedicalUnavailable(action)==null)BeginMedical(action);
