@@ -18,6 +18,9 @@ namespace Askich {
   string MedicalUnavailable(MedicalAction action){
    if(medicalAction!=MedicalAction.None)return "Действие выполняется";
    if(attack>0||heroStagger>0)return "После удара";
+   if(action==MedicalAction.Eat&&food==0)return "Нужна еда";
+   if(action==MedicalAction.Water&&inventory.Count(DistrictItemKind.Water)==0)return "Нужна питьевая вода";
+   if(action==MedicalAction.Rest&&!SafeToRest())return bleeding?"Сначала останови кровь":"Отдых доступен в безопасном убежище";
    if((action==MedicalAction.Bandage||action==MedicalAction.Craft)&&bandages==0)return "Нужен обычный бинт";
    if(action==MedicalAction.Sterile&&sterileBandages==0)return "Нет стерильных бинтов";
    if((action==MedicalAction.Craft||action==MedicalAction.Drink)&&alcoholDoses==0)return "Нужен спирт";
@@ -60,7 +63,7 @@ namespace Askich {
    if(medicalAction==MedicalAction.None)return;
    float progress=Mathf.Clamp01(medicalTime/MedicalDuration(medicalAction));
    Panel(MedicalProgressArea);
-   string label=medicalAction==MedicalAction.Craft?"Стерилизация":medicalAction==MedicalAction.Drink?"Питьё":"Перевязка";
+   string label=medicalAction==MedicalAction.Craft?"Стерилизация":medicalAction==MedicalAction.Drink||medicalAction==MedicalAction.Water?"Питьё":medicalAction==MedicalAction.Eat?"Еда":medicalAction==MedicalAction.Rest?"Отдых":"Перевязка";
    GUI.Label(new Rect(344,558,290,30),label+" · "+Mathf.RoundToInt(progress*100)+"%",small);
    FillRect(new Rect(344,596,280,7),new Color(.17f,.22f,.20f));
    FillRect(new Rect(344,596,280*progress,7),MedicalAccent);

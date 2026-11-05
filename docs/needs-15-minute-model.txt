@@ -1,0 +1,1 @@
+900 simulated seconds walking: satiety 50.2, water 28.5, fatigue 30.3. This is a model check, not a manual 15-minute session.

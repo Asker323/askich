@@ -36,3 +36,5 @@ Street stage: StreetSurface and VergeGrass shaders, ground patches, grass meshes
 Interaction stage: hinged doors, handles and frames are project geometry. The Search clip is baked on the existing Matt skeleton using its Idle pose and project-generated arm motion. Container rummage remains project-generated procedural audio. No new external assets were acquired.
 
 Inventory stage: item icons are rendered at runtime from project-authored item geometry. The school backpack and status icons are project-generated. The body portrait reuses the existing licensed Matt model. No new third-party assets were acquired.
+
+Needs stage: water bottle, tin geometry and additional needs icons are project-generated. No new external assets were acquired.

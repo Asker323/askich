@@ -86,6 +86,11 @@ namespace Askich {
    int bagSlot=Array.FindIndex(inventory.Data.slots,item=>item.kind==8);
    RouteRequire(inventory.Equip(bagSlot)&&inventory.Capacity==18,"equipped found backpack and expanded capacity");
    Save();yield return RoutePhoto("route-found-backpack");
+   yield return RouteWalk(waterPositions[0]);yield return RouteUse();
+   RouteRequire(inventory.Count(DistrictItemKind.Water)==3,"found drinking water in kitchen");
+   inventorySelection=Array.FindIndex(inventory.Data.slots,item=>item.kind==9);
+   RouteRequire(BeginMedical(MedicalAction.Water),"drank found water");yield return RouteWait(1.8f);
+   RouteRequire(inventory.Count(DistrictItemKind.Water)==2,"water bottle retains two sips");inventorySelection=-1;
    RouteRequire(BeginMedical(MedicalAction.Craft),"craft command accepted");yield return RouteWait(3.3f);RouteRequire(sterileBandages>0,"crafted from collected materials");
    if(bleeding||infection>0){BeginMedical(MedicalAction.Sterile);yield return RouteWait(2.8f);RouteRequire(!bleeding&&infection==0,"treated actual route wound");}
    yield return RouteWalk(new Vector2(-14,-9));yield return RouteUse();float radioDeadline=Time.time+65;while(!heard&&Time.time<radioDeadline)yield return RouteWait(.1f);RouteRequire(heard,"heard radio objective");yield return RoutePhoto("route-radio");yield return RouteUse();RouteRequire(!radioOn,"switched off radio before leaving");
@@ -105,7 +110,9 @@ namespace Askich {
      RouteRequire(!bleeding,"stopped new bleeding on return journey");
     }
    }
-   yield return RouteUse();RouteRequire(campEstablished,"established shelter using collected supplies");yield return RoutePhoto("route-shelter");Save();RouteNote("COMPLETE automated ordinary-rules route; not a manual playthrough");Application.Quit();
+   yield return RouteUse();RouteRequire(campEstablished,"established shelter using collected supplies");yield return RoutePhoto("route-shelter");
+   if(SafeToRest()&&tiredness>5){float before=tiredness;RouteRequire(BeginMedical(MedicalAction.Rest),"started safe shelter rest");yield return RouteWait(6.3f);RouteRequire(tiredness<before,"shelter rest restores energy");}
+   Save();RouteNote("COMPLETE automated ordinary-rules route; not a manual playthrough");Application.Quit();
   }
  }
 }

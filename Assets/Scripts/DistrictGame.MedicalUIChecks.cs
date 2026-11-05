@@ -14,6 +14,7 @@ namespace Askich {
    foreach(var enemy in infected){enemy.hp=0;enemy.visual.Die();}
    hero.p=homes[6].p;health=68;bleeding=true;infection=26;
    bandages=2;sterileBandages=1;alcoholDoses=2;inventory.TryAdd(DistrictItemKind.Backpack,1);inventory.Data.bagFound=true;hero.p=homes[6].p+homes[6].containers[0]+Vector2.down;homes[6].taken[0]=true;suppliesOpen=true;
+   bleeding=false;infection=0;nourishment=35;hydration=25;tiredness=70;inventory.TryAdd(DistrictItemKind.Food,1);inventory.TryAdd(DistrictItemKind.Water,3);
    yield return null;
   }
   IEnumerator CheckMedicalUI(Action<bool,string> check,string folder){
