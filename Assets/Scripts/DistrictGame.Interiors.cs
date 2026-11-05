@@ -12,7 +12,7 @@ namespace Askich {
     h.containers=new[]{new Vector2(2,-1.9f),new Vector2(2,2.4f),new Vector2(0,2.4f)};
     h.labels=new[]{"Ящик с инструментами","Кухонный ящик","Дорожная аптечка"};
     h.seconds=new[]{3.4f,2.2f,1.3f};h.noise=new[]{13f,6f,3f};
-    h.note="ЗАПИСКА НИНЫ: «Саша велел оставить приёмник на этой частоте. Взяли только документы. Топор заедает в железном ящике у кровати — не греми. Анна через улицу ещё перевязывала людей. Потом все шли к башне»";
+    h.note="ЗАПИСКА НИНЫ: «Саша велел оставить приёмник на этой частоте. Ключи сняли с крючков, сумку бросили. Взяли только документы. Топор заедает в железном ящике у кровати — не греми. Анна через улицу ещё перевязывала людей. Потом все шли к башне»";
    }else if(id==6){
     h.title="Временный медпункт";h.labels=new[]{"Перевязочный ящик","Медицинская сумка","Опустевший шкаф"};
     h.seconds=new[]{2.1f,1.3f,2.8f};h.noise=new[]{5f,3f,9f};
@@ -53,6 +53,15 @@ namespace Askich {
    for(int x=-1;x<=1;x+=2)for(int z=-1;z<=1;z+=2)Part("Writing table leg",-2+x*.65f,.4f,z*.48f,.09f,.6f,.09f,wood);
    // All additions are authored geometry; no new asset or voice licenses are required.
    if(id==5){
+    // An open bag, empty hooks and a scrape lead from the threshold to the tool chest.
+    Part("Open travel bag",-1.45f,.36f,-3.1f,.72f,.35f,.48f,new Color(.28f,.22f,.16f));
+    Part("Bag dark opening",-1.45f,.55f,-3.1f,.59f,.02f,.35f,new Color(.08f,.09f,.07f));
+    for(int i=0;i<2;i++)Part("Bag folded clothes",-1.6f+i*.28f,.55f,-3.1f,.2f,.08f,.25f,linen);
+    Part("Empty key rack",2.3f,1.55f,-3.79f,.8f,.15f,.06f,wood);
+    for(int i=0;i<3;i++)Part("Bare key hook",2.05f+i*.24f,1.52f,-3.7f,.04f,.08f,.12f,metal);
+    for(int i=0;i<2;i++)Part("Toolbox drag mark",1.74f+i*.4f,.193f,-2.8f,.035f,.009f,1.55f,new Color(.58f,.49f,.32f));
+    Part("Box abandoned lid",.95f,.23f,-2.4f,.5f,.07f,.4f,wood);
+    DistrictAtmosphere.Point("Tool chest window light",V(h.p+new Vector2(2,-2),1.8f),new Color(.82f,.76f,.59f),.42f,3);
     for(int i=0;i<20;i++)Part("Uneven floorboards",-3.8f+i*.4f,.17f,0,.38f,.02f,7.8f,Color.Lerp(wood,new Color(.42f,.35f,.26f),(i%4)*.18f));
     Part("Faded rug",0,.19f,-.5f,2.3f,.025f,3.3f,new Color(.28f,.31f,.28f));
     for(int i=-1;i<=1;i+=2)Part("Rug border",i*1.03f,.21f,-.5f,.09f,.01f,3.1f,linen);

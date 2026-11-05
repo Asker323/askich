@@ -6,7 +6,7 @@ namespace Askich {
  public sealed class DistrictFoley:MonoBehaviour {
   readonly AudioClip[,] steps=new AudioClip[4,3];
   AudioSource feet,door,task,breathing;
-  AudioClip creak,cloth,craft,drink,breath,gasp,finish;
+  AudioClip creak,scrape,cloth,craft,drink,breath,gasp,finish;
   int variation;float breathTimer;bool taskWanted;
   public GroundSound LastSurface {get;private set;}
   public int StepClipCount=>steps.Length;
@@ -15,6 +15,7 @@ namespace Askich {
    transform.SetParent(hero,false);feet=Source("Footsteps",true);door=Source("Door sound",true);door.transform.SetParent(null,true);task=Source("Hands",false);breathing=Source("Breathing",false);
    for(int s=0;s<4;s++)for(int n=0;n<3;n++)steps[s,n]=MakeStep((GroundSound)s,n);
    creak=Make("Hinge and door latch",.75f,(t,n)=>n*.15f+(Mathf.Sin(t*620+t*t*900)+Mathf.Sin(t*301))*.1f);
+   scrape=Make("Claws scraping porch",1.3f,(t,n)=>(n*.65f+Mathf.Sin(t*410)*.04f)*Mathf.Pow(Mathf.Max(0,Mathf.Sin(t*11)),3));
    cloth=Make("Bandage cloth",.85f,(t,n)=>n*.36f*(.3f+.7f*Mathf.Pow(Mathf.Sin(t*15),2)));
    craft=Make("Wrap and bottle",.85f,(t,n)=>n*.28f*(.3f+.7f*Mathf.Pow(Mathf.Sin(t*11),2))+Mathf.Sin(t*2400)*.04f*Mathf.Exp(-t*18));
    drink=Make("Bottle gulp",.58f,(t,n)=>(Mathf.Sin(t*820+2*Mathf.Sin(t*55))*.13f+n*.22f)*Mathf.Exp(-Mathf.Abs(t-.2f)*13));
@@ -37,6 +38,7 @@ namespace Askich {
   }
   public void Step(GroundSound surface,bool running,bool quiet){LastSurface=surface;feet.pitch=UnityEngine.Random.Range(.96f,1.04f);feet.PlayOneShot(steps[(int)surface,variation++%3],quiet?.2f:running?.65f:.45f);}
   public void Door(Vector3 position,bool opening){door.transform.position=position;door.pitch=opening?1:.83f;door.PlayOneShot(creak,.55f);}
+  public void Scrape(Vector3 position){door.transform.position=position;door.pitch=.9f;door.PlayOneShot(scrape,.6f);}
   public void StartTask(bool crafting,bool drinking=false){task.clip=drinking?drink:crafting?craft:cloth;task.loop=true;task.volume=0;taskWanted=true;task.Play();}
   public void StopTask(){taskWanted=false;}
   public void FinishTask(bool drinking){StopTask();if(!drinking)breathing.PlayOneShot(finish,.45f);}
@@ -52,6 +54,6 @@ namespace Askich {
    Put(creak,6,.55f);Put(cloth,6.9f,.4f);Put(breath,7.7f,.5f);
    using(var stream=new BinaryWriter(File.Create(path))){stream.Write(System.Text.Encoding.ASCII.GetBytes("RIFF"));stream.Write(36+data.Length*2);stream.Write(System.Text.Encoding.ASCII.GetBytes("WAVEfmt "));stream.Write(16);stream.Write((short)1);stream.Write((short)1);stream.Write(rate);stream.Write(rate*2);stream.Write((short)2);stream.Write((short)16);stream.Write(System.Text.Encoding.ASCII.GetBytes("data"));stream.Write(data.Length*2);foreach(float v in data)stream.Write((short)(Mathf.Clamp(v,-1,1)*32767));}
   }
-  void OnDestroy(){if(door)Destroy(door.gameObject);foreach(var clip in steps)if(clip)Destroy(clip);foreach(var clip in new[]{creak,cloth,craft,drink,breath,gasp,finish})if(clip)Destroy(clip);}
+  void OnDestroy(){if(door)Destroy(door.gameObject);foreach(var clip in steps)if(clip)Destroy(clip);foreach(var clip in new[]{creak,scrape,cloth,craft,drink,breath,gasp,finish})if(clip)Destroy(clip);}
  }
 }

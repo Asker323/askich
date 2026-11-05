@@ -28,3 +28,5 @@ License stated on the asset page: CC0 1.0 Universal, https://creativecommons.org
 The Dusk shader, geometry for houses/vegetation, procedural wind, steps and impacts are project code. The radio script was written for this game; the existing recording uses Microsoft Irina Desktop via Windows System.Speech. This is a temporary synthetic voice, not an actor recording. Before public distribution, confirm that voice's redistribution terms or replace the recording with a clearly licensed voice performance. Publication remains deferred.
 
 Combat stage (2026-11-04): the already included Matt Axe and Spear skinned meshes are now enabled for equipped weapons, retaining the original bone bindings. Other unused weapon meshes remain hidden. No additional third-party files were downloaded.
+
+Radio story stage: message0.wav, message1.wav and message2.wav were generated locally with Microsoft Irina Desktop using System.Speech. These are temporary synthetic recordings. The prior redistribution caveat applies to these files as well. Porch scraping is project-generated procedural audio.

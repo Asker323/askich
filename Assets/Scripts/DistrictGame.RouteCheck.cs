@@ -76,14 +76,21 @@ namespace Askich {
    yield return RouteWalk(new Vector2(-15,-14));yield return RouteUse();RouteRequire(alcoholDoses==3,"found alcohol bottle");
    RouteRequire(BeginMedical(MedicalAction.Craft),"craft command accepted");yield return RouteWait(3.3f);RouteRequire(sterileBandages>0,"crafted from collected materials");
    if(bleeding||infection>0){BeginMedical(MedicalAction.Sterile);yield return RouteWait(2.8f);RouteRequire(!bleeding&&infection==0,"treated actual route wound");}
-   yield return RouteWalk(new Vector2(-14,-9));yield return RouteUse();RouteRequire(heard,"heard radio objective");yield return RoutePhoto("route-radio");
+   yield return RouteWalk(new Vector2(-14,-9));yield return RouteUse();float radioDeadline=Time.time+65;while(!heard&&Time.time<radioDeadline)yield return RouteWait(.1f);RouteRequire(heard,"heard radio objective");yield return RoutePhoto("route-radio");yield return RouteUse();RouteRequire(!radioOn,"switched off radio before leaving");
    yield return RouteWalk(new Vector2(-12,-15));yield return RouteUse();yield return RouteWalk(new Vector2(-12,-17));yield return RouteUse();
    yield return RouteWalk(new Vector2(-12,-24),true);yield return RouteWalk(new Vector2(4,-24),true);face=Vector2.up;RouteRequire(ThrowStone(),"threw collected stone toward clinic flank");yield return RouteWait(.65f);
    yield return FaceClinicGuard();yield return RouteWalk(new Vector2(12,-17),true);yield return RouteUse();RouteRequire(homes[6].open,"entered guarded clinic");
    yield return RouteWalk(new Vector2(12,-15));yield return RouteUse();yield return RouteWalk(new Vector2(9,-14));yield return RouteUse();RouteRequire(bandages>=2,"picked up medical supplies");
    if(bleeding||infection>0){if(sterileBandages==0){BeginMedical(MedicalAction.Craft);yield return RouteWait(3.3f);}RouteRequire(BeginMedical(MedicalAction.Sterile),"began dressing actual wound");yield return RouteWait(2.8f);RouteRequire(!bleeding&&infection==0,"completed treatment inside clinic");}
+   if(sterileBandages==0&&bandages>1&&alcoholDoses>0){RouteRequire(BeginMedical(MedicalAction.Craft),"prepared spare dressing inside clinic");yield return RouteWait(3.3f);}
    yield return RoutePhoto("route-clinic");yield return RouteWalk(new Vector2(12,-15));yield return RouteUse();yield return RouteWalk(new Vector2(12,-17));yield return RouteUse();
-   foreach(var waypoint in new[]{new Vector2(12,-24),new Vector2(24,-24),new Vector2(24,0),new Vector2(24,24),new Vector2(48,24),new Vector2(48,45),refuge})yield return RouteWalk(waypoint,true);
+   foreach(var waypoint in new[]{new Vector2(12,-24),new Vector2(24,-24),new Vector2(24,0),new Vector2(24,24),new Vector2(48,24),new Vector2(48,45),refuge}){
+    yield return RouteWalk(waypoint,true);
+    if(bleeding&&sterileBandages>0&&!infected.Exists(z=>z.hp>0&&Vector2.Distance(z.p,hero.p)<6&&Sight(hero.p,z.p))){
+     RouteRequire(BeginMedical(MedicalAction.Sterile),"began spare dressing after breaking pursuit");yield return RouteWait(2.8f);
+     RouteRequire(!bleeding,"stopped new bleeding on return journey");
+    }
+   }
    yield return RouteUse();RouteRequire(campEstablished,"established shelter using collected supplies");yield return RoutePhoto("route-shelter");Save();RouteNote("COMPLETE automated ordinary-rules route; not a manual playthrough");Application.Quit();
   }
  }
