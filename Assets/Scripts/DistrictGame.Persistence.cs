@@ -48,11 +48,11 @@ namespace Askich {
    for(int n=0;n<homes.Count;n++){var h=homes[n];h.open=n<s.doors.Length&&s.doors[n];h.gate.active=!h.open;h.door.SetActive(!h.open);for(int i=0;i<3;i++)h.taken[i]=n*3+i<s.taken.Length&&s.taken[n*3+i];RefreshContainers(h);}
    foreach(var actor in infected){
     var e=s.version>=2?Array.Find(s.enemies,v=>v.id==actor.id):null;
-    actor.p=e==null?actor.spawn:new Vector2(e.x,e.z);actor.hp=e==null?actor.maxHp:s.version<=3?e.hp/LegacyEnemyHealth(actor.id)*actor.maxHp:e.hp;
+    actor.p=e==null?actor.spawn:e.hp>0?ResolveStreetPosition(new Vector2(e.x,e.z)):new Vector2(e.x,e.z);actor.hp=e==null?actor.maxHp:s.version<=3?e.hp/LegacyEnemyHealth(actor.id)*actor.maxHp:e.hp;
     actor.awareness=Awareness.Roam;actor.searchClock=actor.unreachable=0;actor.searchOrigin=actor.p;actor.goal=actor.p;actor.alert=actor.wind=actor.rest=actor.repath=actor.stagger=actor.recovery=0;actor.striking=false;actor.path.Clear();actor.root.position=V(actor.p);actor.root.rotation=Quaternion.Euler(0,e==null?0:e.yaw,0);
     if(actor.visual)actor.visual.Restore(actor.hp<=0);
    }
-   hero.p=new Vector2(s.x,s.z);if(Blocked(hero.p))hero.p=new Vector2(-12,-20);
+   hero.p=ResolveStreetPosition(new Vector2(s.x,s.z));if(Blocked(hero.p))hero.p=new Vector2(-12,-20);
    health=s.hp;stamina=s.stamina;weapon=s.weapon;food=s.food;bandages=s.bandages;heard=s.heard;campEstablished=s.version>=2&&s.camp;depotLooted=s.version>=3&&s.depot;
    bleeding=s.version>=4&&s.bleeding;infection=s.version>=4?s.infection:0;drunkSeconds=s.version>=4?s.drunk:0;alcoholDoses=s.version>=4?s.alcohol:0;sterileBandages=s.version>=4?s.sterile:0;stones=s.version>=4?s.stones:0;
    for(int n=0;n<supplies.Count;n++){supplies[n].taken=s.version>=4&&s.supplies[n];supplies[n].model.SetActive(!supplies[n].taken);}

@@ -82,8 +82,8 @@ namespace Askich {
    if(actionRemaining<=0&&crawler&&speed<=.1f)Play("Crawl",true,0);
    else if(actionRemaining<=0)Play(speed>.1f?(crawler?"Crawl":speed>3.5f&&!zombie?"Run":"Walk"):"Idle",true,speed>.1f?Mathf.Clamp(speed/(crawler?1.1f:zombie?1.45f:speed>3.5f?5f:2.6f),.35f,1.9f):1);
    if(!zombie)return;
-   vocal.volume=Mathf.Lerp(vocal.volume,clear?.48f:.16f,dt*4);
-   occlusion.cutoffFrequency=Mathf.Lerp(occlusion.cutoffFrequency,clear?12000:1300,dt*4);
+   vocal.volume=Mathf.Lerp(vocal.volume,clear?(distance<6?.55f:.36f):.12f,dt*4);
+   occlusion.cutoffFrequency=Mathf.Lerp(occlusion.cutoffFrequency,clear?12000:1000,dt*4);
    nextVoice-=dt;
    if(nextVoice<=0){nextVoice=UnityEngine.Random.Range(6,14);if(distance<22&&!vocal.isPlaying&&voices.Length>0){vocal.clip=voices[UnityEngine.Random.Range(0,voices.Length)];vocal.Play();}}
   }

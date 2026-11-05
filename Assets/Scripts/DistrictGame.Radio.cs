@@ -26,6 +26,9 @@ namespace Askich {
   }
   void TickRadio(float dt){
    if(!radioOn)return;
+   bool clear=Sight(radioPos,hero.p);
+   voice.volume=Mathf.Lerp(voice.volume,clear?.85f:.38f,dt*4);
+   voice.GetComponent<AudioLowPassFilter>().cutoffFrequency=clear?3400:1100;
    radioPulse-=dt;
    if(radioPulse<=0){radioPulse=3;Alert(radioPos,25);}
    if(radioSpeaking){

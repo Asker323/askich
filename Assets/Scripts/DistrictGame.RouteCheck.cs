@@ -67,7 +67,7 @@ namespace Askich {
   IEnumerator CheckRoute(){
    // No teleportation, inventory grants, stat overrides, frozen AI or accelerated time.
    testSave=Path.Combine(Application.temporaryCachePath,"berezki-route-"+Guid.NewGuid().ToString("N")+".json");routeFolder=Environment.GetEnvironmentVariable("GOIDA_ROUTE_CHECK");Directory.CreateDirectory(routeFolder);Application.runInBackground=true;playing=true;paused=false;routeStart=Time.time;routeKeyboard=InputSystem.AddDevice<Keyboard>();
-   RouteNote("fresh ordinary start");yield return RouteWalk(new Vector2(-14,-20));yield return RouteUse();RouteRequire(stones==3,"picked up roadside stones");
+   RouteNote("fresh ordinary start");yield return RoutePhoto("route-street-start");yield return RouteWalk(new Vector2(-14,-20));yield return RouteUse();RouteRequire(stones==3,"picked up roadside stones");
    yield return RouteWalk(new Vector2(-12,-17));yield return RouteUse();RouteRequire(homes[5].open,"opened radio house");
    yield return RouteWalk(new Vector2(-12,-15));yield return RouteUse();RouteRequire(!homes[5].open,"closed door from inside");
    yield return RouteWalk(new Vector2(-10,-13));yield return RouteUse(3.7f);RouteRequire(weapon==1,"found axe through timed search");yield return RoutePhoto("route-first-weapon");
@@ -78,7 +78,7 @@ namespace Askich {
    if(bleeding||infection>0){BeginMedical(MedicalAction.Sterile);yield return RouteWait(2.8f);RouteRequire(!bleeding&&infection==0,"treated actual route wound");}
    yield return RouteWalk(new Vector2(-14,-9));yield return RouteUse();float radioDeadline=Time.time+65;while(!heard&&Time.time<radioDeadline)yield return RouteWait(.1f);RouteRequire(heard,"heard radio objective");yield return RoutePhoto("route-radio");yield return RouteUse();RouteRequire(!radioOn,"switched off radio before leaving");
    yield return RouteWalk(new Vector2(-12,-15));yield return RouteUse();yield return RouteWalk(new Vector2(-12,-17));yield return RouteUse();
-   yield return RouteWalk(new Vector2(-12,-24),true);yield return RouteWalk(new Vector2(4,-24),true);face=Vector2.up;RouteRequire(ThrowStone(),"threw collected stone toward clinic flank");yield return RouteWait(.65f);
+   yield return RouteWalk(new Vector2(-12,-24),true);yield return RoutePhoto("route-street-crossing");yield return RouteWalk(new Vector2(4,-24),true);face=Vector2.up;RouteRequire(ThrowStone(),"threw collected stone toward clinic flank");yield return RouteWait(.65f);
    yield return FaceClinicGuard();yield return RouteWalk(new Vector2(12,-17),true);yield return RouteUse();RouteRequire(homes[6].open,"entered guarded clinic");
    yield return RouteWalk(new Vector2(12,-15));yield return RouteUse();yield return RouteWalk(new Vector2(9,-14));yield return RouteUse();RouteRequire(bandages>=2,"picked up medical supplies");
    if(bleeding||infection>0){if(sterileBandages==0){BeginMedical(MedicalAction.Craft);yield return RouteWait(3.3f);}RouteRequire(BeginMedical(MedicalAction.Sterile),"began dressing actual wound");yield return RouteWait(2.8f);RouteRequire(!bleeding&&infection==0,"completed treatment inside clinic");}
