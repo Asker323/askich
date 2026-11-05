@@ -1,0 +1,69 @@
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+using System;
+using System.Collections;
+using System.IO;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
+
+namespace Askich {
+ public sealed partial class DistrictGame {
+  IEnumerator PreviewMedicalUI(){
+   testSave=Path.Combine(Application.temporaryCachePath,"medical-preview-"+Guid.NewGuid()+".json");
+   Application.runInBackground=true;playing=true;paused=false;
+   foreach(var enemy in infected){enemy.hp=0;enemy.visual.Die();}
+   hero.p=homes[6].p;health=68;bleeding=true;infection=26;
+   bandages=2;sterileBandages=1;alcoholDoses=2;suppliesOpen=true;
+   yield return null;
+  }
+  IEnumerator CheckMedicalUI(Action<bool,string> check,string folder){
+   foreach(var enemy in infected)enemy.hp=0;
+   hero.p=homes[6].p;heroVelocity=Vector2.zero;attack=heroStagger=0;CancelMedical();
+   health=65;bleeding=true;infection=20;drunkSeconds=0;
+   bandages=2;sterileBandages=0;alcoholDoses=3;suppliesOpen=true;pointer.Reset();
+   var nativeMice=new System.Collections.Generic.List<Mouse>();
+   foreach(var device in InputSystem.devices)if(device is Mouse native&&native.enabled)nativeMice.Add(native);
+   foreach(var native in nativeMice)InputSystem.DisableDevice(native);
+   var mouse=InputSystem.AddDevice<Mouse>();
+   IEnumerator Tap(Rect area){
+    Vector2 p=ScreenLayout.Offset+area.center*ScreenLayout.Scale;p.y=Screen.height-p.y;
+    mouse.MakeCurrent();InputSystem.QueueStateEvent(mouse,new MouseState{position=p}.WithButton(MouseButton.Left));
+    yield return new WaitForSeconds(.09f);
+    mouse.MakeCurrent();InputSystem.QueueStateEvent(mouse,new MouseState{position=p});
+    yield return new WaitForSeconds(.09f);
+   }
+   IEnumerator Invoke(Rect area,MedicalAction action=MedicalAction.None){
+    if(Application.isBatchMode){
+     if(area==CancelTreatment)CancelMedical();
+     else if(MedicalUnavailable(action)==null)BeginMedical(action);
+     yield return null;
+    }else yield return Tap(area);
+   }
+   check(MedicalUnavailable(MedicalAction.Sterile)=="Нет стерильных бинтов"&&TreatmentAdvice().Contains("Стерилизуй"),"wounded inventory explains missing dressing and available recipe");
+   yield return Invoke(SterileAction,MedicalAction.Sterile);
+   check(suppliesOpen&&medicalAction==MedicalAction.None&&bandages==2&&alcoholDoses==3&&attack<=0,"disabled inventory button cannot spend supplies or trigger world melee");
+   yield return Invoke(CraftAction,MedicalAction.Craft);
+   check(medicalAction==MedicalAction.Craft&&!suppliesOpen,"craft action enters live timed crafting");
+   check(PointerOnHud(CancelTreatment.center),"medical progress buttons exclude world attacks");
+   yield return Invoke(CancelTreatment);
+   check(medicalAction==MedicalAction.None&&bandages==2&&alcoholDoses==3,"cancel button interrupts craft and preserves its materials");
+
+   suppliesOpen=true;yield return Invoke(CraftAction,MedicalAction.Craft);
+   yield return new WaitForSeconds(3.2f);
+   check(sterileBandages==1&&bandages==1&&alcoholDoses==2,"inventory craft completes with one bandage and one dose spent");
+   check(QuickDressing()==MedicalAction.Sterile,"touch quick dressing chooses sterile bandage for infected wound");
+   suppliesOpen=true;yield return Invoke(SterileAction,MedicalAction.Sterile);yield return new WaitForSeconds(2.7f);
+   check(!bleeding&&infection==0&&sterileBandages==0,"inventory treatment button stops bleeding and treats wound through Update");
+   suppliesOpen=true;yield return Invoke(DrinkAction,MedicalAction.Drink);yield return new WaitForSeconds(1.4f);
+   check(drunkSeconds>40&&alcoholDoses==1,"separate drinking action spends one dose and causes intoxication");
+   bandages=1;sterileBandages=1;bleeding=true;infection=0;
+   check(QuickDressing()==MedicalAction.Bandage,"quick dressing uses ordinary bandage for uncomplicated bleeding");
+   bandages=0;
+   check(QuickDressing()==MedicalAction.Sterile,"quick dressing falls back to available sterile bandage");
+   alcoholDoses=5;check(AlcoholSummary().Contains("1")&&AlcoholSummary().Contains("2"),"alcohol stock explains full bottle and remaining doses");
+   suppliesOpen=false;InputSystem.RemoveDevice(mouse);foreach(var native in nativeMice)InputSystem.EnableDevice(native);
+   File.WriteAllText(Path.Combine(folder,"medical-ui-note.txt"),Application.isBatchMode?"Headless run checks medical commands and states. Graphical button clicks need a windowed run.":"Graphical inventory buttons tested through Input System mouse events. Phone testing remains pending.");
+  }
+ }
+}
+#endif

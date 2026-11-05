@@ -54,7 +54,7 @@ namespace Askich {
   }
   bool BeginMedical(MedicalAction action){
    if(!playing||paused||dead||attack>0||heroStagger>0||medicalAction!=MedicalAction.None)return false;
-   if(!CanTreat(action)){Say("Нет нужных материалов или лечение сейчас не требуется.");return false;}
+   if(!CanTreat(action)){Say(MedicalUnavailable(action));return false;}
    medicalAction=action;medicalTime=0;if(foley)foley.StartTask(action==MedicalAction.Craft,action==MedicalAction.Drink);searchSlot=-1;suppliesOpen=false;heroVelocity=Vector2.zero;return true;
   }
   void TickMedical(float dt){
@@ -86,17 +86,7 @@ namespace Askich {
    if(Button(InventoryButton,"РЮКЗАК · I"))suppliesOpen=!suppliesOpen;
    if(Button(SneakButton,sneakToggle?"ТИХИЙ ШАГ: ВКЛ":"ТИХИЙ ШАГ"))sneakToggle=!sneakToggle;
    if(Button(ThrowButton,"БРОСИТЬ · G · "+stones)&&!suppliesOpen)ThrowStone();
-   if(medicalAction!=MedicalAction.None){Panel(new Rect(430,536,350,44));GUI.Label(new Rect(443,541,325,35),(medicalAction==MedicalAction.Craft?"Крафт":medicalAction==MedicalAction.Drink?"Выпить":"Перевязка")+"… "+Mathf.RoundToInt(medicalTime/MedicalDuration(medicalAction)*100)+"%",text);}
-  }
-  void DrawSuppliesMenu(){
-   if(!suppliesOpen)return;GUI.color=new Color(.035f,.055f,.06f,1);GUI.DrawTexture(new Rect(250,175,780,445),Texture2D.whiteTexture);GUI.color=Color.white;GUI.Label(new Rect(280,195,590,44),"ПРИПАСЫ И ЛЕЧЕНИЕ",large);if(Button(new Rect(890,190,105,45),"Закрыть"))suppliesOpen=false;
-   GUI.Label(new Rect(280,252,710,58),$"Бинты: {bandages} · Стерильные: {sterileBandages}\nСпирт — всего доз: {alcoholDoses} · бутылок: {(alcoholDoses+2)/3} · Камни: {stones}",text);
-   GUI.Label(new Rect(280,305,700,24),$"Кровотечение: {(bleeding?"да":"нет")} · Рана: {Mathf.CeilToInt(infection)}% · Опьянение: {Mathf.CeilToInt(drunkSeconds)} с",small);
-   if(Button(new Rect(280,330,330,55),"Создать стерильный · 3 с"))BeginMedical(MedicalAction.Craft);
-   if(Button(new Rect(650,330,330,55),"Применить стерильный"))BeginMedical(MedicalAction.Sterile);
-   if(Button(new Rect(280,400,330,55),"Обычный бинт · B"))BeginMedical(MedicalAction.Bandage);
-   if(Button(new Rect(650,400,330,55),"Выпить дозу · опьянение"))BeginMedical(MedicalAction.Drink);
-   GUI.Label(new Rect(280,480,700,115),"Рецепт: 1 бинт + 1 доза спирта. В бутылке 3 дозы.\nБинт останавливает кровь; стерильный снимает и заражение.\nПитьё не лечит рану. Движение и урон прерывают лечение.\nМИР НЕ НА ПАУЗЕ — сначала найди укрытие.",small);
+   DrawMedicalProgress();
   }
  }
 }
