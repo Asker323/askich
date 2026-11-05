@@ -72,9 +72,13 @@ namespace Askich {
     }
    }
    RouteRequire(bleeding&&infection>0,"actual enemy strike caused bleeding and infection");
+   yield return RouteWait(.32f);
+   RouteRequire(TryShove((guard.p-hero.p).normalized),"shove creates an escape opportunity after actual wound");
+   yield return RouteWait(.6f);
    yield return RoutePhoto("route-wound");
   }
   IEnumerator CheckRoute(){
+   InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
    // No teleportation, inventory grants, stat overrides, frozen AI or accelerated time.
    testSave=Path.Combine(Application.temporaryCachePath,"berezki-route-"+Guid.NewGuid().ToString("N")+".json");routeFolder=Environment.GetEnvironmentVariable("GOIDA_ROUTE_CHECK");Directory.CreateDirectory(routeFolder);Application.runInBackground=true;playing=true;paused=false;routeStart=Time.time;routeKeyboard=InputSystem.AddDevice<Keyboard>();
    RouteNote("fresh ordinary start");yield return RoutePhoto("route-street-start");yield return RouteWalk(new Vector2(-14,-20));yield return RouteUse();RouteRequire(stones==3,"picked up roadside stones");
@@ -100,9 +104,10 @@ namespace Askich {
    yield return RouteWalk(new Vector2(-12,-15));yield return RouteUse();yield return RouteWalk(new Vector2(-12,-17));yield return RouteUse();
    yield return RouteWalk(new Vector2(-12,-24),true);yield return RoutePhoto("route-street-crossing");yield return RouteWalk(new Vector2(4,-24),true);face=Vector2.up;RouteRequire(ThrowStone(),"threw collected stone toward clinic flank");yield return RouteWait(.65f);
    yield return FaceClinicGuard();
-   foreach(var coverTurn in new[]{new Vector2(20,-22),new Vector2(20,-17),new Vector2(14,-17)})yield return RouteWalk(coverTurn,true);
-   yield return RouteWalk(new Vector2(12,-17),true);yield return RouteUse();RouteRequire(homes[6].open,"entered guarded clinic");
-   yield return RouteWalk(new Vector2(12,-15));yield return RouteUse();yield return SecureRouteDoor(homes[6]);yield return RouteWalk(new Vector2(9,-14));yield return RouteUse();RouteRequire(bandages>=2,"picked up medical supplies");
+   // Retreat commands deliberately do not start stationary weapon swings while sprinting.
+   foreach(var coverTurn in new[]{new Vector2(20,-22),new Vector2(20,-17),new Vector2(14,-17)})yield return RouteWalk(coverTurn,true,false);
+   yield return RouteWalk(new Vector2(12,-17),true,false);yield return RouteUse();RouteRequire(homes[6].open,"entered guarded clinic");
+   yield return RouteWalk(new Vector2(12,-15),true,false);yield return RouteUse();yield return SecureRouteDoor(homes[6]);yield return RouteWalk(new Vector2(9,-14));yield return RouteUse();RouteRequire(bandages>=2,"picked up medical supplies");
    if(bleeding||infection>0){if(sterileBandages==0){BeginMedical(MedicalAction.Craft);yield return RouteWait(3.3f);}RouteRequire(BeginMedical(MedicalAction.Sterile),"began dressing actual wound");yield return RouteWait(2.8f);RouteRequire(!bleeding&&infection==0,"completed treatment inside clinic");}
    if(sterileBandages==0&&bandages>1&&alcoholDoses>0){RouteRequire(BeginMedical(MedicalAction.Craft),"prepared spare dressing inside clinic");yield return RouteWait(3.3f);}
    yield return RoutePhoto("route-clinic");yield return RouteWalk(new Vector2(12,-15));yield return RouteUse();yield return RouteWalk(new Vector2(12,-17));yield return RouteUse();

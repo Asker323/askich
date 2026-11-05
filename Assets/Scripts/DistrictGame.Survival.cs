@@ -98,9 +98,9 @@ namespace Askich {
    if(suppliesOpen)return;
    var nearby=NearbySupply();if(nearby!=null)GUI.Label(new Rect(35,235,720,30),nearby.label+" · действие / E",small);
    if(nearby==null&&!inventory.Data.bagFound&&Vector2.Distance(hero.p,backpackPosition)<1.25f)GUI.Label(new Rect(35,235,720,30),"Школьный рюкзак · действие / E",small);
-   if(Button(InventoryButton,TouchControls.Enabled?"РЮКЗАК":"РЮКЗАК · I"))suppliesOpen=!suppliesOpen;
-   if(Button(SneakButton,sneakToggle?"ТИХИЙ ШАГ: ВКЛ":"ТИХИЙ ШАГ"))sneakToggle=!sneakToggle;
-   if(Button(ThrowButton,(TouchControls.Enabled?"БРОСИТЬ · ":"БРОСИТЬ · G · ")+stones)&&!suppliesOpen)ThrowStone();
+   if(TouchControls.Enabled&&Button(InventoryButton,"РЮКЗАК"))suppliesOpen=!suppliesOpen;
+   if(TouchControls.Enabled&&Button(SneakButton,sneakToggle?"ТИХИЙ ШАГ: ВКЛ":"ТИХИЙ ШАГ"))sneakToggle=!sneakToggle;
+   if(TouchControls.Enabled&&Button(ThrowButton,"БРОСИТЬ · "+stones)&&!suppliesOpen)ThrowStone();
    DrawMedicalProgress();
   }
  }

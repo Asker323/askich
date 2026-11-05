@@ -18,6 +18,7 @@ namespace Askich {
    yield return null;
   }
   IEnumerator CheckMedicalUI(Action<bool,string> check,string folder){
+   InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
    foreach(var enemy in infected)enemy.hp=0;
    hero.p=homes[6].p;heroVelocity=Vector2.zero;attack=heroStagger=0;CancelMedical();
    health=65;bleeding=true;infection=20;drunkSeconds=0;
@@ -26,12 +27,14 @@ namespace Askich {
    foreach(var device in InputSystem.devices)if(device is Mouse native&&native.enabled)nativeMice.Add(native);
    foreach(var native in nativeMice)InputSystem.DisableDevice(native);
    var mouse=InputSystem.AddDevice<Mouse>();
+   string trace=Path.Combine(folder,"medical-ui-trace.txt");File.WriteAllText(trace,"");
+   void Trace(string phase){File.AppendAllText(trace,$"{phase}: focus={Application.isFocused}; held={pointer.Held}; dragged={pointer.Dragged}; pos={pointer.Position}; origin={pointer.Origin}; inventory={suppliesOpen}; selected={inventorySelection}; action={medicalAction}; unavailable={MedicalUnavailable(MedicalAction.Craft)}\n");}
    IEnumerator Tap(Rect area){
     Vector2 p=ScreenLayout.Offset+area.center*ScreenLayout.Scale;p.y=Screen.height-p.y;
     mouse.MakeCurrent();InputSystem.QueueStateEvent(mouse,new MouseState{position=p}.WithButton(MouseButton.Left));
-    yield return new WaitForSeconds(.09f);
+    yield return null;yield return new WaitForEndOfFrame();Trace("press rendered");
     mouse.MakeCurrent();InputSystem.QueueStateEvent(mouse,new MouseState{position=p});
-    yield return new WaitForSeconds(.09f);
+    yield return null;yield return new WaitForEndOfFrame();Trace("release rendered");yield return null;
    }
    IEnumerator Invoke(Rect area,MedicalAction action=MedicalAction.None){
     if(!Application.isBatchMode&&area!=CancelTreatment){

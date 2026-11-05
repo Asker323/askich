@@ -42,7 +42,8 @@ namespace Askich {
    foe.p=new Vector2(-16,-19);foe.awareness=Awareness.Roam;foe.alert=0;foe.stagger=100;foe.rest=100;foe.root.rotation=Quaternion.identity;face=Vector2.right;stones=1;throwCooldown=0;Vector2 landing=StoneTarget(face);
    check(ThrowStone()&&stones==0,"throw consumes one stone");yield return new WaitForSeconds(.7f);
    check(foe.awareness==Awareness.Investigate&&Vector2.Distance(foe.goal,landing)<.1f,"landed stone attracts nearby infected");
-   check(PointerOnHud(InventoryButton.center)&&!InventoryButton.Overlaps(DistrictTouchControls.Hit),"inventory touch target is isolated from world attack");
+   bool wasTouch=TouchControls.ForceEnabled;TouchControls.ForceEnabled=true;
+   check(PointerOnHud(InventoryButton.center)&&!InventoryButton.Overlaps(DistrictTouchControls.Hit),"inventory touch target is isolated from world attack");TouchControls.ForceEnabled=wasTouch;
    suppliesOpen=true;float energy=stamina;check(!TryAttack(Vector2.up)&&stamina==energy,"inventory clicks cannot trigger melee attacks");suppliesOpen=false;
    foe.hp=0;foe.visual.Die();hero.p=homes[6].p;bleeding=true;infection=38;drunkSeconds=25;bandages=2;alcoholDoses=2;sterileBandages=1;stones=2;health=80;zoom=8;yield return new WaitForSeconds(1);suppliesOpen=true;
    yield return new WaitForEndOfFrame();var frame=ScreenCapture.CaptureScreenshotAsTexture();File.WriteAllBytes(Path.Combine(folder,"survival-inventory.png"),frame.EncodeToPNG());Destroy(frame);suppliesOpen=false;

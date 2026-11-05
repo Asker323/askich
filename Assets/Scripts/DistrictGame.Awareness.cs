@@ -41,10 +41,10 @@ namespace Askich {
     if(z.awareness==Awareness.Search||(z.awareness==Awareness.Chase&&distance<.9f)){Animate(z,Vector2.zero,true,0);continue;}
     if(z.awareness==Awareness.Chase||z.awareness==Awareness.Investigate){
      if(z.repath<=0){z.path=FindPath(z.p,z.goal);z.repath=.65f+(z.id%5)*.08f;}
-     if(z.path.Count>0){Vector2 target=z.path[0];if(Vector2.Distance(z.p,target)<.25f)z.path.RemoveAt(0);else z.p=Move(z.p,(target-z.p).normalized*dt*z.speed);}
+     if(z.path.Count>0){Vector2 target=z.path[0];if(Vector2.Distance(z.p,target)<.25f)z.path.RemoveAt(0);else z.p=MoveAmongActors(z,(target-z.p).normalized*dt*z.speed,true);}
      z.unreachable=(z.p-old).sqrMagnitude<.000001f?z.unreachable+dt:0;
     }else{
-     Vector2 roam=new Vector2(Mathf.Sin(Time.time*.14f+z.phase),Mathf.Cos(Time.time*.1f+z.phase));z.p=Move(z.p,roam*dt*.35f);
+     Vector2 roam=new Vector2(Mathf.Sin(Time.time*.14f+z.phase),Mathf.Cos(Time.time*.1f+z.phase));z.p=MoveAmongActors(z,roam*dt*.35f,true);
     }
     Animate(z,z.p-old,true,0);
    }

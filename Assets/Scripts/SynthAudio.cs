@@ -6,7 +6,7 @@ namespace Askich
     public sealed class SynthAudio : MonoBehaviour
     {
         AudioSource source, ambience;
-        AudioClip shot, hit, dash, upgrade, lose, block, step;
+        AudioClip shot, hit, dash, upgrade, lose, block, step, shove;
         public bool Muted { get; private set; }
         void Awake()
         {
@@ -14,6 +14,7 @@ namespace Askich
             shot = Percussion("Weapon sweep", .18f, .75f, 0);
             hit = Percussion("Wood and mail impact", .17f, .32f, 120);
             block = Percussion("Shield rim", .28f, .15f, 730);
+            shove = Percussion("Cloth shove", .14f, .38f, 0);
             step = Percussion("Earth footstep", .08f, .16f, 65);
             dash = Tone("Dash", 110, 55, 0.16f, 1.6f);
             upgrade = Tone("Upgrade", 330, 440, 0.32f, 0.05f);
@@ -44,7 +45,7 @@ namespace Askich
         public void Toggle() { Muted = !Muted; source.mute = Muted;if(ambience!=null)ambience.mute=Muted; }
         public void Play(string effect)
         {
-            AudioClip clip = effect == "shot" ? shot : effect == "hit" ? hit : effect=="block"?block:effect=="step"?step:effect == "dash" ? dash : effect == "lose" ? lose : upgrade;
+            AudioClip clip = effect == "shot" ? shot : effect == "hit" ? hit : effect=="shove"?shove:effect=="block"?block:effect=="step"?step:effect == "dash" ? dash : effect == "lose" ? lose : upgrade;
             source.pitch=effect=="upgrade"||effect=="lose"?1:Random.Range(.94f,1.06f);
             source.PlayOneShot(clip, effect == "step" ? .4f : 1f);
         }

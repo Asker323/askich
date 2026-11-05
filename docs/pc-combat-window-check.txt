@@ -1,0 +1,13 @@
+2026-11-06 Asia/Vladivostok. Unity 6000.3.4f1, Windows x64.
+Release build: 0 errors, 0 warnings. Standalone player launched for startup smoke.
+Scene initialized (UnloadTime recorded); no Exception/Shader error/compiler error in startup log.
+Development real window: temporary ordinary attempt started through menu using Computer Use.
+Attempt later died while idle; manual battle and shelter route NOT completed.
+Native OS key-I check NOT verified. Further window input/capture did not reliably establish
+the intended gameplay state, so it is not counted as a passed keyboard/inventory check.
+No unrelated window screenshots retained or included in evidence.
+PC mouse, Space, aiming, buffer and retreat checked through Unity Input System in Player.
+260 checks total: 230 prior regression checks + 30 dedicated PC combat checks.
+Separate ordinary-rules automated route FAILED on crossing at 70.5 seconds.
+One prepared live-AI shove and sprint encounter PASSED without wounds.
+FPS and subjective audio mix not measured. Android not built/tested in this stage.

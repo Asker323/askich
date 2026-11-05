@@ -35,6 +35,8 @@ Derived rigged body, eyes, morphs and garments are in `Assets/CharacterSources/A
 
 ## Project-generated material
 
+PC combat stage (2026-11-06): shove cloth-contact audio is generated locally by the existing SynthAudio code. Weapon reach indicator and crowd avoidance are project code. Punch and reversed Walk reuse the licensed animation derivatives described above. No new external assets were acquired.
+
 The Dusk shader, geometry for houses/vegetation, procedural wind, steps and impacts are project code. The radio script was written for this game. The temporary Microsoft Irina Desktop recordings were removed from Resources in the November 5 visual-polish stage. The current receiver uses project-generated static and timed captions, with no spoken dialogue. Publication remains deferred.
 
 Combat stage (2026-11-04): the already included Matt Axe and Spear skinned meshes are now enabled for equipped weapons, retaining the original bone bindings. Other unused weapon meshes remain hidden. No additional third-party files were downloaded.

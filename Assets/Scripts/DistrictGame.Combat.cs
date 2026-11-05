@@ -9,7 +9,8 @@ namespace Askich {
   struct Strike {
    public float duration,impact,range,dot,damage,cost,stagger,push;
    public int targets;
-   public Strike(float duration,float phase,float range,float dot,float damage,float cost,float stagger,float push,int targets){this.duration=duration;impact=duration*phase;this.range=range;this.dot=dot;this.damage=damage;this.cost=cost;this.stagger=stagger;this.push=push;this.targets=targets;}
+   public bool shove;
+   public Strike(float duration,float phase,float range,float dot,float damage,float cost,float stagger,float push,int targets,bool shove=false){this.duration=duration;impact=duration*phase;this.range=range;this.dot=dot;this.damage=damage;this.cost=cost;this.stagger=stagger;this.push=push;this.targets=targets;this.shove=shove;}
   }
   // Contact phases come from sampling the authored hand curves (DistrictCombatProbe).
   static Strike WeaponStrike(int weapon)=>weapon==1?new Strike(.85f,.36f,1.85f,.35f,45,18,.5f,.3f,2):weapon==2?new Strike(.8f,.4f,2.7f,.86f,30,14,.35f,.22f,1):new Strike(.55f,.47f,1.35f,.6f,10,8,.22f,.12f,1);
@@ -39,17 +40,21 @@ namespace Askich {
    return aim;
   }
   bool TryAttack(Vector2 direction){
-   var strike=WeaponStrike(weapon);
+   return TryHeroStrike(direction,WeaponStrike(weapon));
+  }
+  static Strike ShoveStrike()=>new Strike(.55f,.47f,1.5f,.35f,0,24,.8f,.9f,2,true);
+  bool TryShove(Vector2 direction)=>TryHeroStrike(direction,ShoveStrike());
+  bool TryHeroStrike(Vector2 direction,Strike strike){
    if(!playing||paused||dead||suppliesOpen||attack>0||heroStagger>0||stamina<strike.cost)return false;
    CancelMedical();activeStrike=strike;attack=strike.duration;stamina-=strike.cost;heroVelocity=Vector2.zero;searchSlot=-1;
    heroStrikeDirection=DrunkDirection(direction.sqrMagnitude>.001f?direction.normalized:Vector2.up);
    hero.root.rotation=Quaternion.LookRotation(V(heroStrikeDirection));
-   if(hero.visual)hero.visual.Attack(weapon,strike.duration);
-   Alert(hero.p,weapon==0?6:13);StartCoroutine(Hit(heroStrikeDirection,strike,++strikeSequence));return true;
+   if(hero.visual)hero.visual.Attack(strike.shove?0:weapon,strike.duration);
+   Alert(hero.p,strike.shove||weapon==0?6:13);StartCoroutine(Hit(heroStrikeDirection,strike,++strikeSequence));return true;
   }
   IEnumerator Hit(Vector2 direction,Strike strike,int sequence){
    int generation=worldGeneration;float t=0;
-   while(t<strike.impact){yield return null;if(!paused)t+=Mathf.Min(Time.deltaTime,.05f);if(dead||won||generation!=worldGeneration||sequence!=strikeSequence)yield break;}
+   while(t<strike.impact){yield return null;if(!paused)t+=FrameDelta;if(dead||won||generation!=worldGeneration||sequence!=strikeSequence)yield break;}
    sound.Play("shot");ResolveStrike(direction,strike);
   }
   int ResolveStrike(Vector2 direction,Strike strike){
@@ -58,13 +63,13 @@ namespace Askich {
    candidates.Sort((a,b)=>(a.p-hero.p).sqrMagnitude.CompareTo((b.p-hero.p).sqrMagnitude));
    int hits=Mathf.Min(strike.targets,candidates.Count);
    for(int i=0;i<hits;i++){
-    var z=candidates[i];z.hp-=strike.damage;z.striking=false;z.wind=0;z.recovery=0;z.stagger=strike.stagger;z.rest=Mathf.Max(z.rest,strike.stagger+.35f);
-    Vector2 push=(z.p-hero.p).normalized*strike.push/4;
+    var z=candidates[i];float resistance=strike.shove&&z.id%3==1?.6f:1;z.hp-=strike.damage;z.striking=false;z.wind=0;z.recovery=0;z.stagger=strike.stagger*resistance;z.rest=Mathf.Max(z.rest,z.stagger+.35f);
+    Vector2 push=(z.p-hero.p).normalized*strike.push*resistance/4;
     for(int n=0;n<4;n++)z.p=Move(z.p,push);
     z.root.position=V(z.p);
     if(z.hp<=0){if(z.visual)z.visual.Die();else z.root.rotation=Quaternion.Euler(0,0,85);}else if(z.visual)z.visual.Hurt();
    }
-   if(hits>0)sound.Play("hit");return hits;
+   if(hits>0)sound.Play(strike.shove?"shove":"hit");return hits;
   }
   void BeginEnemyAttack(Person z){
    z.striking=true;z.wind=ImpactTime(z);z.strikeOrigin=z.p;
@@ -89,8 +94,7 @@ namespace Askich {
    z.wind-=dt;
    if(IsCrawler(z)){
     float advance=z.lungeTravel*(LungeFraction(z.wind)-LungeFraction(before));
-    var destination=z.p+advance*z.strikeDirection;
-    if(!Blocked(destination))z.p=destination;
+    z.p=MoveAmongActors(z,advance*z.strikeDirection,false);
     if(z.visual)z.visual.SampleLunge(CrawlerContact-Mathf.Max(z.wind,0));
    }
    if(z.wind<=0){
@@ -101,7 +105,7 @@ namespace Askich {
      ? offset.magnitude<CrawlerReach&&fromOrigin.magnitude<CrawlerRange&&Vector2.Dot(fromOrigin.normalized,z.strikeDirection)>Mathf.Cos(CrawlerHalfAngle)
      : offset.magnitude<1.55f&&Vector2.Dot(offset.normalized,z.strikeDirection)>.55f;
     if(contact&&damageDelay<=0&&Sight(z.p,hero.p)){
-     health-=EnemyDamage(z);WoundHero();damageDelay=.8f;heroStagger=.28f;heroVelocity=Vector2.zero;attack=0;strikeSequence++;searchSlot=-1;sound.Play("hit");
+     health-=EnemyDamage(z);WoundHero();damageDelay=.8f;heroStagger=.28f;heroVelocity=Vector2.zero;attack=0;strikeSequence++;ClearPcCombat();searchSlot=-1;sound.Play("hit");
      if(hero.visual)hero.visual.Hurt();
      if(health<=0){health=0;dead=true;if(hero.visual)hero.visual.Die();else hero.root.rotation=Quaternion.Euler(0,0,80);}
     }
@@ -124,7 +128,7 @@ namespace Askich {
     float progress=1-z.wind/ImpactTime(z);line.widthMultiplier=Mathf.Lerp(.04f,.085f,progress);attackCueTint.SetColor("_Color",Color.Lerp(new Color(1,.7f,.2f,.9f),new Color(1,.28f,.12f,1),progress));line.SetPropertyBlock(attackCueTint);
    }
   }
-  void DrawCombatHint(){if(attack<=0)return;Panel(new Rect(470,588,300,34));GUI.Label(new Rect(483,591,285,30),attack>activeStrike.duration-activeStrike.impact?"Замах · направление зафиксировано":"Возврат оружия",small);}
+  void DrawCombatHint(){if(attack<=0)return;Panel(new Rect(470,560,330,34));GUI.Label(new Rect(483,563,310,30),activeStrike.shove?"Толчок · 24 силы":attack>activeStrike.duration-activeStrike.impact?"Замах · направление зафиксировано":"Возврат оружия",small);}
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
   IEnumerator CheckCombat(Action<bool,string> check,string folder){
    foreach(var e in infected){e.hp=0;e.striking=false;e.stagger=e.recovery=0;}
