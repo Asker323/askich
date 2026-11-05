@@ -14,7 +14,8 @@ namespace Askich {
    if(!Application.isMobilePlatform&&Touch.activeTouches.Count==0&&Mouse.current!=null&&Mouse.current.leftButton.isPressed)Sample(ScreenLayout.ToUI(Mouse.current.position.ReadValue()),Mouse.current.leftButton.wasPressedThisFrame);
   }
   public void Sample(Vector2 p,bool began){
-   var delta=p-new Vector2(115,535);if(delta.magnitude<110)move=Vector2.ClampMagnitude(new Vector2(delta.x,-delta.y)/68,1);
+   var delta=p-new Vector2(115,535);float distance=delta.magnitude;
+   if(distance<110)move=new Vector2(delta.x,-delta.y).normalized*Mathf.InverseLerp(8,68,distance);
    if(Hit.Contains(p))hit=true;
    if(!began)return;
    pause|=Pause.Contains(p);torch|=Torch.Contains(p);use|=Use.Contains(p);heal|=Heal.Contains(p);

@@ -27,7 +27,8 @@ namespace Askich {
    yield return RouteWait(.2f);
   }
   IEnumerator RouteUse(float wait=.3f){RouteKeys(Key.E);yield return new WaitForSeconds(.12f);yield return RouteWait(wait);}
-  IEnumerator RoutePhoto(string name){
+  IEnumerator RoutePhoto(string name)=>CaptureGameCamera(Path.Combine(routeFolder,name+".png"));
+  IEnumerator CaptureGameCamera(string file){
    // Capture the current gameplay camera even when the desktop window is hidden.
    yield return new WaitForEndOfFrame();
    var previous=cam.targetTexture;
@@ -40,7 +41,7 @@ namespace Askich {
     RenderTexture.active=target;
     frame.ReadPixels(new Rect(0,0,target.width,target.height),0,0);
     frame.Apply();
-    File.WriteAllBytes(Path.Combine(routeFolder,name+".png"),frame.EncodeToPNG());
+    File.WriteAllBytes(file,frame.EncodeToPNG());
    } finally {
     cam.targetTexture=previous;
     RenderTexture.active=active;

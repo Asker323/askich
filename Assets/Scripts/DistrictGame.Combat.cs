@@ -14,6 +14,11 @@ namespace Askich {
   // Contact phases come from sampling the authored hand curves (DistrictCombatProbe).
   static Strike WeaponStrike(int weapon)=>weapon==1?new Strike(.85f,.36f,1.85f,.35f,45,18,.5f,.3f,2):weapon==2?new Strike(.8f,.4f,2.7f,.86f,30,14,.35f,.22f,1):new Strike(.55f,.47f,1.35f,.6f,10,8,.22f,.12f,1);
   const float EnemyDuration=1.2f,EnemyImpact=EnemyDuration*.47f;
+  const float CrawlerRange=1.85f,CrawlerTravel=.8f,CrawlerReach=1.08f,CrawlerGrip=.99f;
+  const float CrawlerBrace=.54f,CrawlerContact=.76f,CrawlerEnd=1.68f,CrawlerHalfAngle=.53f;
+  static bool IsCrawler(Person enemy)=>enemy.id%3==2;
+  static float ImpactTime(Person enemy)=>IsCrawler(enemy)?CrawlerContact:EnemyImpact;
+  static float LungeFraction(float remaining)=>Mathf.SmoothStep(0,1,Mathf.InverseLerp(CrawlerBrace,CrawlerContact,CrawlerContact-remaining));
   Vector2 heroVelocity,heroStrikeDirection;
   float heroStagger;
   int strikeSequence;
@@ -21,6 +26,18 @@ namespace Askich {
   readonly Dictionary<Person,LineRenderer> attackCues=new Dictionary<Person,LineRenderer>();
   Material attackCueMaterial;MaterialPropertyBlock attackCueTint;
 
+  Vector2 TouchStrikeDirection(){
+   float reach=WeaponStrike(weapon).range;
+   Vector2 aim=face;
+   foreach(var enemy in infected){
+    Vector2 toEnemy=enemy.p-hero.p;
+    float distance=toEnemy.magnitude;
+    if(enemy.hp<=0||distance>=reach||distance<.001f||!Sight(hero.p,enemy.p))continue;
+    reach=distance;
+    aim=toEnemy/distance;
+   }
+   return aim;
+  }
   bool TryAttack(Vector2 direction){
    var strike=WeaponStrike(weapon);
    if(!playing||paused||dead||suppliesOpen||attack>0||heroStagger>0||stamina<strike.cost)return false;
@@ -50,19 +67,40 @@ namespace Askich {
    if(hits>0)sound.Play("hit");return hits;
   }
   void BeginEnemyAttack(Person z){
-   z.striking=true;z.wind=EnemyImpact;z.strikeDirection=(hero.p-z.p).normalized;
+   z.striking=true;z.wind=ImpactTime(z);z.strikeOrigin=z.p;
+   if(IsCrawler(z))z.lungeTravel=Mathf.Clamp(Vector2.Distance(hero.p,z.p)-CrawlerGrip,0,CrawlerTravel);
+   z.strikeDirection=(hero.p-z.p).normalized;
    if(z.strikeDirection.sqrMagnitude<.01f)z.strikeDirection=Vector2.up;
    z.root.rotation=Quaternion.LookRotation(V(z.strikeDirection));
-   if(z.visual)z.visual.Attack(0,EnemyDuration);
+   if(z.visual)z.visual.Attack(0,IsCrawler(z)?CrawlerEnd:EnemyDuration);
   }
   bool TickEnemyAttack(Person z,float dt){
-   if(z.stagger>0||z.recovery>0){z.stagger=Mathf.Max(0,z.stagger-dt);z.recovery=Mathf.Max(0,z.recovery-dt);Animate(z,Vector2.zero,true,.1f);return true;}
+   bool crawler=IsCrawler(z);
+   if(crawler&&(z.striking||z.recovery>0))z.root.rotation=Quaternion.LookRotation(V(z.strikeDirection));
+   if(z.stagger>0||z.recovery>0){
+    z.stagger=Mathf.Max(0,z.stagger-dt);
+    z.recovery=Mathf.Max(0,z.recovery-dt);
+    if(crawler&&z.visual&&z.stagger==0)z.visual.SampleLunge(CrawlerEnd-z.recovery);
+    Animate(z,Vector2.zero,true,.1f);
+    return true;
+   }
    if(!z.striking)return false;
+   float before=z.wind;
    z.wind-=dt;
+   if(IsCrawler(z)){
+    float advance=z.lungeTravel*(LungeFraction(z.wind)-LungeFraction(before));
+    var destination=z.p+advance*z.strikeDirection;
+    if(!Blocked(destination))z.p=destination;
+    if(z.visual)z.visual.SampleLunge(CrawlerContact-Mathf.Max(z.wind,0));
+   }
    if(z.wind<=0){
-    z.striking=false;z.recovery=EnemyDuration-EnemyImpact;z.rest=1.2f;
+    z.striking=false;z.recovery=IsCrawler(z)?CrawlerEnd-CrawlerContact:EnemyDuration-EnemyImpact;z.rest=1.2f;
     Vector2 offset=hero.p-z.p;
-    if(offset.magnitude<1.55f&&Vector2.Dot(offset.normalized,z.strikeDirection)>.55f&&damageDelay<=0&&Sight(z.p,hero.p)){
+    Vector2 fromOrigin=hero.p-z.strikeOrigin;
+    bool contact=IsCrawler(z)
+     ? offset.magnitude<CrawlerReach&&fromOrigin.magnitude<CrawlerRange&&Vector2.Dot(fromOrigin.normalized,z.strikeDirection)>Mathf.Cos(CrawlerHalfAngle)
+     : offset.magnitude<1.55f&&Vector2.Dot(offset.normalized,z.strikeDirection)>.55f;
+    if(contact&&damageDelay<=0&&Sight(z.p,hero.p)){
      health-=EnemyDamage(z);WoundHero();damageDelay=.8f;heroStagger=.28f;heroVelocity=Vector2.zero;attack=0;strikeSequence++;searchSlot=-1;sound.Play("hit");
      if(hero.visual)hero.visual.Hurt();
      if(health<=0){health=0;dead=true;if(hero.visual)hero.visual.Die();else hero.root.rotation=Quaternion.Euler(0,0,80);}
@@ -80,9 +118,10 @@ namespace Askich {
      line=new GameObject("Infected attack warning").AddComponent<LineRenderer>();line.sharedMaterial=attackCueMaterial;line.useWorldSpace=true;line.loop=true;line.positionCount=19;line.widthMultiplier=.045f;line.shadowCastingMode=UnityEngine.Rendering.ShadowCastingMode.Off;line.receiveShadows=false;attackCues[z]=line;
     }
     line.enabled=visible;if(!visible)continue;
-    line.SetPosition(0,V(z.p,.09f));float yaw=Mathf.Atan2(z.strikeDirection.x,z.strikeDirection.y);
-    for(int i=0;i<18;i++){float a=yaw+Mathf.Lerp(-.98f,.98f,i/17f);line.SetPosition(i+1,V(z.p+new Vector2(Mathf.Sin(a),Mathf.Cos(a))*1.55f,.09f));}
-    float progress=1-z.wind/EnemyImpact;line.widthMultiplier=Mathf.Lerp(.04f,.085f,progress);attackCueTint.SetColor("_Color",Color.Lerp(new Color(1,.7f,.2f,.9f),new Color(1,.28f,.12f,1),progress));line.SetPropertyBlock(attackCueTint);
+    var origin=z.strikeOrigin;float reach=IsCrawler(z)?CrawlerRange:1.55f;float halfAngle=IsCrawler(z)?CrawlerHalfAngle:.98f;
+    line.SetPosition(0,V(origin,.09f));float yaw=Mathf.Atan2(z.strikeDirection.x,z.strikeDirection.y);
+    for(int i=0;i<18;i++){float a=yaw+Mathf.Lerp(-halfAngle,halfAngle,i/17f);line.SetPosition(i+1,V(origin+new Vector2(Mathf.Sin(a),Mathf.Cos(a))*reach,.09f));}
+    float progress=1-z.wind/ImpactTime(z);line.widthMultiplier=Mathf.Lerp(.04f,.085f,progress);attackCueTint.SetColor("_Color",Color.Lerp(new Color(1,.7f,.2f,.9f),new Color(1,.28f,.12f,1),progress));line.SetPropertyBlock(attackCueTint);
    }
   }
   void DrawCombatHint(){if(attack<=0)return;Panel(new Rect(470,588,300,34));GUI.Label(new Rect(483,591,285,30),attack>activeStrike.duration-activeStrike.impact?"Замах · направление зафиксировано":"Возврат оружия",small);}

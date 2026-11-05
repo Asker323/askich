@@ -36,7 +36,7 @@ namespace Askich {
     z.rest-=dt;z.repath-=dt;ObserveEnemy(z,dt);
     if(TickEnemyAttack(z,dt))continue;
     float distance=Vector2.Distance(z.p,hero.p);
-    if(distance<1.35f&&z.rest<=0&&CanSeeHero(z)){BeginEnemyAttack(z);continue;}
+    if(distance<(IsCrawler(z)?CrawlerRange:1.35f)&&z.rest<=0&&CanSeeHero(z)){BeginEnemyAttack(z);continue;}
     Vector2 old=z.p;
     if(z.awareness==Awareness.Search||(z.awareness==Awareness.Chase&&distance<.9f)){Animate(z,Vector2.zero,true,0);continue;}
     if(z.awareness==Awareness.Chase||z.awareness==Awareness.Investigate){
