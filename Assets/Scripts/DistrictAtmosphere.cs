@@ -36,17 +36,7 @@ namespace Askich {
    SetLowQuality(Application.isMobilePlatform);
   }
   public static GameObject Spawn(string name,Vector3 position,float yaw=0){var prefab=Resources.Load<GameObject>("Survival/Art/"+name);return prefab?Instantiate(prefab,position,Quaternion.Euler(0,yaw,0)):null;}
-  public static void Tree(Vector3 position,int seed){
-   var root=new GameObject("Wind tree");root.transform.position=position;
-   var bark=new Material(Shader.Find("Standard"));bark.color=new Color(.19f,.17f,.14f);bark.SetFloat("_Glossiness",0);
-   var leaves=new Material(Shader.Find("Standard"));leaves.color=Color.Lerp(new Color(.18f,.25f,.20f),new Color(.28f,.30f,.19f),(seed%7)/7f);leaves.SetFloat("_Glossiness",0);
-   void Part(PrimitiveType type,Vector3 p,Vector3 size,Material m){var o=GameObject.CreatePrimitive(type);Destroy(o.GetComponent<Collider>());o.transform.SetParent(root.transform,false);o.transform.localPosition=p;o.transform.localScale=size;o.GetComponent<Renderer>().sharedMaterial=m;}
-   Part(PrimitiveType.Cylinder,new Vector3(0,1.6f,0),new Vector3(.24f,1.6f,.24f),bark);
-   Part(PrimitiveType.Sphere,new Vector3(0,3.7f,0),new Vector3(2.5f,3.3f,2.1f),leaves);
-   Part(PrimitiveType.Sphere,new Vector3(.9f,3,.2f),new Vector3(1.9f,2.3f,1.8f),leaves);
-   Part(PrimitiveType.Sphere,new Vector3(-.7f,3.3f,-.3f),new Vector3(1.7f,2.2f,1.9f),leaves);
-   root.AddComponent<DistrictTreeSway>().Phase=seed*.7f;
-  }
+  public static void Tree(Vector3 position,int seed)=>DistrictTreeArt.Build(position,seed);
   public static Light Point(string name,Vector3 position,Color color,float intensity,float range){var o=new GameObject(name);o.transform.position=position;var l=o.AddComponent<Light>();l.type=LightType.Point;l.color=color;l.intensity=intensity;l.range=range;l.shadows=LightShadows.None;return l;}
   public void Aim(Vector2 direction){if(flashlight&&direction.sqrMagnitude>.01f)flashlight.transform.rotation=Quaternion.LookRotation(new Vector3(direction.x,-.20f,direction.y));}
   public void ToggleFlashlight(){flashlight.enabled=!flashlight.enabled;}

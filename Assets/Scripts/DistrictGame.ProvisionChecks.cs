@@ -37,17 +37,19 @@ namespace Askich {
   IEnumerator CheckTouchInventory(){
    testSave=Path.Combine(Application.temporaryCachePath,"touch-inventory-"+Guid.NewGuid()+".json");
    string folder=Environment.GetEnvironmentVariable("GOIDA_TOUCH_INVENTORY_CHECK");Directory.CreateDirectory(folder);
-   var results=new System.Collections.Generic.List<string>();
-   void Require(bool ok,string message){results.Add((ok?"PASS ":"FAIL ")+message);File.WriteAllLines(Path.Combine(folder,"touch-inventory-checks.txt"),results);if(!ok){Application.Quit(1);throw new Exception(message);}}
+   InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;EnsureInventoryArt();
+   var results=new System.Collections.Generic.List<string>();var trace=new System.Collections.Generic.List<string>();
+   void Trace(string phase){trace.Add($"{phase}: screen={Screen.width}x{Screen.height}, offset={ScreenLayout.Offset}, scale={ScreenLayout.Scale}, held={pointer.Held}, pos={pointer.Position}, origin={pointer.Origin}, dragged={pointer.Dragged}, slot={dragSlot}, open={suppliesOpen}");File.WriteAllLines(Path.Combine(folder,"touch-trace.txt"),trace);}
+   void Require(bool ok,string message){results.Add((ok?"PASS ":"FAIL ")+message);File.WriteAllLines(Path.Combine(folder,"touch-inventory-checks.txt"),results);if(!ok){var frame=ScreenCapture.CaptureScreenshotAsTexture();File.WriteAllBytes(Path.Combine(folder,"failed-touch.png"),frame.EncodeToPNG());Destroy(frame);Application.Quit(1);throw new Exception(message);}}
    playing=true;paused=false;Application.runInBackground=true;
    foreach(var z in infected)z.hp=0;inventory.Load(new DistrictInventoryData());inventory.TryAdd(DistrictItemKind.Water,3);inventory.TryAdd(DistrictItemKind.Backpack,1);inventory.Data.bagFound=true;
    hero.p=homes[5].p+homes[5].containers[1]+Vector2.down;homes[5].taken[1]=true;suppliesOpen=true;pointer.Reset();
    var screen=InputSystem.AddDevice<Touchscreen>();TouchControls.ForceEnabled=true;
    void Finger(Vector2 ui,UnityEngine.InputSystem.TouchPhase phase){var pos=ScreenLayout.Offset+ui*ScreenLayout.Scale;pos.y=Screen.height-pos.y;InputSystem.QueueStateEvent(screen,new TouchState{touchId=21,phase=phase,position=pos,pressure=phase==UnityEngine.InputSystem.TouchPhase.Ended?0:1});}
    IEnumerator Drag(Vector2 from,Vector2 to){
-    Finger(from,UnityEngine.InputSystem.TouchPhase.Began);yield return new WaitForSeconds(.15f);
-    Finger(Vector2.Lerp(from,to,.5f),UnityEngine.InputSystem.TouchPhase.Moved);yield return new WaitForSeconds(.15f);
-    Finger(to,UnityEngine.InputSystem.TouchPhase.Moved);yield return new WaitForSeconds(.15f);
+    Finger(from,UnityEngine.InputSystem.TouchPhase.Began);yield return new WaitForSeconds(.15f);Trace("sample");
+    Finger(Vector2.Lerp(from,to,.5f),UnityEngine.InputSystem.TouchPhase.Moved);yield return new WaitForSeconds(.15f);Trace("sample");
+    Finger(to,UnityEngine.InputSystem.TouchPhase.Moved);yield return new WaitForSeconds(.15f);Trace("sample");
     Finger(to,UnityEngine.InputSystem.TouchPhase.Ended);yield return new WaitForSeconds(.2f);yield return new WaitForEndOfFrame();
    }
    yield return new WaitForSeconds(.5f);

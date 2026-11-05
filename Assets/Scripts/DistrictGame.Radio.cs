@@ -10,29 +10,30 @@ namespace Askich {
    "Нина, не жди у дома. На голос идут заражённые. Закрой дверь.",
    "Северо-восточная окраина. Водонапорная башня. Возьмите еду и бинты. Мы ещё здесь."
   };
-  AudioClip[] radioMessages;
+  readonly float[] radioDurations={6,6,8};
+  float radioRemaining;
   int radioPart=-1;
   float radioGap,porchScrape;
   bool radioSpeaking;
   void PrepareRadio(){
-   radioMessages=new AudioClip[3];
-   for(int i=0;i<radioMessages.Length;i++)radioMessages[i]=Resources.Load<AudioClip>("Survival/Radio/message"+i);
-   voice.loop=false;
+   // No synthetic speech is loaded. The damaged receiver carries timed text and static.
+   voice.clip=null;voice.loop=false;
   }
   void ToggleRadio(){
-   radioOn=!radioOn;voice.Stop();radioSpeaking=false;radioPart=-1;radioGap=.8f;radioPulse=0;
-   if(radioOn){staticSound.Play();Alert(radioPos,25);Say("Приёмник ловит голоса. Можно дослушать или выключить — действие / E.");}
-   else{staticSound.Stop();Say("Приёмник выключен. Голоса стихли.");}
+   radioOn=!radioOn;voice.Stop();radioSpeaking=false;radioPart=-1;radioRemaining=0;radioGap=.8f;radioPulse=0;
+   if(radioOn){staticSound.Play();Alert(radioPos,25);Say("Слабый сигнал. E — выключить.");}
+   else{staticSound.Stop();Say("Приёмник выключен.");}
   }
   void TickRadio(float dt){
    if(!radioOn)return;
    bool clear=Sight(radioPos,hero.p);
-   voice.volume=Mathf.Lerp(voice.volume,clear?.85f:.38f,dt*4);
+   staticSound.volume=Mathf.Lerp(staticSound.volume,clear?.075f:.035f,dt*4);
    voice.GetComponent<AudioLowPassFilter>().cutoffFrequency=clear?3400:1100;
    radioPulse-=dt;
    if(radioPulse<=0){radioPulse=3;Alert(radioPos,25);}
    if(radioSpeaking){
-    if(!voice.isPlaying){
+    radioRemaining-=dt;
+    if(radioRemaining<=0){
      radioSpeaking=false;
      if(radioPart==2){if(!heard){heard=true;Save();}radioPart=-1;radioGap=4;}
      else radioGap=1.1f;
@@ -40,8 +41,7 @@ namespace Askich {
    }else{
     radioGap-=dt;
     if(radioGap<=0){
-     radioPart++;voice.clip=radioMessages[radioPart];radioSpeaking=true;
-     if(voice.clip)voice.Play();
+     radioPart++;radioRemaining=radioDurations[radioPart];radioSpeaking=true;
     }
    }
    porchScrape-=dt;
@@ -52,7 +52,7 @@ namespace Askich {
    }
   }
   string RadioCaption=>radioOn&&Vector2.Distance(hero.p,radioPos)<12
-   ?radioSpeaking?"РАДИО · "+radioLines[radioPart]:"РАДИО · треск, голоса теряются в помехах…":null;
+   ?radioSpeaking?"РАДИО · "+radioLines[radioPart]:null:null;
   void DrawRadioCaption(){
    if(RadioCaption==null||suppliesOpen)return;
    Panel(RadioCaptionArea);
@@ -63,13 +63,13 @@ namespace Askich {
    foreach(var z in infected)z.hp=0;
    health=100;bleeding=false;infection=0;hero.p=radioPos;heroVelocity=Vector2.zero;heard=false;
    radioOn=false;voice.Stop();staticSound.Stop();ToggleRadio();
-   check(!heard&&radioMessages.Length==3&&System.Array.TrueForAll(radioMessages,c=>c),"three radio messages load without granting the destination early");
+   check(!heard&&radioDurations.Length==3&&voice.clip==null&&staticSound.isPlaying,"text radio starts with static and no synthetic voice or early destination");
    yield return new WaitForSeconds(1.2f);
-   check(radioSpeaking&&radioPart==0&&RadioCaption.Contains("Анна"),"first spoken fragment has matching Anna subtitle");
+   check(radioSpeaking&&radioPart==0&&RadioCaption.Contains("Анна"),"first timed fragment shows Anna subtitle without speech");
    check(PointerOnHud(RadioCaptionArea.center),"radio subtitles exclude clicks from world attacks");
-   int part=radioPart;float cursor=voice.time;paused=true;
+   int part=radioPart;float cursor=radioRemaining;paused=true;
    yield return new WaitForSeconds(.3f);
-   check(radioPart==part&&Mathf.Abs(voice.time-cursor)<.12f,"pause holds the radio scene");paused=false;
+   check(radioPart==part&&Mathf.Abs(radioRemaining-cursor)<.12f,"pause holds the radio scene");paused=false;
    yield return CaptureGameCamera(Path.Combine(folder,"radio-story-house.png"));
    ToggleRadio();yield return new WaitForSeconds(.3f);
    check(!voice.isPlaying&&!staticSound.isPlaying&&!heard,"early switch-off silences both sources and keeps clue unknown");

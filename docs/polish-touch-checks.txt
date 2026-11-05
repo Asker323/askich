@@ -1,0 +1,4 @@
+PASS touch equips backpack
+PASS touch transfers bottle to backpack row
+PASS touch deposits bottle in searched container
+PASS touch retrieves bottle without duplication

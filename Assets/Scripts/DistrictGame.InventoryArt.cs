@@ -46,7 +46,9 @@ namespace Askich {
    var anim=bodyModel.GetComponentInChildren<Animation>();
    foreach(AnimationState state in anim)if(state.name.EndsWith("|Idle")){state.clip.SampleAnimation(anim.gameObject,0);break;}
    anim.enabled=false;
+   foreach(var bone in bodyModel.GetComponentsInChildren<Transform>())if(bone.name=="Head")bone.localScale*=.8f;
    foreach(var bone in bodyModel.GetComponentsInChildren<Transform>(true))if(System.Array.IndexOf(new[]{"knife","woodenbat_barbed","woodenbat_saw","pistol","shotgun","guitar","smg","spear","rifle","axe"},bone.name.ToLowerInvariant())>=0)bone.gameObject.SetActive(false);
+   foreach(var skin in bodyModel.GetComponentsInChildren<SkinnedMeshRenderer>())skin.forceMatrixRecalculationPerRender=true;
    SetPortraitLayer(bodyModel);
   }
   static void SetPortraitLayer(GameObject obj){foreach(var t in obj.GetComponentsInChildren<Transform>(true))t.gameObject.layer=31;}

@@ -35,14 +35,16 @@ namespace Askich {
   }
   IEnumerator RouteUse(float wait=.3f){RouteKeys(Key.E);yield return new WaitForSeconds(.12f);yield return RouteWait(wait);}
   IEnumerator RoutePhoto(string name)=>CaptureGameCamera(Path.Combine(routeFolder,name+".png"));
-  IEnumerator CaptureGameCamera(string file){
+  IEnumerator CaptureGameCamera(string file,float inspectionSize=0){
    // Capture the current gameplay camera even when the desktop window is hidden.
    yield return new WaitForEndOfFrame();
-   var previous=cam.targetTexture;
+   var skins=FindObjectsByType<SkinnedMeshRenderer>(FindObjectsSortMode.None);var force=new bool[skins.Length];for(int i=0;i<skins.Length;i++){force[i]=skins[i].forceMatrixRecalculationPerRender;skins[i].forceMatrixRecalculationPerRender=true;}
+   var previous=cam.targetTexture;float previousSize=cam.orthographicSize;Vector3 previousPosition=cam.transform.position;
    var active=RenderTexture.active;
    var target=RenderTexture.GetTemporary(1280,720,24,RenderTextureFormat.ARGB32);
    var frame=new Texture2D(target.width,target.height,TextureFormat.RGB24,false);
    try {
+    if(inspectionSize>0){cam.orthographicSize=inspectionSize;cam.transform.position=V(hero.p,.9f)-cam.transform.forward*35;}
     cam.targetTexture=target;
     cam.Render();
     RenderTexture.active=target;
@@ -50,8 +52,9 @@ namespace Askich {
     frame.Apply();
     File.WriteAllBytes(file,frame.EncodeToPNG());
    } finally {
-    cam.targetTexture=previous;
+    cam.targetTexture=previous;cam.orthographicSize=previousSize;cam.transform.position=previousPosition;
     RenderTexture.active=active;
+    for(int i=0;i<skins.Length;i++)if(skins[i])skins[i].forceMatrixRecalculationPerRender=force[i];
     RenderTexture.ReleaseTemporary(target);
     Destroy(frame);
    }
@@ -112,7 +115,10 @@ namespace Askich {
    }
    yield return RouteUse();RouteRequire(campEstablished,"established shelter using collected supplies");yield return RoutePhoto("route-shelter");
    if(SafeToRest()&&tiredness>5){float before=tiredness;RouteRequire(BeginMedical(MedicalAction.Rest),"started safe shelter rest");yield return RouteWait(6.3f);RouteRequire(tiredness<before,"shelter rest restores energy");}
-   yield return RouteWalk(cistern);yield return RouteUse();yield return RouteWait(3.3f);
+   yield return RouteWalk(cistern);float clearDeadline=Time.time+25;
+   while(infected.Exists(z=>z.hp>0&&Vector2.Distance(z.p,hero.p)<7&&Sight(hero.p,z.p))&&Time.time<clearDeadline){RouteRequireAlive();RouteDefend();RouteKeys();yield return null;}
+   RouteRequire(!infected.Exists(z=>z.hp>0&&Vector2.Distance(z.p,hero.p)<7&&Sight(hero.p,z.p)),"secured reserve approach before refilling");
+   yield return RouteWait(1);yield return RouteUse();yield return RouteWait(3.3f);
    RouteRequire(inventory.Count(DistrictItemKind.Water)>=3,"refilled carried bottle at shelter reserve");
    Save();RouteNote("COMPLETE automated ordinary-rules route; not a manual playthrough");Application.Quit();
   }

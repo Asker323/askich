@@ -12,7 +12,8 @@ namespace Askich {
   int sterileBandages {get=>inventory.Count(DistrictItemKind.Sterile);set=>inventory.SetCount(DistrictItemKind.Sterile,value);}
   int alcoholDoses {get=>inventory.Count(DistrictItemKind.Alcohol);set=>inventory.SetCount(DistrictItemKind.Alcohol,value);}
   int stones {get=>inventory.Count(DistrictItemKind.Stone);set=>inventory.SetCount(DistrictItemKind.Stone,value);}
-  string hoveredInventoryItem;
+  string hoveredInventoryItem,inventoryNotice;float inventoryNoticeUntil;
+  void InventoryFeedback(string message){inventoryNotice=message;inventoryNoticeUntil=Time.unscaledTime+4;}
   int inventorySelection=-1,dragSlot=-1,dragArea,overflowPage;
   GameObject backpackFind,wornBackpack;
   bool inventoryMouseHeld,inventoryDropPending;
@@ -65,26 +66,26 @@ namespace Askich {
     if(area.Contains(pointer.Position))hoveredInventoryItem=ItemNames[item.kind]+" · "+item.amount+(item.kind==6?" доз":item.kind==9?" глотков":"");
     GUI.DrawTexture(new Rect(area.x+7,area.y+4,58,58),ItemIcon(item.kind),ScaleMode.ScaleToFit,true);
     if(item.amount>1||item.kind==6||item.kind==9)GUI.Label(new Rect(area.x+40,area.y+47,30,24),item.amount.ToString(),small);
-   }else if(locked){GUI.color=new Color(.34f,.38f,.35f);GUI.Label(new Rect(area.x+16,area.y+22,50,30),"—",text);GUI.color=Color.white;}
+   }
   }
   void DrawSuppliesMenu(){
    if(!suppliesOpen){dragSlot=-1;return;}
    hoveredInventoryItem=null;EnsureInventoryArt();
    FillRect(new Rect(0,0,1280,720),new Color(.01f,.02f,.025f,.72f));FillRect(GridPanel,new Color(.04f,.065f,.07f));
    GUI.Label(new Rect(130,112,600,45),"СНАРЯЖЕНИЕ",large);
-   if(Button(new Rect(1000,116,150,48),"Закрыть · I")){suppliesOpen=false;dragSlot=-1;}
-   GUI.Label(new Rect(400,147,490,30),(inventory.Data.backpack?"Школьный рюкзак":"Карманы")+" · "+inventory.Capacity+" ячеек",text);
+   if(Button(new Rect(1000,116,150,48),"Закрыть")){suppliesOpen=false;dragSlot=-1;}
+   GUI.Label(new Rect(400,147,490,30),(inventory.Data.backpack?"Школьный рюкзак":"Карманы")+" · "+inventory.Capacity,text);
    DrawBodyPreview(new Rect(132,175,225,260));
    InventoryCell(HandSlot,weapon==0?default:new DistrictItem((DistrictItemKind)weapon,1),-2,false);
    InventoryCell(BagSlot,inventory.Data.backpack?new DistrictItem(DistrictItemKind.Backpack,1):default,-3,false);
    GUI.Label(new Rect(155,536,90,24),"В руках",small);GUI.Label(new Rect(265,536,95,24),"На спине",small);
-   if(Button(new Rect(145,568,95,40),"Снять")&&medicalAction==MedicalAction.None){if(inventory.UnequipWeapon())Save();else if(weapon>0)Say("Нет свободной ячейки для оружия.");}
-   if(Button(new Rect(255,568,105,40),"Снять")&&medicalAction==MedicalAction.None&&inventory.Data.backpack){if(inventory.UnequipBag())Save();else Say("Освободи дополнительные ячейки и место в карманах.");}
+   if(weapon>0&&Button(new Rect(145,568,95,40),"Снять")&&medicalAction==MedicalAction.None){if(inventory.UnequipWeapon())Save();else if(weapon>0)InventoryFeedback("Нет свободной ячейки для оружия.");}
+   if(inventory.Data.backpack&&Button(new Rect(255,568,105,40),"Снять")&&medicalAction==MedicalAction.None&&inventory.Data.backpack){if(inventory.UnequipBag())Save();else InventoryFeedback("Освободи дополнительные ячейки и место в карманах.");}
    for(int i=0;i<18;i++)InventoryCell(ItemCell(i),inventory.Data.slots[i],i,i>=inventory.Capacity);
    int store=NearbyStore();bool overflow=store<0&&inventory.Data.overflow.Count>0;DistrictItem[] external=null;
    if(store>=0)external=inventory.Container(store);
    else if(overflow){external=new DistrictItem[6];overflowPage=Mathf.Clamp(overflowPage,0,(inventory.Data.overflow.Count-1)/6);for(int i=0;i<6;i++)if(overflowPage*6+i<inventory.Data.overflow.Count)external[i]=inventory.Data.overflow[overflowPage*6+i];}
-   GUI.Label(new Rect(400,438,480,30),store>=0?"Обысканный контейнер":overflow?"Вещи из прежнего сохранения":"Подойди к обысканному контейнеру",small);
+   if(external!=null)GUI.Label(new Rect(400,438,480,30),overflow?"Возвращённые вещи":"Контейнер",small);
    if(external!=null)for(int i=0;i<6;i++)InventoryCell(StoreCell(i),external[i],-10-i,false);
    if(overflow){
     if(Button(new Rect(900,550,70,40),"←"))overflowPage=Mathf.Max(0,overflowPage-1);
@@ -94,20 +95,20 @@ namespace Askich {
     var item=inventory.Data.slots[inventorySelection];
     GUI.Label(new Rect(905,190,245,64),ItemNames[item.kind],text);
     if(item.kind<=2||item.kind==8){
-     GUI.Label(new Rect(905,260,245,80),item.kind==8?"+12 ячеек. Освободи карманы, чтобы снять.":"Перенеси на силуэт или возьми в руки.",small);
+     GUI.Label(new Rect(905,260,245,80),item.kind==8?"+12 ячеек":"",small);
      if(Button(new Rect(905,355,245,58),item.kind==8?"Надеть":"Взять в руки")&&medicalAction==MedicalAction.None&&inventory.Equip(inventorySelection)){inventorySelection=-1;Save();}
     }else{
-     GUI.Label(new Rect(905,257,245,60),item.kind==10?"Сохрани, чтобы набрать воду":item.kind==9?"В бутылке "+item.amount+" из 3 глотков":item.kind==6?"В бутылке "+item.amount+" из 3 доз":item.kind==7?"Отвлекают заражённых":item.kind==3?"Утоляет голод · 1,8 с":"Перевязка занимает 2,5 с",small);
-     if(item.kind==10||item.kind==9)MedicalButton(new Rect(905,402,245,56),"Наполнить у убежища",MedicalAction.Refill);
+     GUI.Label(new Rect(905,257,245,60),item.kind==10?"Пусто":item.kind==9?item.amount+" / 3 глотка":item.kind==6?item.amount+" / 3 дозы":item.kind==7?"Отвлечение":item.kind==3?"+35 сытости":item.kind==5?"Кровь и заражение":"Останавливает кровь",small);
+     if(item.kind==10||item.kind==9&&item.amount<3)MedicalButton(new Rect(905,402,245,56),"Наполнить",MedicalAction.Refill);
      if(item.kind==3)MedicalButton(new Rect(905,334,245,56),"Поесть",MedicalAction.Eat);
      if(item.kind==9)MedicalButton(new Rect(905,334,245,56),"Выпить воды",MedicalAction.Water);
-     if(item.kind==4)MedicalButton(new Rect(905,334,245,56),"Перевязать · B",MedicalAction.Bandage);
-     if(item.kind==5)MedicalButton(new Rect(905,334,245,56),"Обработать · H",MedicalAction.Sterile);
+     if(item.kind==4)MedicalButton(new Rect(905,334,245,56),"Перевязать",MedicalAction.Bandage);
+     if(item.kind==5)MedicalButton(new Rect(905,334,245,56),"Обработать",MedicalAction.Sterile);
      if(item.kind==4||item.kind==6)MedicalButton(new Rect(905,402,245,56),"Стерилизовать",MedicalAction.Craft);
      if(item.kind==6)MedicalButton(new Rect(905,470,245,56),"Выпить · опьянение",MedicalAction.Drink);
     }
-   }else GUI.Label(new Rect(905,195,245,120),"Выбери предмет. Перетаскивай вещи между ячейками и открытым контейнером.",small);
-   GUI.color=MedicalWarning;GUI.Label(new Rect(400,565,475,48),medicalAction!=MedicalAction.None?"Действие выполняется. Перенос после завершения.":hoveredInventoryItem??"Мир продолжает жить. Держи вход закрытым.",small);GUI.color=Color.white;
+   }
+   GUI.color=MedicalWarning;GUI.Label(new Rect(400,565,475,48),Time.unscaledTime<inventoryNoticeUntil?inventoryNotice:medicalAction!=MedicalAction.None?"Действие выполняется":hoveredInventoryItem??"",small);GUI.color=Color.white;
    if(Event.current.type!=EventType.Repaint)return;
    Vector2 dropPosition=pointer.Position;bool dropDragged=pointer.Dragged;
    bool rawDrop=false;

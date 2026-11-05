@@ -1,0 +1,5 @@
+PASS world materials compile for walls, floors, roofs and terrain
+PASS branching trees have supported individual-leaf canopy meshes
+PASS infected head proportions remain applied at end of rendered frame
+PASS infected carry individual decayed material treatment
+PASS synthetic radio speech is absent from packaged resources

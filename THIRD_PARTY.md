@@ -25,11 +25,11 @@ License stated on the asset page: CC0 1.0 Universal, https://creativecommons.org
 
 ## Project-generated material
 
-The Dusk shader, geometry for houses/vegetation, procedural wind, steps and impacts are project code. The radio script was written for this game; the existing recording uses Microsoft Irina Desktop via Windows System.Speech. This is a temporary synthetic voice, not an actor recording. Before public distribution, confirm that voice's redistribution terms or replace the recording with a clearly licensed voice performance. Publication remains deferred.
+The Dusk shader, geometry for houses/vegetation, procedural wind, steps and impacts are project code. The radio script was written for this game. The temporary Microsoft Irina Desktop recordings were removed from Resources in the November 5 visual-polish stage. The current receiver uses project-generated static and timed captions, with no spoken dialogue. Publication remains deferred.
 
 Combat stage (2026-11-04): the already included Matt Axe and Spear skinned meshes are now enabled for equipped weapons, retaining the original bone bindings. Other unused weapon meshes remain hidden. No additional third-party files were downloaded.
 
-Radio story stage: message0.wav, message1.wav and message2.wav were generated locally with Microsoft Irina Desktop using System.Speech. These are temporary synthetic recordings. The prior redistribution caveat applies to these files as well. Porch scraping is project-generated procedural audio.
+Historical radio story stage: message0.wav, message1.wav and message2.wav were generated locally with Microsoft Irina Desktop using System.Speech. These files and the older radio.wav were removed from the current project in the November 5 visual-polish stage. Older packaged releases may still contain them. Porch scraping is project-generated procedural audio.
 
 Street stage: StreetSurface and VergeGrass shaders, ground patches, grass meshes and fence geometry are project-generated. Existing licensed vehicles and street props are reused. No new external assets were acquired.
 
@@ -40,3 +40,5 @@ Inventory stage: item icons are rendered at runtime from project-authored item g
 Needs stage: water bottle, tin geometry and additional needs icons are project-generated. No new external assets were acquired.
 
 Provisions stage: DrinkProvision, EatProvision and RestProvision are baked from the existing licensed Matt Idle/Duck clips with project-generated arm posing. Bottle, tin and refill-reserve geometry are project-generated. No new third-party assets were acquired.
+
+Visual-polish stage: WorldSurface and Canopy shaders, branching tree meshes and leaf geometry are project-generated. The existing licensed infected models retain their skeletons and attacks; material treatment, head proportions and tongue visibility were adjusted. No external assets or new speech recordings were acquired.

@@ -18,6 +18,7 @@ namespace Askich {
   bool zombie,dead,crawler,searching;
   Transform head;
   GameObject nativeAxe,nativeSpear;
+  int visualVariant;float meshHeight=1,meshBase;
   float hurtFlash;bool paused;Renderer[] bodyRenderers;MaterialPropertyBlock tint;
   public int EquippedWeapon {get;private set;}
   public bool NativeEquipmentReady=>nativeAxe&&nativeSpear;
@@ -25,10 +26,11 @@ namespace Askich {
   public Transform Hand {get;private set;}
   public bool Ready=>animationPlayer&&clips.ContainsKey("Idle")&&clips.ContainsKey("Walk")&&clips.ContainsKey("Death");
   public string State=>state;
+  public float HeadScaleRatio=>head?head.localScale.x/headScale.x:1;
   public int VoiceCount=>voices==null?0:voices.Length;
 
   public bool Initialize(bool infected,int variant){
-   zombie=infected;crawler=infected&&variant%3==2;
+   visualVariant=variant;zombie=infected;crawler=infected&&variant%3==2;
    string name=!infected?"Characters_Matt":variant%3==1?"Zombie_Chubby":"Zombie_Basic";
    var prefab=Resources.Load<GameObject>("Survival/Art/"+name);
    if(!prefab)return false;
@@ -52,12 +54,14 @@ namespace Askich {
    }
    foreach(var bone in model.GetComponentsInChildren<Transform>(true)){
     string n=bone.name.ToLowerInvariant();
+    if(infected&&n=="tongue"&&bone.GetComponent<SkinnedMeshRenderer>())bone.gameObject.SetActive(false);
     if(n=="head"){head=bone;headScale=bone.localScale;}
     if(n==(infected?"index1.r":"index1.l"))Hand=bone;
     if(!infected&&n=="axe")nativeAxe=bone.gameObject;if(!infected&&n=="spear")nativeSpear=bone.gameObject;
     if(!infected&&Array.IndexOf(new[]{"knife","woodenbat_barbed","woodenbat_saw","pistol","shotgun","guitar","smg","spear","rifle","axe"},n)>=0)bone.gameObject.SetActive(false);
    }
    bodyRenderers=model.GetComponentsInChildren<Renderer>();tint=new MaterialPropertyBlock();
+   var skin=model.GetComponentInChildren<SkinnedMeshRenderer>();if(skin){meshHeight=skin.sharedMesh.bounds.size.y;meshBase=skin.sharedMesh.bounds.min.y;}
    if(!infected&&bodyRenderers.Length>0)foreach(var tool in new[]{nativeAxe,nativeSpear})if(tool)foreach(var r in tool.GetComponentsInChildren<Renderer>(true)){var materials=r.sharedMaterials;for(int i=0;i<materials.Length;i++)materials[i]=bodyRenderers[0].sharedMaterial;r.sharedMaterials=materials;}
    Play(crawler?"Crawl":"Idle",true,crawler?0:1);
    animationPlayer[clips[state]].normalizedTime=(variant*.173f)%1;
@@ -75,7 +79,7 @@ namespace Askich {
    // at the same simulation time, including the frame before resuming gameplay.
    if(state=="CrawlerLunge"&&lungeTime>=.12f) crawlerLunge.SampleAnimation(animationPlayer.gameObject,lungeTime);
    if(!zombie&&provisionMode>0&&provisionMode<=3&&state==provisions[provisionMode-1].name)provisions[provisionMode-1].SampleAnimation(animationPlayer.gameObject,provisionTime);
-   if(head)head.localScale=headScale*.84f;if(paused)return;hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
+   if(head)head.localScale=headScale*(zombie?.54f:.80f);if(paused)return;hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();tint.SetFloat("_Decay",zombie?.85f:0);tint.SetFloat("_Variant",visualVariant);tint.SetFloat("_PatternHeight",meshHeight);tint.SetFloat("_PatternBase",meshBase);if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
   public bool Equip(int weapon){EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
   void Play(string key,bool loop,float speed){
    if(!clips.TryGetValue(key,out string name))return;
