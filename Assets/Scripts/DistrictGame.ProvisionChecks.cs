@@ -57,6 +57,12 @@ namespace Askich {
    yield return Drag(ItemCell(0).center,ItemCell(7).center);Require(inventory.Data.slots[7].kind==9&&inventory.Data.slots[7].amount==3,"touch transfers bottle to backpack row");
    yield return Drag(ItemCell(7).center,StoreCell(2).center);Require(inventory.Container(16)[2].kind==9,"touch deposits bottle in searched container");
    yield return Drag(StoreCell(2).center,ItemCell(8).center);Require(inventory.Data.slots[8].kind==9&&inventory.Container(16)[2].Empty,"touch retrieves bottle without duplication");
+   for(int i=0;i<3;i++){
+    var kind=(DistrictItemKind)(11+i);inventory.TryAdd(kind,1);
+    int slot=Array.FindIndex(inventory.Data.slots,v=>v.kind==(int)kind);
+    yield return Drag(ItemCell(slot).center,ClothingSlot(i).center);
+    Require(inventory.HasClothing((int)kind)&&inventory.Count(kind)==0,"touch equips clothing slot "+i+" without duplication");
+   }
    var image=ScreenCapture.CaptureScreenshotAsTexture();File.WriteAllBytes(Path.Combine(folder,"touch-inventory.png"),image.EncodeToPNG());Destroy(image);
    TouchControls.ForceEnabled=false;InputSystem.RemoveDevice(screen);Application.Quit();
   }

@@ -91,16 +91,16 @@ namespace Askich {
   }
   IEnumerator StoneFlight(Vector2 start,Vector2 end,int generation){
    var stone=Cube("Thrown distraction stone",V(start,1),Vector3.one*.16f,new Color(.5f,.5f,.46f));float elapsed=0;
-   while(elapsed<.55f){yield return null;if(generation!=worldGeneration||dead){Destroy(stone);yield break;}if(paused)continue;elapsed+=Mathf.Min(Time.deltaTime,.05f);float t=Mathf.Clamp01(elapsed/.55f);stone.transform.position=V(Vector2.Lerp(start,end,t),Mathf.Lerp(1,.1f,t)+Mathf.Sin(t*Mathf.PI)*1.7f);}
+   while(elapsed<.55f){yield return null;if(generation!=worldGeneration||dead){Destroy(stone);yield break;}if(paused)continue;elapsed+=FrameDelta;float t=Mathf.Clamp01(elapsed/.55f);stone.transform.position=V(Vector2.Lerp(start,end,t),Mathf.Lerp(1,.1f,t)+Mathf.Sin(t*Mathf.PI)*1.7f);}
    HearNoise(end,14);sound.Play("block");Destroy(stone,2);Say("Камень упал. Заражённые поблизости могут пойти на звук.");
   }
   void DrawSurvivalHud(){
    if(suppliesOpen)return;
    var nearby=NearbySupply();if(nearby!=null)GUI.Label(new Rect(35,235,720,30),nearby.label+" · действие / E",small);
    if(nearby==null&&!inventory.Data.bagFound&&Vector2.Distance(hero.p,backpackPosition)<1.25f)GUI.Label(new Rect(35,235,720,30),"Школьный рюкзак · действие / E",small);
-   if(Button(InventoryButton,"РЮКЗАК · I"))suppliesOpen=!suppliesOpen;
+   if(Button(InventoryButton,TouchControls.Enabled?"РЮКЗАК":"РЮКЗАК · I"))suppliesOpen=!suppliesOpen;
    if(Button(SneakButton,sneakToggle?"ТИХИЙ ШАГ: ВКЛ":"ТИХИЙ ШАГ"))sneakToggle=!sneakToggle;
-   if(Button(ThrowButton,"БРОСИТЬ · G · "+stones)&&!suppliesOpen)ThrowStone();
+   if(Button(ThrowButton,(TouchControls.Enabled?"БРОСИТЬ · ":"БРОСИТЬ · G · ")+stones)&&!suppliesOpen)ThrowStone();
    DrawMedicalProgress();
   }
  }

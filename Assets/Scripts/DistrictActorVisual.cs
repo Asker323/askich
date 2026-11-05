@@ -19,7 +19,9 @@ namespace Askich {
   Transform head;
   GameObject nativeAxe,nativeSpear;
   int visualVariant;float meshHeight=1,meshBase;
-  float hurtFlash;bool paused;Renderer[] bodyRenderers;MaterialPropertyBlock tint;
+  float hurtFlash;bool paused,tintApplied;Renderer[] bodyRenderers;MaterialPropertyBlock tint;
+  int clothingBits=-1;
+  public bool UsesAdultModel {get;private set;}
   public int EquippedWeapon {get;private set;}
   public bool NativeEquipmentReady=>nativeAxe&&nativeSpear;
   Vector3 headScale;
@@ -29,26 +31,30 @@ namespace Askich {
   public float HeadScaleRatio=>head?head.localScale.x/headScale.x:1;
   public int VoiceCount=>voices==null?0:voices.Length;
 
+  static string ProvisionKey(int mode)=>mode==1?"DrinkProvision":mode==2?"EatProvision":"RestProvision";
   public bool Initialize(bool infected,int variant){
    visualVariant=variant;zombie=infected;crawler=infected&&variant%3==2;
-   string name=!infected?"Characters_Matt":variant%3==1?"Zombie_Chubby":"Zombie_Basic";
-   var prefab=Resources.Load<GameObject>("Survival/Art/"+name);
-   if(!prefab)return false;
+   string name=!infected?"Hero":variant%3==1?"Heavy":variant%3==2?"Crawler":"Lean";
+   var prefab=Resources.Load<GameObject>("Survival/Human/"+name);
+   if(!prefab)throw new InvalidOperationException("Missing adult character: "+name);UsesAdultModel=true;
    var model=Instantiate(prefab,transform,false);
    animationPlayer=model.GetComponentInChildren<Animation>();
    if(!animationPlayer){Destroy(model);return false;}
    // The survivor is the camera subject; its weapon hand must also animate on cutaway frames.
-   if(!infected)animationPlayer.cullingType=AnimationCullingType.AlwaysAnimate;
-   foreach(AnimationState s in animationPlayer){string key=s.name.Substring(s.name.LastIndexOf('|')+1);if(!clips.ContainsKey(key))clips[key]=s.name;}
+   animationPlayer.cullingType=infected?AnimationCullingType.BasedOnRenderers:AnimationCullingType.AlwaysAnimate;
+   foreach(var skin in model.GetComponentsInChildren<SkinnedMeshRenderer>(true))skin.updateWhenOffscreen=!infected;
+   foreach(string key in new[]{"Idle","Walk","Run","Punch","Slash","Stab","HitReact","Death","Duck","Crawl"}){
+    var clip=Resources.Load<AnimationClip>("Survival/Human/"+name+"_"+key);if(!clip)continue;animationPlayer.AddClip(clip,key);clips[key]=key;
+   }
    if(crawler){
-    crawlerLunge=Resources.Load<AnimationClip>("Survival/CrawlerLunge");
+    crawlerLunge=Resources.Load<AnimationClip>("Survival/Human/Crawler_CrawlerLunge");
     if(!crawlerLunge)throw new InvalidOperationException("Missing crawler lunge clip");
     animationPlayer.AddClip(crawlerLunge,"CrawlerLunge");
     clips["CrawlerLunge"]="CrawlerLunge";
    }
    if(!zombie){
-    for(int i=0;i<3;i++){provisions[i]=Resources.Load<AnimationClip>("Survival/"+new[]{"DrinkProvision","EatProvision","RestProvision"}[i]);if(!provisions[i])throw new InvalidOperationException("Missing provision animation");animationPlayer.AddClip(provisions[i],provisions[i].name);clips[provisions[i].name]=provisions[i].name;}
-    var search=Resources.Load<AnimationClip>("Survival/Search");
+    for(int i=0;i<3;i++){provisions[i]=Resources.Load<AnimationClip>("Survival/Human/Hero_"+new[]{"DrinkProvision","EatProvision","RestProvision"}[i]);if(!provisions[i])throw new InvalidOperationException("Missing provision animation");animationPlayer.AddClip(provisions[i],ProvisionKey(i+1));clips[ProvisionKey(i+1)]=ProvisionKey(i+1);}
+    var search=Resources.Load<AnimationClip>("Survival/Human/Hero_Search");
     if(!search)throw new InvalidOperationException("Missing survivor search clip");
     animationPlayer.AddClip(search,"Search");clips["Search"]="Search";
    }
@@ -56,13 +62,18 @@ namespace Askich {
     string n=bone.name.ToLowerInvariant();
     if(infected&&n=="tongue"&&bone.GetComponent<SkinnedMeshRenderer>())bone.gameObject.SetActive(false);
     if(n=="head"){head=bone;headScale=bone.localScale;}
-    if(n==(infected?"index1.r":"index1.l"))Hand=bone;
+    if(n==(infected?"hand.r":"hand.l"))Hand=bone;
     if(!infected&&n=="axe")nativeAxe=bone.gameObject;if(!infected&&n=="spear")nativeSpear=bone.gameObject;
     if(!infected&&Array.IndexOf(new[]{"knife","woodenbat_barbed","woodenbat_saw","pistol","shotgun","guitar","smg","spear","rifle","axe"},n)>=0)bone.gameObject.SetActive(false);
    }
-   bodyRenderers=model.GetComponentsInChildren<Renderer>();tint=new MaterialPropertyBlock();
-   var skin=model.GetComponentInChildren<SkinnedMeshRenderer>();if(skin){meshHeight=skin.sharedMesh.bounds.size.y;meshBase=skin.sharedMesh.bounds.min.y;}
-   if(!infected&&bodyRenderers.Length>0)foreach(var tool in new[]{nativeAxe,nativeSpear})if(tool)foreach(var r in tool.GetComponentsInChildren<Renderer>(true)){var materials=r.sharedMaterials;for(int i=0;i<materials.Length;i++)materials[i]=bodyRenderers[0].sharedMaterial;r.sharedMaterials=materials;}
+   bodyRenderers=model.GetComponentsInChildren<Renderer>(true);tint=new MaterialPropertyBlock();
+   var firstSkin=model.GetComponentInChildren<SkinnedMeshRenderer>();if(firstSkin){meshHeight=firstSkin.sharedMesh.bounds.size.y;meshBase=firstSkin.sharedMesh.bounds.min.y;}
+   if(infected){
+    foreach(var skin in model.GetComponentsInChildren<SkinnedMeshRenderer>(true)){
+     for(int i=0;i<skin.sharedMesh.blendShapeCount;i++)skin.SetBlendShapeWeight(i,skin.sharedMesh.GetBlendShapeName(i).Contains(variant%3==1?"Heavy":"Gaunt")?80:0);
+     if(skin.name=="Shirt")skin.gameObject.SetActive(variant%3!=1);if(skin.name=="Trousers")skin.gameObject.SetActive(variant%3!=2);if(skin.name=="Shoes")skin.gameObject.SetActive(variant%3==0);if(skin.name=="Hair")skin.gameObject.SetActive(variant%3==0);
+    }
+   }
    Play(crawler?"Crawl":"Idle",true,crawler?0:1);
    animationPlayer[clips[state]].normalizedTime=(variant*.173f)%1;
    if(zombie){
@@ -78,8 +89,12 @@ namespace Askich {
    // Legacy Animation can restore its bind pose when disabled on pause. Keep the committed pose
    // at the same simulation time, including the frame before resuming gameplay.
    if(state=="CrawlerLunge"&&lungeTime>=.12f) crawlerLunge.SampleAnimation(animationPlayer.gameObject,lungeTime);
-   if(!zombie&&provisionMode>0&&provisionMode<=3&&state==provisions[provisionMode-1].name)provisions[provisionMode-1].SampleAnimation(animationPlayer.gameObject,provisionTime);
-   if(head)head.localScale=headScale*(zombie?.54f:.80f);if(paused)return;hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();tint.SetFloat("_Decay",zombie?.85f:0);tint.SetFloat("_Variant",visualVariant);tint.SetFloat("_PatternHeight",meshHeight);tint.SetFloat("_PatternBase",meshBase);if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
+   if(!zombie&&provisionMode>0&&provisionMode<=3&&state==ProvisionKey(provisionMode))provisions[provisionMode-1].SampleAnimation(animationPlayer.gameObject,provisionTime);
+   if(head)head.localScale=headScale;if(paused)return;hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(hurtFlash<=0&&tintApplied)return;tintApplied=hurtFlash<=0;if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();tint.SetFloat("_Decay",zombie?.85f:0);tint.SetFloat("_Variant",visualVariant);tint.SetFloat("_PatternHeight",meshHeight);tint.SetFloat("_PatternBase",meshBase);if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
+  public void ApplyClothing(DistrictInventoryData data){
+   if(zombie||bodyRenderers==null)return;int bits=(data.shirt?1:0)|(data.trousers?2:0)|(data.shoes?4:0);if(bits==clothingBits)return;clothingBits=bits;
+   foreach(var renderer in bodyRenderers){if(renderer.name=="Shirt")renderer.gameObject.SetActive(data.shirt);if(renderer.name=="Trousers")renderer.gameObject.SetActive(data.trousers);if(renderer.name=="Shoes")renderer.gameObject.SetActive(data.shoes);}
+  }
   public bool Equip(int weapon){EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
   void Play(string key,bool loop,float speed){
    if(!clips.TryGetValue(key,out string name))return;
@@ -90,7 +105,7 @@ namespace Askich {
   public void SetPaused(bool pause){paused=pause;if(animationPlayer)animationPlayer.enabled=!pause;}
   public void SetSurvivalPose(int mode,float progress){
    if(mode==0){if(provisionMode>0&&state!=null&&(state.EndsWith("Provision")||state=="Search")){state=null;actionRemaining=0;}provisionMode=0;return;}
-   if(provisionMode!=mode){state=null;Play(mode==4?"Search":provisions[mode-1].name,false,0);}
+   if(provisionMode!=mode){state=null;Play(mode==4?"Search":ProvisionKey(mode),false,0);}
    provisionMode=mode;provisionTime=Mathf.Clamp01(progress);actionRemaining=.2f;
   }
   public void SetSearching(bool active){searching=active;}
@@ -122,7 +137,7 @@ namespace Askich {
    actionRemaining=.1f;
   }
   public void Hurt(){if(dead)return;hurtFlash=.14f;if(clips.ContainsKey("HitReact")){state=null;Play("HitReact",false,1.4f);actionRemaining=.26f;}}
-  public void Revive(){dead=false;hurtFlash=0;actionRemaining=0;state=null;Play(crawler?"Crawl":"Idle",true,crawler?0:1);}
+  public void Revive(){dead=false;hurtFlash=0;tintApplied=false;actionRemaining=0;state=null;Play(crawler?"Crawl":"Idle",true,crawler?0:1);}
   public void Restore(bool corpse){Revive();if(!corpse)return;Die();var clip=animationPlayer[clips["Death"]];animationPlayer.Play(clips["Death"]);clip.time=clip.length;clip.speed=0;animationPlayer.Sample();}
   public void Die(){if(dead)return;dead=true;state=null;Play("Death",false,1);if(vocal)vocal.Stop();}
  }

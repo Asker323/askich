@@ -31,7 +31,7 @@ namespace Askich {
   static readonly Rect GridPanel=new Rect(100,100,1080,530),HandSlot=new Rect(155,454,80,80),BagSlot=new Rect(265,454,80,80);
   static Rect ItemCell(int i)=>new Rect(400+i%6*80,190+i/6*80,72,72);
   static Rect StoreCell(int i)=>new Rect(400+i*80,470,72,72);
-  static readonly string[] ItemNames={"","Топор","Копьё","Консервы","Бинт","Стерильный бинт","Этиловый спирт","Камни","Школьный рюкзак","Питьевая вода","Пустая бутылка"};
+  static readonly string[] ItemNames={"","Топор","Копьё","Консервы","Бинт","Стерильный бинт","Этиловый спирт","Камни","Школьный рюкзак","Питьевая вода","Пустая бутылка","Майка","Брюки","Кроссовки"};
   bool TryCarry(DistrictItemKind kind,int amount){
    if((kind==DistrictItemKind.Axe||kind==DistrictItemKind.Spear)&&weapon==0&&amount==1){weapon=(int)kind;return true;}
    return inventory.TryAdd(kind,amount);
@@ -75,7 +75,7 @@ namespace Askich {
    GUI.Label(new Rect(130,112,600,45),"СНАРЯЖЕНИЕ",large);
    if(Button(new Rect(1000,116,150,48),"Закрыть")){suppliesOpen=false;dragSlot=-1;}
    GUI.Label(new Rect(400,147,490,30),(inventory.Data.backpack?"Школьный рюкзак":"Карманы")+" · "+inventory.Capacity,text);
-   DrawBodyPreview(new Rect(132,175,225,260));
+   DrawBodyPreview(new Rect(132,175,184,260));DrawClothingSlots();
    InventoryCell(HandSlot,weapon==0?default:new DistrictItem((DistrictItemKind)weapon,1),-2,false);
    InventoryCell(BagSlot,inventory.Data.backpack?new DistrictItem(DistrictItemKind.Backpack,1):default,-3,false);
    GUI.Label(new Rect(155,536,90,24),"В руках",small);GUI.Label(new Rect(265,536,95,24),"На спине",small);
@@ -94,9 +94,9 @@ namespace Askich {
    if(inventorySelection>=0&&inventorySelection<inventory.Capacity&&!inventory.Data.slots[inventorySelection].Empty){
     var item=inventory.Data.slots[inventorySelection];
     GUI.Label(new Rect(905,190,245,64),ItemNames[item.kind],text);
-    if(item.kind<=2||item.kind==8){
-     GUI.Label(new Rect(905,260,245,80),item.kind==8?"+12 ячеек":"",small);
-     if(Button(new Rect(905,355,245,58),item.kind==8?"Надеть":"Взять в руки")&&medicalAction==MedicalAction.None&&inventory.Equip(inventorySelection)){inventorySelection=-1;Save();}
+    if(item.kind<=2||item.kind==8||item.kind>=11){
+     GUI.Label(new Rect(905,260,245,80),item.kind==8?"+12 ячеек":item.kind>=11?"Одежда":"",small);
+     if(Button(new Rect(905,355,245,58),item.kind==8||item.kind>=11?"Надеть":"Взять в руки")&&medicalAction==MedicalAction.None&&inventory.Equip(inventorySelection)){inventorySelection=-1;Save();}
     }else{
      GUI.Label(new Rect(905,257,245,60),item.kind==10?"Пусто":item.kind==9?item.amount+" / 3 глотка":item.kind==6?item.amount+" / 3 дозы":item.kind==7?"Отвлечение":item.kind==3?"+35 сытости":item.kind==5?"Кровь и заражение":"Останавливает кровь",small);
      if(item.kind==10||item.kind==9&&item.amount<3)MedicalButton(new Rect(905,402,245,56),"Наполнить",MedicalAction.Refill);
@@ -108,6 +108,7 @@ namespace Askich {
      if(item.kind==6)MedicalButton(new Rect(905,470,245,56),"Выпить · опьянение",MedicalAction.Drink);
     }
    }
+   DrawClothingSelection();
    GUI.color=MedicalWarning;GUI.Label(new Rect(400,565,475,48),Time.unscaledTime<inventoryNoticeUntil?inventoryNotice:medicalAction!=MedicalAction.None?"Действие выполняется":hoveredInventoryItem??"",small);GUI.color=Color.white;
    if(Event.current.type!=EventType.Repaint)return;
    Vector2 dropPosition=pointer.Position;bool dropDragged=pointer.Dragged;
@@ -133,7 +134,9 @@ namespace Askich {
     if(!rawDrop&&!pointer.TakeDrop())return;
     if(!dropDragged){inventorySelection=dragArea==0?source:-1;return;}
     bool changed=false;
-    if(dragArea==0&&(HandSlot.Contains(dropPosition)||BagSlot.Contains(dropPosition))){
+    int garmentTarget=ClothingTarget(dropPosition);
+    if(dragArea==0&&garmentTarget>=11){if(inventory.Data.slots[source].kind==garmentTarget)changed=inventory.Equip(source);}
+    else if(dragArea==0&&(HandSlot.Contains(dropPosition)||BagSlot.Contains(dropPosition))){
      int kind=inventory.Data.slots[source].kind;
      if(HandSlot.Contains(dropPosition)&&(kind==1||kind==2)||BagSlot.Contains(dropPosition)&&kind==8)changed=inventory.Equip(source);
     }else for(int i=0;i<inventory.Capacity;i++)if(ItemCell(i).Contains(dropPosition)){

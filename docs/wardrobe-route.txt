@@ -1,0 +1,63 @@
+0.0s fresh ordinary start; p=(-12.00, -20.00); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+0.0s walk to (-14.00, -20.00); p=(-12.00, -20.00); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+0.0s PASS route has navigable path; p=(-12.00, -20.00); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+1.3s PASS picked up roadside stones; p=(-13.85, -20.00); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+1.3s walk to (-12.00, -17.00); p=(-13.85, -20.00); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+1.3s PASS route has navigable path; p=(-13.85, -20.00); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+3.5s PASS opened radio house; p=(-12.16, -16.97); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+3.5s walk to (-12.00, -15.00); p=(-12.16, -16.97); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+3.5s PASS route has navigable path; p=(-12.16, -16.97); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+4.8s PASS closed door from inside; p=(-12.13, -15.10); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+4.8s PASS cleared occupied threshold and secured door; p=(-12.13, -15.10); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+4.8s walk to (-10.00, -13.00); p=(-12.13, -15.10); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+4.8s PASS route has navigable path; p=(-12.13, -15.10); hp=100.0; weapon=0; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+10.2s PASS found axe through timed search; p=(-10.13, -12.96); hp=100.0; weapon=1; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+10.2s walk to (-10.00, -10.60); p=(-10.13, -12.96); hp=100.0; weapon=1; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+10.2s PASS route has navigable path; p=(-10.13, -12.96); hp=100.0; weapon=1; food=0; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+13.8s PASS found food; p=(-10.13, -10.70); hp=100.0; weapon=1; food=1; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+13.8s walk to (-12.00, -10.60); p=(-10.13, -10.70); hp=100.0; weapon=1; food=1; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+13.8s PASS route has navigable path; p=(-10.13, -10.70); hp=100.0; weapon=1; food=1; bandages=0; sterile=0; doses=0; infection=0.0; bleeding=False
+16.5s PASS found first bandage; p=(-12.01, -10.83); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=0; infection=0.0; bleeding=False
+16.5s walk to (-15.00, -14.00); p=(-12.01, -10.83); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=0; infection=0.0; bleeding=False
+16.5s PASS route has navigable path; p=(-12.01, -10.83); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=0; infection=0.0; bleeding=False
+19.1s PASS found alcohol bottle; p=(-14.87, -13.97); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=3; infection=0.0; bleeding=False
+19.1s walk to (-14.50, -14.80); p=(-14.87, -13.97); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=3; infection=0.0; bleeding=False
+19.1s PASS route has navigable path; p=(-14.87, -13.97); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=3; infection=0.0; bleeding=False
+20.6s PASS found school backpack in the house; p=(-14.38, -14.95); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=3; infection=0.0; bleeding=False
+20.6s PASS equipped found backpack and expanded capacity; p=(-14.38, -14.95); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=3; infection=0.0; bleeding=False
+20.6s walk to (-9.00, -11.70); p=(-14.38, -14.95); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=3; infection=0.0; bleeding=False
+20.6s PASS route has navigable path; p=(-14.38, -14.95); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=3; infection=0.0; bleeding=False
+23.9s PASS found drinking water in kitchen; p=(-9.01, -11.90); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=3; infection=0.0; bleeding=False
+23.9s PASS drank found water; p=(-9.01, -11.90); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=3; infection=0.0; bleeding=False
+25.7s PASS water bottle retains two sips; p=(-9.01, -11.90); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=3; infection=0.0; bleeding=False
+25.7s PASS craft command accepted; p=(-9.01, -11.90); hp=100.0; weapon=1; food=1; bandages=1; sterile=0; doses=3; infection=0.0; bleeding=False
+29.0s PASS crafted from collected materials; p=(-9.01, -11.90); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+29.0s walk to (-14.00, -9.00); p=(-9.01, -11.90); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+29.0s PASS route has navigable path; p=(-9.01, -11.90); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+54.9s PASS heard radio objective; p=(-13.87, -9.02); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+55.3s PASS switched off radio before leaving; p=(-13.87, -9.02); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+55.3s walk to (-12.00, -15.00); p=(-13.87, -9.02); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+55.3s PASS route has navigable path; p=(-13.87, -9.02); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+58.5s walk to (-12.00, -17.00); p=(-12.02, -14.87); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+58.5s PASS route has navigable path; p=(-12.02, -14.87); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+59.9s walk to (-12.00, -24.00); p=(-12.02, -16.86); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+59.9s PASS route has navigable path; p=(-12.02, -16.86); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+61.5s walk to (4.00, -24.00); p=(-12.02, -24.10); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+61.5s PASS route has navigable path; p=(-12.02, -24.10); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+65.1s PASS threw collected stone toward clinic flank; p=(3.90, -24.10); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+65.8s PASS clinic guard present for exposure check; p=(3.90, -24.10); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+65.8s walk to (16.95, -18.88); p=(3.90, -24.10); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+65.8s PASS route has navigable path; p=(3.90, -24.10); hp=100.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=0.0; bleeding=False
+72.9s PASS actual enemy strike caused bleeding and infection; p=(16.87, -18.94); hp=71.6; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=13.3; bleeding=True
+72.9s walk to (20.00, -22.00); p=(16.87, -18.94); hp=71.6; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=13.3; bleeding=True
+72.9s PASS route has navigable path; p=(16.87, -18.94); hp=71.6; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=13.3; bleeding=True
+75.0s walk to (20.00, -17.00); p=(20.04, -21.86); hp=70.8; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=13.8; bleeding=True
+75.0s PASS route has navigable path; p=(20.04, -21.86); hp=70.8; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=13.8; bleeding=True
+76.8s walk to (14.00, -17.00); p=(20.04, -17.10); hp=70.1; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=14.1; bleeding=True
+76.8s PASS route has navigable path; p=(20.04, -17.10); hp=70.1; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=14.1; bleeding=True
+78.9s walk to (12.00, -17.00); p=(14.12, -17.10); hp=69.2; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=14.6; bleeding=True
+78.9s PASS route has navigable path; p=(14.12, -17.10); hp=69.2; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=14.6; bleeding=True
+80.2s PASS entered guarded clinic; p=(12.08, -17.10); hp=68.7; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=14.9; bleeding=True
+80.2s walk to (12.00, -15.00); p=(12.08, -17.10); hp=68.7; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=14.9; bleeding=True
+80.2s PASS route has navigable path; p=(12.08, -17.10); hp=68.7; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=14.9; bleeding=True
+85.5s FAIL hero died during ordinary route commands; p=(12.08, -15.14); hp=0.0; weapon=1; food=1; bandages=0; sterile=1; doses=2; infection=52.1; bleeding=True

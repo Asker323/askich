@@ -1,0 +1,10 @@
+Result: Succeeded
+Platform: Android ARM64
+Development: False
+Scene: Assets/Scenes/District.unity
+Min SDK: 26
+Target SDK: 35
+Graphics: OpenGLES3
+Signing: local debug key (test APK)
+Errors: 0
+Warnings: 0

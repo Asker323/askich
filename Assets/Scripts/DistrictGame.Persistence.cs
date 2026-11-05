@@ -16,7 +16,7 @@ namespace Askich {
   }
   SaveData ReadSave(string path){
    var s=JsonUtility.FromJson<SaveData>(File.ReadAllText(path));
-   if(s==null||(s.version<1||s.version>7)||!ValidPosition(s.x,s.z)||!Finite(s.hp)||!Finite(s.stamina)||s.hp<=0||s.hp>100||s.stamina<0||s.stamina>100||s.weapon<0||s.weapon>2||s.food<0||s.bandages<0||s.taken==null||s.taken.Length!=(s.version<3?16:homes.Count)*3||s.doors==null||s.doors.Length!=(s.version<3?16:homes.Count))throw new InvalidDataException("Неверный формат сохранения");
+   if(s==null||(s.version<1||s.version>8)||!ValidPosition(s.x,s.z)||!Finite(s.hp)||!Finite(s.stamina)||s.hp<=0||s.hp>100||s.stamina<0||s.stamina>100||s.weapon<0||s.weapon>2||s.food<0||s.bandages<0||s.taken==null||s.taken.Length!=(s.version<3?16:homes.Count)*3||s.doors==null||s.doors.Length!=(s.version<3?16:homes.Count))throw new InvalidDataException("Неверный формат сохранения");
    if(s.version>=4&&(s.alcohol<0||s.alcohol>10000||s.sterile<0||s.sterile>10000||s.stones<0||s.stones>10000||!Finite(s.infection)||s.infection<0||s.infection>100||!Finite(s.drunk)||s.drunk<0||s.drunk>90||s.supplies==null||s.supplies.Length!=supplies.Count))throw new InvalidDataException("Неверное состояние ранений и припасов");
    if(s.version>=6&&(!Finite(s.nourishment)||s.nourishment<0||s.nourishment>100||!Finite(s.hydration)||s.hydration<0||s.hydration>100||!Finite(s.tiredness)||s.tiredness<0||s.tiredness>100||s.water==null||s.water.Length!=3))throw new InvalidDataException("Неверные потребности");
    if(s.version>=5)DistrictInventory.Validate(s.inventory,homes.Count*3);
@@ -61,6 +61,8 @@ namespace Askich {
     weapon=s.weapon;food=s.food;bandages=s.bandages;
     alcoholDoses=s.version>=4?s.alcohol:0;sterileBandages=s.version>=4?s.sterile:0;stones=s.version>=4?s.stones:0;
    }
+   if(s.version<8){inventory.Data.shirt=inventory.Data.trousers=inventory.Data.shoes=true;inventory.Data.clothingFound=7;}
+   UpdateClothing();
    nourishment=s.version>=6?s.nourishment:70;hydration=s.version>=6?s.hydration:60;tiredness=s.version>=6?s.tiredness:15;
    for(int i=0;i<waterTaken.Length;i++){waterTaken[i]=s.version>=6&&s.water[i];waterModels[i].SetActive(!waterTaken[i]);}
    bleeding=s.version>=4&&s.bleeding;infection=s.version>=4?s.infection:0;drunkSeconds=s.version>=4?s.drunk:0;

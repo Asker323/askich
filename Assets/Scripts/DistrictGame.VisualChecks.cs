@@ -16,7 +16,7 @@ namespace Askich {
    var canopy=GameObject.Find("Individual wind leaves");
    check(canopy&&canopy.GetComponent<MeshFilter>().sharedMesh.vertexCount>1000&&canopy.GetComponent<Renderer>().sharedMaterial.shader.isSupported,"branching trees have supported individual-leaf canopy meshes");
    var block=new MaterialPropertyBlock();infected[0].root.GetComponentInChildren<SkinnedMeshRenderer>().GetPropertyBlock(block);
-   yield return new WaitForEndOfFrame();check(infected[0].visual.HeadScaleRatio<.6f,"infected head proportions remain applied at end of rendered frame");
+   yield return new WaitForEndOfFrame();check(infected[0].visual.UsesAdultModel&&Mathf.Abs(infected[0].visual.HeadScaleRatio-1)<.01f,"new anatomically proportioned infected are active at end of frame");
    check(block.GetFloat("_Decay")>.8f,"infected carry individual decayed material treatment");
    check(Resources.Load<AudioClip>("Survival/radio")==null&&Resources.Load<AudioClip>("Survival/Radio/message0")==null,"synthetic radio speech is absent from packaged resources");
    CancelMedical();hero.p=new Vector2(0,-23);heroVelocity=Vector2.zero;

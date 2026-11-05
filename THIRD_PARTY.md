@@ -23,6 +23,16 @@ License stated on the asset page: CC0 1.0 Universal, https://creativecommons.org
 
 24 WAV recordings in `Assets/Resources/Survival/ZombieAudio`. Originals retained; Unity imports mono Vorbis for playback. In-game pitch, spatial attenuation and low-pass filtering vary per emitter. These are infected vocal effects, not spoken Russian dialogue.
 
+## Blender Studio / community — Human Base Meshes v1.0.0
+
+Official listing: https://www.blender.org/download/demo-files/
+Pinned download: https://download.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.0.0.zip
+Archive SHA256: `46a912c0524072ac3b78c35d5d2471df7b8df102394a050ca8cd7184e3393648`.
+
+Source collection **Body Male - Realistic**, object `GEO-body_male_realistic`. Embedded asset metadata: author **Julien Kaspar**, license **CC0**. The official bundle listing independently describes CC0 base meshes. License: https://creativecommons.org/publicdomain/zero/1.0/ . The Blender application license is separate from this asset license.
+
+Derived rigged body, eyes, morphs and garments are in `Assets/CharacterSources/Adult.fbx`; provenance in `source.json`. Project authoring script: `tools/author_adult.py` (Blender 4.5.9). Modifications: 25-bone rig and skin weights, shorts/shirt/trousers/shoes derived from mesh regions, hair and iris geometry, heavy/gaunt shape keys. The body has 15,093 vertices before derived parts. Unity editor retargeting reuses the previously included CC0 Quaternius animation clips and axe/spear geometry; generated clips, materials and prefabs are in `Resources/Survival/Human`. These are derivatives of third-party assets, not original human anatomy created for this project.
+
 ## Project-generated material
 
 The Dusk shader, geometry for houses/vegetation, procedural wind, steps and impacts are project code. The radio script was written for this game. The temporary Microsoft Irina Desktop recordings were removed from Resources in the November 5 visual-polish stage. The current receiver uses project-generated static and timed captions, with no spoken dialogue. Publication remains deferred.

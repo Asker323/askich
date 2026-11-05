@@ -1,0 +1,57 @@
+{
+  "source": "Blender Human Base Meshes v1.0.0",
+  "object": "GEO-body_male_realistic",
+  "metadata": {
+    "name": "Body Male - Realistic",
+    "author": "Julien Kaspar",
+    "description": "",
+    "license": "CC0",
+    "copyright": ""
+  },
+  "body_vertices": 15093,
+  "parts": [
+    [
+      "Body",
+      15093
+    ],
+    [
+      "EyeL",
+      946
+    ],
+    [
+      "EyeR",
+      946
+    ],
+    [
+      "Hair",
+      232
+    ],
+    [
+      "IrisEyeL",
+      62
+    ],
+    [
+      "IrisEyeR",
+      62
+    ],
+    [
+      "Shirt",
+      1331
+    ],
+    [
+      "Shoes",
+      1768
+    ],
+    [
+      "Shorts",
+      928
+    ],
+    [
+      "Trousers",
+      3027
+    ]
+  ],
+  "source_url": "https://download.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.0.0.zip",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "bundle_sha256": "46a912c0524072ac3b78c35d5d2471df7b8df102394a050ca8cd7184e3393648"
+}

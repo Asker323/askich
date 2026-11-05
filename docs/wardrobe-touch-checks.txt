@@ -1,0 +1,7 @@
+PASS touch equips backpack
+PASS touch transfers bottle to backpack row
+PASS touch deposits bottle in searched container
+PASS touch retrieves bottle without duplication
+PASS touch equips clothing slot 0 without duplication
+PASS touch equips clothing slot 1 without duplication
+PASS touch equips clothing slot 2 without duplication

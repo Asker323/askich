@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 namespace Askich {
- public enum DistrictItemKind {Empty,Axe,Spear,Food,Bandage,Sterile,Alcohol,Stone,Backpack,Water,EmptyBottle}
+ public enum DistrictItemKind {Empty,Axe,Spear,Food,Bandage,Sterile,Alcohol,Stone,Backpack,Water,EmptyBottle,Shirt,Trousers,Shoes}
  [Serializable] public struct DistrictItem {
   public int kind,amount;
   public DistrictItem(DistrictItemKind type,int count){kind=(int)type;amount=count;}
@@ -18,6 +18,7 @@ namespace Askich {
   public List<DistrictContainerItems> containers=new List<DistrictContainerItems>();
   public int weapon;
   public bool backpack,bagFound;
+  public bool shirt,trousers,shoes;public int clothingFound;
  }
  public sealed class DistrictInventory {
   public DistrictInventoryData Data {get;private set;}=new DistrictInventoryData();
@@ -25,9 +26,10 @@ namespace Askich {
   public int Capacity=>Data.backpack?18:6;
   public int Count(DistrictItemKind kind){int total=0;for(int i=0;i<Capacity;i++)if(Data.slots[i].kind==(int)kind)total+=Data.slots[i].amount;return total;}
   public static int Limit(int kind){switch((DistrictItemKind)kind){case DistrictItemKind.Food:case DistrictItemKind.Bandage:case DistrictItemKind.Sterile:return 5;case DistrictItemKind.Alcohol:case DistrictItemKind.Water:return 3;case DistrictItemKind.Stone:return 10;default:return 1;}}
-  static bool ValidItem(DistrictItem item)=>item.kind>=0&&item.kind<=10&&(item.kind==0?item.amount==0:item.amount>0&&item.amount<=Limit(item.kind));
+  static bool ValidItem(DistrictItem item)=>item.kind>=0&&item.kind<=13&&(item.kind==0?item.amount==0:item.amount>0&&item.amount<=Limit(item.kind));
   public static void Validate(DistrictInventoryData data,int containerCount){
    if(data==null||data.slots==null||data.slots.Length!=18||data.overflow==null||data.overflow.Count>60000||data.containers==null||data.containers.Count>containerCount||data.weapon<0||data.weapon>2)throw new System.IO.InvalidDataException("Повреждён инвентарь");
+   if(data.clothingFound<0||data.clothingFound>7||data.shirt&&(data.clothingFound&1)==0||data.trousers&&(data.clothingFound&2)==0||data.shoes&&(data.clothingFound&4)==0)throw new System.IO.InvalidDataException("Неверная одежда");
    int capacity=data.backpack?18:6;
    for(int i=0;i<18;i++)if(!ValidItem(data.slots[i])||(i>=capacity&&!data.slots[i].Empty))throw new System.IO.InvalidDataException("Неверная ячейка");
    foreach(var item in data.overflow)if(!ValidItem(item)||item.Empty)throw new System.IO.InvalidDataException("Неверный перенос вещей");
@@ -97,9 +99,13 @@ namespace Askich {
    }else{from[source]=to[target];to[target]=item;}
    return true;
   }
+  public bool HasClothing(int kind)=>kind==11?Data.shirt:kind==12?Data.trousers:kind==13&&Data.shoes;
+  void SetClothing(int kind,bool value){if(kind==11)Data.shirt=value;if(kind==12)Data.trousers=value;if(kind==13)Data.shoes=value;}
+  public bool UnequipClothing(int kind){if(!HasClothing(kind)||!TryAdd((DistrictItemKind)kind,1))return false;SetClothing(kind,false);return true;}
   public bool Equip(int index){
    if(index<0||index>=Capacity)return false;
    var item=Data.slots[index];
+   if(item.kind>=11&&item.kind<=13){if(HasClothing(item.kind))return false;SetClothing(item.kind,true);Data.clothingFound|=1<<(item.kind-11);Data.slots[index]=default;return true;}
    if(item.kind==8&&!Data.backpack){Data.slots[index]=default;Data.backpack=Data.bagFound=true;return true;}
    if(item.kind!=1&&item.kind!=2)return false;
    Data.slots[index]=Data.weapon==0?default:new DistrictItem((DistrictItemKind)Data.weapon,1);

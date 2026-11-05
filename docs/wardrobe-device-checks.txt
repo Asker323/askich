@@ -1,0 +1,41 @@
+Physical Android test, 2026-11-05 UTC. Model 25053PC47G (onyx_global).
+Development 242: isolated cache save through development-only berezki.testSession intent.
+Normal rules, actual ADB touch input; no grants/teleportation/enemy disabling.
+Observed: fresh shorts-only start, joystick movement, door open/close, entering radio house,
+timed search and axe, radio objective, found shirt, inventory drag equip, remove, re-equip.
+First house checked; full shelter route and 15-minute continuous playthrough NOT completed.
+FPS NOT measured: SurfaceFlinger latency probe returned no valid frame samples.
+Native Collider stripping errors from initial APK fixed by inactive scene references.
+Development fixed startup: 0 Unity errors/exceptions in own process log.
+Release 243: adb install -r Success, COLD activity start Status ok, menu rendered.
+Release startup: 0 Unity errors/exceptions in own process log.
+Release gameplay after this final update not re-tested; development checks above exclude
+final weapon size/material correction and crawler low hit/death revision, tested on Windows.
+Local signing key, no publication. Existing user save not overwritten by test session.
+
+ADB test event trace:
+13:09:38 UTC Started isolated development session
+13:19:35 UTC Started isolated development session
+13:20:38 UTC tap 1100 840
+13:21:31 UTC swipe 440 863 440 863 950
+13:22:06 UTC tap 2330 900
+13:22:35 UTC swipe 440 863 440 863 650
+13:22:51 UTC tap 2330 900
+13:23:32 UTC swipe 528 826 528 826 850
+13:23:58 UTC tap 2330 900
+13:28:20 UTC tap 1940 900
+13:28:50 UTC tap 2220 250
+13:28:54 UTC swipe 403 951 403 951 1100
+13:29:23 UTC swipe 440 863 440 863 700
+13:29:52 UTC swipe 403 951 403 951 700
+13:29:55 UTC tap 2330 900
+13:30:57 UTC swipe 583 1060 583 1060 700
+13:31:54 UTC tap 2330 900
+13:32:28 UTC swipe 616 1039 616 1039 400
+13:32:52 UTC tap 2330 900
+13:32:55 UTC tap 1940 900
+13:33:20 UTC swipe 1100 400 950 400 700
+13:33:50 UTC tap 950 400
+13:34:13 UTC tap 2150 642
+13:34:41 UTC swipe 1100 400 950 400 650
+13:34:43 UTC tap 2220 250
