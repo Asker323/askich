@@ -32,6 +32,8 @@ namespace Askich {
    var model=Instantiate(prefab,transform,false);
    animationPlayer=model.GetComponentInChildren<Animation>();
    if(!animationPlayer){Destroy(model);return false;}
+   // The survivor is the camera subject; its weapon hand must also animate on cutaway frames.
+   if(!infected)animationPlayer.cullingType=AnimationCullingType.AlwaysAnimate;
    foreach(AnimationState s in animationPlayer){string key=s.name.Substring(s.name.LastIndexOf('|')+1);if(!clips.ContainsKey(key))clips[key]=s.name;}
    foreach(var bone in model.GetComponentsInChildren<Transform>(true)){
     string n=bone.name.ToLowerInvariant();

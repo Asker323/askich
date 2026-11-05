@@ -34,14 +34,14 @@ namespace Askich {
   Supply NearbySupply(){Supply closest=null;float distance=1.25f;foreach(var s in supplies)if(!s.taken&&Vector2.Distance(hero.p,s.p)<distance&&Sight(hero.p,s.p)){closest=s;distance=Vector2.Distance(hero.p,s.p);}return closest;}
   bool UseSupply(){var s=NearbySupply();if(s==null)return false;s.taken=true;s.model.SetActive(false);if(s.kind==0)alcoholDoses+=3;else if(s.kind==1)bandages+=2;else stones+=3;Save();Say("Подобрано: "+s.label+". Рюкзак — I / кнопка справа.");return true;}
   Vector2 DrunkDirection(Vector2 direction){if(drunkSeconds<=0)return direction;float angle=Mathf.Sin(Time.time*2.2f)*.16f;return new Vector2(direction.x*Mathf.Cos(angle)-direction.y*Mathf.Sin(angle),direction.x*Mathf.Sin(angle)+direction.y*Mathf.Cos(angle));}
-  void WoundHero(){bleeding=true;infection=Mathf.Min(100,Mathf.Max(12,infection+12));CancelMedical();Say("РАНЕНИЕ: кровотечение и заражение раны. Нужны бинты; I — лечение и крафт.");}
+  void WoundHero(){bleeding=true;infection=Mathf.Min(100,Mathf.Max(12,infection+12));CancelMedical();if(foley)foley.Wound();Say("РАНЕНИЕ: кровотечение и заражение раны. Нужны бинты; I — лечение и крафт.");}
   void TickAfflictions(float dt){
    drunkSeconds=Mathf.Max(0,drunkSeconds-dt);throwCooldown=Mathf.Max(0,throwCooldown-dt);
    if(infection>0)infection=Mathf.Min(100,infection+dt*.22f);
    health-=dt*((bleeding?.4f:0)+(infection>=50?.15f:0));
    if(health<=0&&!dead){health=0;dead=true;attack=0;strikeSequence++;CancelMedical();if(hero.visual)hero.visual.Die();Say("Ранения оказались смертельными.");}
   }
-  void CancelMedical(){medicalAction=MedicalAction.None;medicalTime=0;}
+  void CancelMedical(){if(foley)foley.StopTask();medicalAction=MedicalAction.None;medicalTime=0;}
   float MedicalDuration(MedicalAction action)=>action==MedicalAction.Craft?3:action==MedicalAction.Drink?1.2f:2.5f;
   bool CanTreat(MedicalAction action){
    switch(action){
@@ -55,11 +55,11 @@ namespace Askich {
   bool BeginMedical(MedicalAction action){
    if(!playing||paused||dead||attack>0||heroStagger>0||medicalAction!=MedicalAction.None)return false;
    if(!CanTreat(action)){Say("Нет нужных материалов или лечение сейчас не требуется.");return false;}
-   medicalAction=action;medicalTime=0;searchSlot=-1;suppliesOpen=false;heroVelocity=Vector2.zero;return true;
+   medicalAction=action;medicalTime=0;if(foley)foley.StartTask(action==MedicalAction.Craft,action==MedicalAction.Drink);searchSlot=-1;suppliesOpen=false;heroVelocity=Vector2.zero;return true;
   }
   void TickMedical(float dt){
    if(medicalAction==MedicalAction.None)return;medicalTime+=dt;if(medicalTime<MedicalDuration(medicalAction))return;
-   var action=medicalAction;CancelMedical();if(!CanTreat(action))return;
+   var action=medicalAction;CancelMedical();if(!CanTreat(action))return;if(foley)foley.FinishTask(action==MedicalAction.Drink);
    if(action==MedicalAction.Craft){bandages--;alcoholDoses--;sterileBandages++;Say("Создан стерильный бинт: 1 бинт + 1 доза спирта.");}
    if(action==MedicalAction.Bandage){bandages--;bleeding=false;health=Mathf.Min(100,health+8);Say(infection>0?"Кровотечение остановлено. Заражение осталось: нужен стерильный бинт.":"Перевязка завершена.");}
    if(action==MedicalAction.Sterile){sterileBandages--;bleeding=false;infection=0;health=Mathf.Min(100,health+12);Say("Рана обработана: кровотечение и заражение сняты.");}

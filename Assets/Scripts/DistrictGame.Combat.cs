@@ -65,7 +65,7 @@ namespace Askich {
     if(offset.magnitude<1.55f&&Vector2.Dot(offset.normalized,z.strikeDirection)>.55f&&damageDelay<=0&&Sight(z.p,hero.p)){
      health-=EnemyDamage(z);WoundHero();damageDelay=.8f;heroStagger=.28f;heroVelocity=Vector2.zero;attack=0;strikeSequence++;searchSlot=-1;sound.Play("hit");
      if(hero.visual)hero.visual.Hurt();
-     if(health<=0){dead=true;if(hero.visual)hero.visual.Die();else hero.root.rotation=Quaternion.Euler(0,0,80);}
+     if(health<=0){health=0;dead=true;if(hero.visual)hero.visual.Die();else hero.root.rotation=Quaternion.Euler(0,0,80);}
     }
    }
    Animate(z,Vector2.zero,true,.3f);return true;
