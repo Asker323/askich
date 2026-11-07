@@ -41,9 +41,9 @@ namespace Askich {
   void DrawInteriorHint(){
    if(current==null)return;
    GUI.Label(new Rect(35,174,700,30),current.title, text);
-   int i=NearbyContainer(current);if(i>=0){
+   int i=FocusedStorageSlot();if(i>=0){
     string risk=current.noise[i]>=9?"громко":current.noise[i]<=3?"тихо":"умеренный шум";
-    GUI.Label(new Rect(35,210,800,42),current.labels[i]+(current.taken[i]?" · открыть / E":" · действие / E · "+current.seconds[i].ToString("0.0")+" с · "+risk),small);return;
+    GUI.Label(new Rect(35,210,800,42),current.labels[i]+(current.taken[i]?" · открыть · E / ЛКМ":" · E / ЛКМ · "+current.seconds[i].ToString("0.0")+" с · "+risk),small);return;
    }
    if(current.note!=null&&Vector2.Distance(hero.p,current.p+new Vector2(-2,0))<1.7f)
     GUI.Label(new Rect(35,210,800,42),"Записка на столе · действие / E",small);

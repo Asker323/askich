@@ -26,7 +26,7 @@ namespace Askich {
    if(TouchControls.Enabled||suppliesOpen){ClearPcCombat();return;}
    queuedPcTime-=dt;if(queuedPcTime<0&&attack>0)queuedPcAction=0;
    bool shove=Keyboard.current!=null&&Keyboard.current.spaceKey.wasPressedThisFrame;
-   bool hit=PcWorldPointer()&&Mouse.current.leftButton.wasPressedThisFrame;
+   bool hit=!storageClickConsumed&&PcWorldPointer()&&Mouse.current.leftButton.wasPressedThisFrame;
    if(shove||hit){if(!RequestPcStrike(face,shove)&&stamina<(shove?24:WeaponStrike(weapon).cost))Say("Не хватает сил. Отступи и переведи дыхание.");}
    if(queuedPcAction!=0&&attack<=0){int action=queuedPcAction;queuedPcAction=0;if(action==2)TryShove(queuedPcDirection);else TryAttack(queuedPcDirection);}
   }
@@ -44,7 +44,7 @@ namespace Askich {
   }
   void DrawPcControls(){
    if(TouchControls.Enabled||suppliesOpen)return;
-   GUI.Label(new Rect(34,602,650,24),"ЛКМ — удар    ПКМ — прицел    Пробел — толчок    I — снаряжение",small);
+   GUI.Label(new Rect(34,602,650,24),"ЛКМ — обыск / удар    ПКМ — прицел    Пробел — толчок    I — снаряжение",small);
    if(stones>0)GUI.Label(new Rect(1080,358,170,26),"G · камни: "+stones,small);
   }
  }

@@ -57,7 +57,9 @@ namespace Askich {
    if(backpackFind)backpackFind.SetActive(!inventory.Data.bagFound);
   }
   int NearbyStore(){
-   if(current==null)return -1;int index=NearbyContainer(current);
+   if(current==null)return -1;
+   if(suppliesOpen&&openedStorage>=0){var home=homes[openedStorage/3];int slot=openedStorage%3;return home.taken[slot]&&StorageReachable(home,slot)?openedStorage:-1;}
+   int index=FocusedStorageSlot();
    return index>=0&&current.taken[index]?homes.IndexOf(current)*3+index:-1;
   }
   void InventoryCell(Rect area,DistrictItem item,int index,bool locked){

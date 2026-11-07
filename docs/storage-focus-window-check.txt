@@ -1,0 +1,9 @@
+2026-11-07 Asia/Vladivostok. Unity 6000.3.4f1, Windows x64.
+Release build: 0 errors, 0 warnings. Separate diagnostic Player used for checks.
+295 checks passed: 18 new focus scenarios + 230 general + 30 PC combat + 17 scavenging.
+Mouse and keyboard input exercised through Unity Input System in actual Windows Player.
+Local prepared scenarios use disabled infected and temporary saves; combat suite also tests live AI.
+Screenshots are prepared diagnostic states from Windows Player, not a complete outing.
+Release Player initialized its scene; no Exception/Shader error/compiler error in startup log.
+No full outing attempted or required. No FPS measurement or subjective audio test.
+Existing user save untouched. Android not built/tested. GitHub not updated.

@@ -6,17 +6,20 @@ namespace Askich {
    if(id!=5&&id!=6){h.labels=new[]{"Ящик в кладовке","Кухонный ящик","Домашняя аптечка"};h.loot=new[]{id==2?"Копьё":id==19?"Топор":"Пусто",id%3==1?"Пусто":"Еда",id%2==0?"Бинт":"Пусто"};h.seconds=new[]{2.8f,2.2f,1.3f};h.noise=new[]{10f,6f,3f};}
   }
   void BuildStorageModel(Home h,int id,int i){
+   var art=new System.Collections.Generic.List<Renderer>();
+   GameObject Part(string name,Vector3 position,Vector3 size,Color tint,Transform parent=null){var obj=Cube(name,position,size,tint,parent);art.Add(obj.GetComponent<Renderer>());return obj;}
    bool med=id==6||i==2;bool tool=!med&&i==0;
    Vector2 p=h.p+h.containers[i];float height=med?.42f:tool?.6f:.9f;float width=med?.78f:1.2f;float depth=med?.52f:.7f;
    Color color=med?new Color(.68f,.69f,.6f):tool?new Color(.22f,.28f,.29f):new Color(.39f,.28f,.18f);
-   Cube(h.labels[i],V(p,.18f+height/2),new Vector3(width,height,depth),color);
-   Cube("Storage dark opening",V(p,.18f+height),new Vector3(width-.12f,.025f,depth-.12f),new Color(.07f,.09f,.08f));
+   Part(h.labels[i],V(p,.18f+height/2),new Vector3(width,height,depth),color);
+   Part("Storage dark opening",V(p,.18f+height),new Vector3(width-.12f,.025f,depth-.12f),new Color(.07f,.09f,.08f));
    var lid=new GameObject("Storage lid").transform;lid.position=V(p+Vector2.up*depth/2,.21f+height);h.lids[i]=lid;
-   Cube("Container lid",new Vector3(0,0,-depth/2),new Vector3(width+.04f,.07f,depth+.04f),color,lid);
-   Cube("Lid handle",new Vector3(0,.06f,-depth*.8f),new Vector3(.25f,.06f,.07f),new Color(.12f,.14f,.13f),lid);
-   if(med){var red=new Color(.51f,.2f,.17f);Cube("First aid cross",new Vector3(0,.045f,-depth/2),new Vector3(.28f,.012f,.075f),red,lid);Cube("First aid cross",new Vector3(0,.046f,-depth/2),new Vector3(.075f,.012f,.28f),red,lid);}
-   if(tool)for(int side=-1;side<=1;side+=2)Cube("Metal corner",V(p+new Vector2(side*(width/2-.06f),-depth/2-.01f),.18f+height/2),new Vector3(.075f,height,.03f),new Color(.48f,.45f,.34f));
-   if(!med&&!tool)for(int n=0;n<2;n++){Cube("Kitchen drawer seam",V(p+Vector2.down*(depth/2+.01f),.35f+n*.35f),new Vector3(width-.08f,.025f,.025f),new Color(.17f,.14f,.1f));}
+   Part("Container lid",new Vector3(0,0,-depth/2),new Vector3(width+.04f,.07f,depth+.04f),color,lid);
+   Part("Lid handle",new Vector3(0,.06f,-depth*.8f),new Vector3(.25f,.06f,.07f),new Color(.12f,.14f,.13f),lid);
+   if(med){var red=new Color(.51f,.2f,.17f);Part("First aid cross",new Vector3(0,.045f,-depth/2),new Vector3(.28f,.012f,.075f),red,lid);Part("First aid cross",new Vector3(0,.046f,-depth/2),new Vector3(.075f,.012f,.28f),red,lid);}
+   if(tool)for(int side=-1;side<=1;side+=2)Part("Metal corner",V(p+new Vector2(side*(width/2-.06f),-depth/2-.01f),.18f+height/2),new Vector3(.075f,height,.03f),new Color(.48f,.45f,.34f));
+   if(!med&&!tool)for(int n=0;n<2;n++){Part("Kitchen drawer seam",V(p+Vector2.down*(depth/2+.01f),.35f+n*.35f),new Vector3(width-.08f,.025f,.025f),new Color(.17f,.14f,.1f));}
+   h.storageArt[i]=art.ToArray();
   }
   DistrictItemKind StorageKind(Home h,int i)=>h.loot[i]=="Топор"?DistrictItemKind.Axe:h.loot[i]=="Копьё"?DistrictItemKind.Spear:h.loot[i]=="Еда"?DistrictItemKind.Food:h.loot[i]=="Бинт"?DistrictItemKind.Bandage:DistrictItemKind.Empty;
   void RevealStorage(Home h,int i){
