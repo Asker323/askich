@@ -1,0 +1,10 @@
+2026-11-07 Asia/Vladivostok. Unity 6000.3.4f1, Windows x64.
+Release: 0 build errors, 0 warnings. Separate diagnostic build used for Player checks.
+17 local scavenging checks + 230 prior regression checks passed in actual Windows Player.
+Graphical storage selection, Take and Take all tested through Unity Input System mouse events.
+Separate release Player initialized its scene; startup log had no Exception/Shader error/compiler error.
+Prepared diagnostic screenshots: infected disabled; camera positioned by scenario.
+Inventory screenshot includes a bandage deliberately stashed in a kitchen drawer.
+No complete outing attempted or required. No subjective listening test or FPS measurement.
+Real user save untouched: diagnostic sessions use unique temporary save paths.
+Android not built/tested. No GitHub publication.

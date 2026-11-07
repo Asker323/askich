@@ -54,3 +54,5 @@ Needs stage: water bottle, tin geometry and additional needs icons are project-g
 Provisions stage: DrinkProvision, EatProvision and RestProvision are baked from the existing licensed Matt Idle/Duck clips with project-generated arm posing. Bottle, tin and refill-reserve geometry are project-generated. No new third-party assets were acquired.
 
 Visual-polish stage: WorldSurface and Canopy shaders, branching tree meshes and leaf geometry are project-generated. The existing licensed infected models retain their skeletons and attacks; material treatment, head proportions and tongue visibility were adjusted. No external assets or new speech recordings were acquired.
+
+Scavenging stage: storage boxes, meal, overturned chair, discarded clothing, dressing tray and footprints are project-authored geometry. Item icon details and wooden-drawer audio are project-generated. No new external assets or licenses were acquired.

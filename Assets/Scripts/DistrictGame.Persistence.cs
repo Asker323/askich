@@ -66,7 +66,7 @@ namespace Askich {
    nourishment=s.version>=6?s.nourishment:70;hydration=s.version>=6?s.hydration:60;tiredness=s.version>=6?s.tiredness:15;
    for(int i=0;i<waterTaken.Length;i++){waterTaken[i]=s.version>=6&&s.water[i];waterModels[i].SetActive(!waterTaken[i]);}
    bleeding=s.version>=4&&s.bleeding;infection=s.version>=4?s.infection:0;drunkSeconds=s.version>=4?s.drunk:0;
-   inventorySelection=dragSlot=-1;inventoryDropPending=inventoryMouseHeld=false;pointer.Reset();
+   inventorySelection=dragSlot=-1;inventoryDropPending=inventoryMouseHeld=false;pointer.Reset();findUntil=0;
    if(backpackFind)backpackFind.SetActive(!inventory.Data.bagFound);
    for(int n=0;n<supplies.Count;n++){supplies[n].taken=s.version>=4&&s.supplies[n];supplies[n].model.SetActive(!supplies[n].taken);}
    hero.root.position=V(hero.p);hero.root.rotation=Quaternion.identity;if(hero.visual)hero.visual.Revive();

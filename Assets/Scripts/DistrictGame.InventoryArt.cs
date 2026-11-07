@@ -31,9 +31,12 @@ namespace Askich {
     }else if(kind==4||kind==5){
      Part("Cloth bandage",Vector3.zero,new Vector3(.48f,.26f,.3f),new Color(.77f,.76f,.64f));
      Part("Paper wrap",new Vector3(0,0,-.16f),new Vector3(.17f,.28f,.025f),kind==5?new Color(.31f,.5f,.41f):new Color(.48f,.45f,.35f));
+     Part("Bandage roll end",new Vector3(.25f,0,0),new Vector3(.025f,.2f,.24f),new Color(.91f,.87f,.73f));
+     if(kind==5){Part("Sterile seal horizontal",new Vector3(0,0,-.18f),new Vector3(.13f,.035f,.012f),Color.white);Part("Sterile seal vertical",new Vector3(0,0,-.19f),new Vector3(.035f,.13f,.012f),Color.white);}
     }else if(kind==3){
      var tin=GameObject.CreatePrimitive(PrimitiveType.Cylinder);Destroy(tin.GetComponent<Collider>());tin.transform.SetParent(root.transform,false);tin.transform.localScale=new Vector3(.4f,.25f,.4f);tin.GetComponent<Renderer>().sharedMaterial=Mat(new Color(.51f,.52f,.46f));
      Part("Faded food label",new Vector3(0,0,-.205f),new Vector3(.3f,.25f,.02f),new Color(.55f,.34f,.19f));
+     Part("Food label emblem",new Vector3(0,0,-.22f),new Vector3(.12f,.14f,.015f),new Color(.78f,.67f,.36f));
      for(int side=-1;side<=1;side+=2)Part("Tin rolled rim",new Vector3(0,side*.25f,0),new Vector3(.41f,.025f,.41f),new Color(.65f,.65f,.58f));
      Part("Pull tab",new Vector3(.05f,.28f,0),new Vector3(.1f,.025f,.16f),new Color(.7f,.7f,.64f));
     }else{

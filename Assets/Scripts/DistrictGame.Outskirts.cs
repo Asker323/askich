@@ -17,7 +17,6 @@ namespace Askich {
    Cube("Northern dirt track",new Vector3(82,.005f,51),new Vector3(76,.03f,2.8f),new Color(.31f,.28f,.21f));
    for(int z=-36;z<=12;z+=24)for(int x=72;x<=96;x+=24){
     BuildHome(new Vector2(x,z),homes.Count);var h=homes[homes.Count-1];
-    h.loot=x==72?new[]{"Еда","Пусто","Бинт"}:new[]{"Пусто","Копьё","Пусто"};
     h.note="ЗАПИСКА: «На восточной окраине остались припасы дорожников. Ищи груз во дворе севернее последних домов. К башне можно вернуться по грунтовке»";
     Cube("Outskirts note",V(h.p+new Vector2(-2,0),.79f),new Vector3(.4f,.015f,.3f),new Color(.74f,.7f,.56f));
    }

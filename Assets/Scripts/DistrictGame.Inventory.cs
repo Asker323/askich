@@ -85,7 +85,7 @@ namespace Askich {
    int store=NearbyStore();bool overflow=store<0&&inventory.Data.overflow.Count>0;DistrictItem[] external=null;
    if(store>=0)external=inventory.Container(store);
    else if(overflow){external=new DistrictItem[6];overflowPage=Mathf.Clamp(overflowPage,0,(inventory.Data.overflow.Count-1)/6);for(int i=0;i<6;i++)if(overflowPage*6+i<inventory.Data.overflow.Count)external[i]=inventory.Data.overflow[overflowPage*6+i];}
-   if(external!=null)GUI.Label(new Rect(400,438,480,30),overflow?"Возвращённые вещи":"Контейнер",small);
+   if(external!=null)GUI.Label(new Rect(400,438,480,30),overflow?"Возвращённые вещи":StorageTitle(store),small);
    if(external!=null)for(int i=0;i<6;i++)InventoryCell(StoreCell(i),external[i],-10-i,false);
    if(overflow){
     if(Button(new Rect(900,550,70,40),"←"))overflowPage=Mathf.Max(0,overflowPage-1);
@@ -108,7 +108,7 @@ namespace Askich {
      if(item.kind==6)MedicalButton(new Rect(905,470,245,56),"Выпить · опьянение",MedicalAction.Drink);
     }
    }
-   DrawClothingSelection();
+   DrawClothingSelection();DrawStorageActions(store);
    GUI.color=MedicalWarning;GUI.Label(new Rect(400,565,475,48),Time.unscaledTime<inventoryNoticeUntil?inventoryNotice:medicalAction!=MedicalAction.None?"Действие выполняется":hoveredInventoryItem??"",small);GUI.color=Color.white;
    if(Event.current.type!=EventType.Repaint)return;
    Vector2 dropPosition=pointer.Position;bool dropDragged=pointer.Dragged;
@@ -132,7 +132,7 @@ namespace Askich {
    if(dragSlot>=0&&(rawDrop||!pointer.Held)){
     int source=dragSlot;dragSlot=-1;
     if(!rawDrop&&!pointer.TakeDrop())return;
-    if(!dropDragged){inventorySelection=dragArea==0?source:-1;return;}
+    if(!dropDragged){inventorySelection=dragArea==0?source:-10-source;return;}
     bool changed=false;
     int garmentTarget=ClothingTarget(dropPosition);
     if(dragArea==0&&garmentTarget>=11){if(inventory.Data.slots[source].kind==garmentTarget)changed=inventory.Equip(source);}

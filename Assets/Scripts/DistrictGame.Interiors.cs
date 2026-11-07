@@ -18,22 +18,13 @@ namespace Askich {
     h.seconds=new[]{2.1f,1.3f,2.8f};h.noise=new[]{5f,3f,9f};
     h.note="ЗАПИСКА АННЫ: «Остались только бинты. Антибиотики увезли вчера. Нина и Саша ушли к башне, я задержалась с последним пациентом. Если придёшь позже — не ищи нас здесь. Не включай соседское радио надолго»";
    }
-   for(int i=0;i<3;i++){
-    Vector2 pos=h.p+h.containers[i];bool medical=id==6||(id==5&&i==2);
-    Color color=medical?new Color(.48f,.55f,.51f):id==5&&i==0?new Color(.25f,.29f,.3f):new Color(.37f,.28f,.19f);
-    Cube(h.labels[i]+" body",V(pos,.48f),new Vector3(1.2f,.86f,.7f),color);
-    Cube("Dark container interior",V(pos,.92f),new Vector3(1.06f,.04f,.57f),new Color(.09f,.11f,.1f));
-    var pivot=new GameObject("Container lid pivot").transform;pivot.position=V(pos+Vector2.up*.35f,.96f);h.lids[i]=pivot;
-    Cube("Container lid",new Vector3(0,0,-.35f),new Vector3(1.25f,.09f,.76f),color,pivot);
-    Cube("Lid handle",new Vector3(0,.075f,-.6f),new Vector3(.28f,.07f,.08f),new Color(.16f,.17f,.17f),pivot);
-    if(medical){Cube("Medical label",new Vector3(0,.055f,-.35f),new Vector3(.35f,.015f,.25f),new Color(.75f,.73f,.61f),pivot);}
-   }
+   ConfigureStorage(h,id);for(int i=0;i<3;i++)BuildStorageModel(h,id,i);
    RefreshContainers(h);
   }
   void RefreshContainers(Home h){for(int i=0;i<3;i++)if(h.lids[i])h.lids[i].localRotation=Quaternion.Euler(h.taken[i]?105:0,0,0);}
   void BeginSearch(Home h,int slot){
    if(searchSlot==slot&&searchHome==h)return;
-   searchHome=h;searchSlot=slot;searchTime=0;heroVelocity=Vector2.zero;
+   searchHome=h;searchSlot=slot;searchTime=0;searchNoiseClock=0;heroVelocity=Vector2.zero;
    Vector2 direction=h.p+h.containers[slot]-hero.p;
    if(direction.sqrMagnitude>.001f)hero.root.rotation=Quaternion.LookRotation(V(direction.normalized));Alert(h.p+h.containers[slot],h.noise[slot]);
    if(containerAudio)containerAudio.Play(V(h.p+h.containers[slot],1),h.noise[slot],false);
@@ -52,7 +43,7 @@ namespace Askich {
    GUI.Label(new Rect(35,174,700,30),current.title, text);
    int i=NearbyContainer(current);if(i>=0){
     string risk=current.noise[i]>=9?"громко":current.noise[i]<=3?"тихо":"умеренный шум";
-    GUI.Label(new Rect(35,210,800,42),current.labels[i]+(current.taken[i]?" · обыскано":" · действие / E · "+current.seconds[i].ToString("0.0")+" с · "+risk),small);return;
+    GUI.Label(new Rect(35,210,800,42),current.labels[i]+(current.taken[i]?" · открыть / E":" · действие / E · "+current.seconds[i].ToString("0.0")+" с · "+risk),small);return;
    }
    if(current.note!=null&&Vector2.Distance(hero.p,current.p+new Vector2(-2,0))<1.7f)
     GUI.Label(new Rect(35,210,800,42),"Записка на столе · действие / E",small);
@@ -124,7 +115,7 @@ namespace Askich {
    foreach(var e in infected){e.hp=0;if(e.visual)e.visual.Die();}
    int previousBandages=bandages;yield return new WaitForSeconds(1.65f);
    check(clinic.taken[1]&&bandages==previousBandages+1,"timed search completes through player Update");
-   Save();clinic.taken[1]=false;RefreshContainers(clinic);check(Load()&&clinic.taken[1]&&clinic.lids[1].TransformPoint(new Vector3(0,0,-.35f)).y>clinic.lids[1].position.y+.3f,"searched container appearance restored from existing save data");
+   Save();clinic.taken[1]=false;RefreshContainers(clinic);check(Load()&&clinic.taken[1]&&clinic.lids[1].TransformPoint(new Vector3(0,0,-.26f)).y>clinic.lids[1].position.y+.2f,"searched container appearance restored from existing save data");
    hero.p=clinic.p+new Vector2(-1,1);zoom=8;yield return new WaitForSeconds(1);Use();yield return new WaitForEndOfFrame();
    var image=ScreenCapture.CaptureScreenshotAsTexture();File.WriteAllBytes(Path.Combine(folder,"clinic.png"),image.EncodeToPNG());Destroy(image);
    hero.p=home.p+new Vector2(-1,1);yield return new WaitForSeconds(1);Use();yield return new WaitForEndOfFrame();
@@ -134,7 +125,7 @@ namespace Askich {
  }
 
  public sealed class DistrictContainerAudio:MonoBehaviour {
-  AudioSource source;AudioClip soft,metal,close;
+  AudioSource source;AudioClip soft,metal,close,wood;
   void Awake(){source=gameObject.AddComponent<AudioSource>();source.playOnAwake=false;source.spatialBlend=1;source.minDistance=1;source.maxDistance=16;source.rolloffMode=AudioRolloffMode.Linear;source.dopplerLevel=0;soft=Make("Cloth rummage",.7f,0);metal=Make("Sticking tool chest",1.1f,410);close=Make("Container latch",.18f,240);}
   static AudioClip Make(string name,float duration,float ring){
    const int rate=22050;var data=new float[(int)(rate*duration)];var random=new System.Random(117);float filtered=0;
@@ -145,8 +136,8 @@ namespace Askich {
   public void SetSearching(bool active){if(!active&&source.loop){source.Stop();source.loop=false;}}
   public void Play(Vector3 position,float noise,bool complete){
    source.Stop();source.transform.position=position;source.loop=!complete;
-   source.clip=complete?close:noise>=9?metal:soft;source.volume=complete?.35f:noise>=9?.7f:.4f;source.Play();
+   if(!wood)wood=Make("Wooden drawer",.6f,140);source.clip=complete?close:noise>=9?metal:noise<=3?soft:wood;source.volume=complete?.25f:noise>=9?.7f:.4f;source.Play();
   }
-  void OnDestroy(){if(soft)Destroy(soft);if(metal)Destroy(metal);if(close)Destroy(close);}
+  void OnDestroy(){if(soft)Destroy(soft);if(metal)Destroy(metal);if(close)Destroy(close);if(wood)Destroy(wood);}
  }
 }
