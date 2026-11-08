@@ -25,17 +25,26 @@ namespace Askich.Editor {
       foreach(string side in new[]{"L","R"}){
        var shoulder=map["Shoulder."+side];var upper=map["UpperArm."+side];var lower=map["LowerArm."+side];var hand=map["Hand."+side];foreach(var bone in new[]{shoulder,upper,lower,hand})bone.localRotation=neutral[bone];
        float sign=Mathf.Sign(bind[upper].m03-bind[map["Chest"]].m03);float swing=-Mathf.Cos((phase+(side=="L"?0:.5f))*Mathf.PI*2);bool run=key=="Run",walk=key=="Walk";
-       float angle=(run?-6+swing*30:walk?-5+swing*19:0)*Mathf.Deg2Rad;
-       float flex=(run?80+8*swing:walk?18+4*swing:12)*Mathf.Deg2Rad;
-       Vector3 upperDirection=torso*new Vector3(sign*.10f,-Mathf.Cos(angle),Mathf.Sin(angle)).normalized;
-       Vector3 lowerDirection=torso*new Vector3(-sign*.015f,-Mathf.Cos(angle+flex),Mathf.Sin(angle+flex)).normalized;
+       float cycle=(phase+(side=="L"?0:.5f))*Mathf.PI*2;
+       // The forearm follows the upper arm with a small delay rather than forming
+       // a rigid pendulum. Leave air under the armpit without flaring the elbows.
+       float angle=(run?-8+swing*32:walk?-5+swing*23:1.5f*Mathf.Sin(cycle))*Mathf.Deg2Rad;
+       float flex=(run?76+12*Mathf.Sin(cycle-.4f):walk?18+9*Mathf.Sin(cycle-.45f):14+2*Mathf.Sin(cycle+.3f))*Mathf.Deg2Rad;
+       float lateral=run?.19f:walk?.20f:.17f;
+       Vector3 upperDirection=torso*new Vector3(sign*(lateral+.025f*Mathf.Sin(cycle-.3f)),-Mathf.Cos(angle),Mathf.Sin(angle)).normalized;
+       Vector3 lowerDirection=torso*new Vector3(sign*.045f,-Mathf.Cos(angle+flex),Mathf.Sin(angle+flex)).normalized;
        upper.rotation=Quaternion.FromToRotation(lower.position-upper.position,upperDirection)*upper.rotation;
        lower.rotation=Quaternion.FromToRotation(hand.position-lower.position,lowerDirection)*lower.rotation;
        Vector3 bindFingers=bind[map["Index1."+side]].GetColumn(3)-bind[hand].GetColumn(3);
        Vector3 bindThumb=bind[map["Thumb1."+side]].GetColumn(3)-bind[map["Index1."+side]].GetColumn(3);
        Quaternion palmFrame=Quaternion.LookRotation(bindFingers,bindThumb);
-       Vector3 thumbDirection=Vector3.Cross(lowerDirection,torso*Vector3.right);
-       hand.rotation=Quaternion.LookRotation(lowerDirection,thumbDirection)*Quaternion.Inverse(palmFrame)*BindRotation(hand);
+       // A little pronation and delayed wrist flex keep the palms from staying
+       // locked to the thighs. Use an anatomical palm frame, not bone Euler axes.
+       float wrist=(run?7:walk?6:2)*Mathf.Sin(cycle-.65f);
+       float roll=12+(run?9:walk?12:3)*Mathf.Sin(cycle-.8f);
+       Vector3 fingers=Quaternion.AngleAxis(wrist,torso*Vector3.right)*lowerDirection;
+       Vector3 thumbDirection=Quaternion.AngleAxis(sign*roll,fingers)*Vector3.Cross(fingers,torso*Vector3.right);
+       hand.rotation=Quaternion.LookRotation(fingers,thumbDirection)*Quaternion.Inverse(palmFrame)*BindRotation(hand);
        foreach(var bone in new[]{shoulder,upper,lower,hand}){
         string path=AnimationUtility.CalculateTransformPath(bone,root.transform);Quaternion q=bone.localRotation;
         Track(path,"localRotation.x",q.x);Track(path,"localRotation.y",q.y);Track(path,"localRotation.z",q.z);Track(path,"localRotation.w",q.w);

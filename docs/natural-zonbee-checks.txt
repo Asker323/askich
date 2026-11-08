@@ -1,0 +1,85 @@
+PASS Windows product and title are Zonbee
+PASS furniture and street objects have registered movement obstacles
+PASS large movement step cannot tunnel through table
+PASS table footprint blocks the survivor body
+PASS legacy position inside furniture is repaired within its original room
+PASS low furniture does not falsely block head-height sight
+PASS reachable container after solid furniture: 0 / 0
+PASS reachable container after solid furniture: 0 / 1
+PASS reachable container after solid furniture: 0 / 2
+PASS reachable container after solid furniture: 1 / 0
+PASS reachable container after solid furniture: 1 / 1
+PASS reachable container after solid furniture: 1 / 2
+PASS reachable container after solid furniture: 2 / 0
+PASS reachable container after solid furniture: 2 / 1
+PASS reachable container after solid furniture: 2 / 2
+PASS reachable container after solid furniture: 3 / 0
+PASS reachable container after solid furniture: 3 / 1
+PASS reachable container after solid furniture: 3 / 2
+PASS reachable container after solid furniture: 4 / 0
+PASS reachable container after solid furniture: 4 / 1
+PASS reachable container after solid furniture: 4 / 2
+PASS reachable container after solid furniture: 5 / 0
+PASS reachable container after solid furniture: 5 / 1
+PASS reachable container after solid furniture: 5 / 2
+PASS reachable container after solid furniture: 6 / 0
+PASS reachable container after solid furniture: 6 / 1
+PASS reachable container after solid furniture: 6 / 2
+PASS reachable container after solid furniture: 7 / 0
+PASS reachable container after solid furniture: 7 / 1
+PASS reachable container after solid furniture: 7 / 2
+PASS reachable container after solid furniture: 8 / 0
+PASS reachable container after solid furniture: 8 / 1
+PASS reachable container after solid furniture: 8 / 2
+PASS reachable container after solid furniture: 9 / 0
+PASS reachable container after solid furniture: 9 / 1
+PASS reachable container after solid furniture: 9 / 2
+PASS reachable container after solid furniture: 10 / 0
+PASS reachable container after solid furniture: 10 / 1
+PASS reachable container after solid furniture: 10 / 2
+PASS reachable container after solid furniture: 11 / 0
+PASS reachable container after solid furniture: 11 / 1
+PASS reachable container after solid furniture: 11 / 2
+PASS reachable container after solid furniture: 12 / 0
+PASS reachable container after solid furniture: 12 / 1
+PASS reachable container after solid furniture: 12 / 2
+PASS reachable container after solid furniture: 13 / 0
+PASS reachable container after solid furniture: 13 / 1
+PASS reachable container after solid furniture: 13 / 2
+PASS reachable container after solid furniture: 14 / 0
+PASS reachable container after solid furniture: 14 / 1
+PASS reachable container after solid furniture: 14 / 2
+PASS reachable container after solid furniture: 15 / 0
+PASS reachable container after solid furniture: 15 / 1
+PASS reachable container after solid furniture: 15 / 2
+PASS reachable container after solid furniture: 16 / 0
+PASS reachable container after solid furniture: 16 / 1
+PASS reachable container after solid furniture: 16 / 2
+PASS reachable container after solid furniture: 17 / 0
+PASS reachable container after solid furniture: 17 / 1
+PASS reachable container after solid furniture: 17 / 2
+PASS reachable container after solid furniture: 18 / 0
+PASS reachable container after solid furniture: 18 / 1
+PASS reachable container after solid furniture: 18 / 2
+PASS reachable container after solid furniture: 19 / 0
+PASS reachable container after solid furniture: 19 / 1
+PASS reachable container after solid furniture: 19 / 2
+PASS reachable container after solid furniture: 20 / 0
+PASS reachable container after solid furniture: 20 / 1
+PASS reachable container after solid furniture: 20 / 2
+PASS reachable container after solid furniture: 21 / 0
+PASS reachable container after solid furniture: 21 / 1
+PASS reachable container after solid furniture: 21 / 2
+PASS full camera viewport at (1600, 1000)
+PASS full camera viewport at (1920, 800)
+PASS both screen edges receive a fresh frame instead of stale world strips
+PASS default HUD hides help and map and keeps radio out of the centre
+PASS compact HUD blocks its controls while centre stays interactive
+PASS M opens optional minimap
+PASS M hides optional minimap
+PASS F1 opens control help on demand
+PASS revised stance follows nominal walking speed without overreaching
+PASS pelvis rises over supporting foot instead of rising at double contact
+PASS ordinary keyboard walk uses revised speed and active skeletal animation
+PASS renamed game imports old profile once and leaves original bytes intact
+PASS existing corrupted Zonbee world is not replaced with stale legacy data

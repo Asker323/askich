@@ -30,7 +30,9 @@ namespace Askich {
    paused=true;hero.visual.SetPaused(true);UnityEngine.InputSystem.InputSystem.RemoveDevice(keyboard);heroVelocity=Vector2.zero;hero.p=new Vector2(0,-24);hero.root.position=V(hero.p);
    int grip=Enumerable.Range(0,body.sharedMesh.blendShapeCount).Where(i=>body.sharedMesh.GetBlendShapeName(i).EndsWith("GripL")).DefaultIfEmpty(-1).First();
    hero.visual.Equip(1);Check(grip>=0&&body.GetBlendShapeWeight(grip)>99,"equipped tool closes authored hand shape in actual Player");
-   hero.visual.Equip(0);Check(body.GetBlendShapeWeight(grip)>0&&body.GetBlendShapeWeight(grip)<50,"unequipping restores relaxed fingers");
+   // Run was selected immediately before pausing: the offhand still has the
+   // previous walk curl until LateUpdate. Unequip must release the full fist now.
+   hero.visual.Equip(0);Check(body.GetBlendShapeWeight(grip)>10&&body.GetBlendShapeWeight(grip)<80,"unequipping releases the weapon fist into a loose locomotion curl");
    hero.visual.ArtSample("Idle",.1f);cam.transform.rotation=Quaternion.Euler(12,0,0);hero.root.rotation=Quaternion.Euler(0,195,0);yield return CaptureGameCamera(Path.Combine(folder,"character-art-hero.png"),1.25f);
    hero.visual.Equip(1);hero.root.rotation=Quaternion.Euler(0,225,0);hero.visual.ArtSample("Slash",.36f);yield return CaptureGameCamera(Path.Combine(folder,"character-art-axe.png"),1.6f);
    var lean=infected.First(z=>z.id%3==0);lean.root.gameObject.SetActive(true);lean.root.position=V(hero.p);lean.root.rotation=Quaternion.Euler(0,195,0);lean.visual.SetPaused(true);lean.visual.ArtSample("Idle",.2f);hero.root.gameObject.SetActive(false);

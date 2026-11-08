@@ -99,7 +99,8 @@ namespace Askich {
    if(zombie||bodyRenderers==null)return;int bits=(data.shirt?1:0)|(data.trousers?2:0)|(data.shoes?4:0);if(bits==clothingBits)return;clothingBits=bits;
    foreach(var renderer in bodyRenderers){if(renderer.name=="Shirt")renderer.gameObject.SetActive(data.shirt);if(renderer.name=="Trousers")renderer.gameObject.SetActive(data.trousers);if(renderer.name=="Shoes")renderer.gameObject.SetActive(data.shoes);}
   }
-  float LooseGrip=>provisionMode>0||searching?0:state=="Run"?42:state=="Walk"?25:state=="Punch"?85:18;
+  static float LocomotionGrip(string key,float phase)=>key=="Run"?60+2*Mathf.Sin(phase*Mathf.PI*2-1):key=="Walk"?46+3*Mathf.Sin(phase*Mathf.PI*2-1):38;
+  float LooseGrip=>provisionMode>0||searching?0:state=="Punch"?85:LocomotionGrip(state,state!=null&&clips.ContainsKey(state)?animationPlayer[clips[state]].normalizedTime:0);
   void UpdateHands(float dt){if(!handSkin)return;float target=LooseGrip;void Set(int index,float value){if(index>=0)handSkin.SetBlendShapeWeight(index,Mathf.MoveTowards(handSkin.GetBlendShapeWeight(index),value,240*dt));}Set(leftGrip,EquippedWeapon>0?100:target);Set(rightGrip,target);}
   public bool Equip(int weapon){bool changed=EquippedWeapon!=weapon;EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);if(handSkin&&leftGrip>=0&&(changed||weapon>0))handSkin.SetBlendShapeWeight(leftGrip,weapon>0?100:LooseGrip);return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
 
@@ -153,7 +154,7 @@ namespace Askich {
   public float ArtPhase(string key)=>animationPlayer[clips[key]].normalizedTime;
   public AnimationClip ArtClip(string key)=>animationPlayer[clips[key]].clip;
   public Transform ArtBone(string key){foreach(var bone in animationPlayer.GetComponentsInChildren<Transform>(true))if(bone.name==key)return bone;return null;}
-  public void ArtSample(string key,float phase){ArtClip(key).SampleAnimation(animationPlayer.gameObject,ArtClip(key).length*phase);if(handSkin){float weight=key=="Run"?42:key=="Walk"?25:18;if(leftGrip>=0)handSkin.SetBlendShapeWeight(leftGrip,EquippedWeapon>0?100:weight);if(rightGrip>=0)handSkin.SetBlendShapeWeight(rightGrip,weight);}}
+  public void ArtSample(string key,float phase){ArtClip(key).SampleAnimation(animationPlayer.gameObject,ArtClip(key).length*phase);if(handSkin){float weight=LocomotionGrip(key,phase);if(leftGrip>=0)handSkin.SetBlendShapeWeight(leftGrip,EquippedWeapon>0?100:weight);if(rightGrip>=0)handSkin.SetBlendShapeWeight(rightGrip,weight);}}
 #endif
  }
 }
