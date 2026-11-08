@@ -25,8 +25,8 @@ namespace Askich.Editor {
     var mat=AssetDatabase.LoadAssetAtPath<Material>(Folder+pair.Item1+".mat");if(!mat)continue;mat.color=pair.Item2;mat.SetFloat("_Glossiness",pair.Item1.StartsWith("Eye")?.32f:.07f);EditorUtility.SetDirty(mat);
    }
   }
-  public static void ReviseLocomotionAndBuild(){Bake("Hero");Bake("Lean");HeroArmMotionAuthor.Bake();AssetDatabase.SaveAssets();BuildDistrict.Pair();}
-  public static void BakeAndBuild(){AdultCharacterAuthor.Bake();Surface();CharacterToolAuthor.Bake();Bake("Hero");Bake("Lean");HeroArmMotionAuthor.Bake();AssetDatabase.SaveAssets();BuildDistrict.Pair();}
+  public static void ReviseLocomotionAndBuild(){Bake("Hero");Bake("Lean");HeroArmMotionAuthor.Bake();HeroHandsAuthor.Bake();AssetDatabase.SaveAssets();BuildDistrict.Pair();}
+  public static void BakeAndBuild(){AdultCharacterAuthor.Bake();Surface();CharacterToolAuthor.Bake();Bake("Hero");Bake("Lean");HeroArmMotionAuthor.Bake();HeroHandsAuthor.Bake();AssetDatabase.SaveAssets();BuildDistrict.Pair();}
   static void Bake(string type){
    bool zombie=type=="Lean";var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(Folder+type+".prefab");var root=UnityEngine.Object.Instantiate(prefab);root.transform.SetPositionAndRotation(Vector3.zero,Quaternion.identity);
    try{

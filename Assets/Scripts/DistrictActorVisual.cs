@@ -18,6 +18,7 @@ namespace Askich {
   bool zombie,dead,crawler,searching;
   Transform head;
   GameObject nativeAxe,nativeSpear;
+  SkinnedMeshRenderer handSkin;int leftGrip=-1,rightGrip=-1;
   int visualVariant;float meshHeight=1,meshBase;
   float hurtFlash;bool paused,tintApplied;Renderer[] bodyRenderers;MaterialPropertyBlock tint;
   int clothingBits=-1;
@@ -69,6 +70,7 @@ namespace Askich {
     if(!infected&&Array.IndexOf(new[]{"knife","woodenbat_barbed","woodenbat_saw","pistol","shotgun","guitar","smg","spear","rifle","axe"},n)>=0)bone.gameObject.SetActive(false);
    }
    bodyRenderers=model.GetComponentsInChildren<Renderer>(true);tint=new MaterialPropertyBlock();
+   if(!infected){foreach(var renderer in bodyRenderers)if(renderer is SkinnedMeshRenderer skin&&skin.name=="Body"){handSkin=skin;for(int i=0;i<skin.sharedMesh.blendShapeCount;i++){string shape=skin.sharedMesh.GetBlendShapeName(i);if(shape.EndsWith("GripL"))leftGrip=i;if(shape.EndsWith("GripR"))rightGrip=i;}}}
    var firstSkin=model.GetComponentInChildren<SkinnedMeshRenderer>();if(firstSkin){meshHeight=firstSkin.sharedMesh.bounds.size.y;meshBase=firstSkin.sharedMesh.bounds.min.y;}
    if(infected){
     foreach(var skin in model.GetComponentsInChildren<SkinnedMeshRenderer>(true)){
@@ -92,12 +94,15 @@ namespace Askich {
    // at the same simulation time, including the frame before resuming gameplay.
    if(state=="CrawlerLunge"&&lungeTime>=.12f) crawlerLunge.SampleAnimation(animationPlayer.gameObject,lungeTime);
    if(!zombie&&provisionMode>0&&provisionMode<=3&&state==ProvisionKey(provisionMode))provisions[provisionMode-1].SampleAnimation(animationPlayer.gameObject,provisionTime);
-   if(head)head.localScale=headScale;if(paused)return;hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(hurtFlash<=0&&tintApplied)return;tintApplied=hurtFlash<=0;if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();tint.SetFloat("_Decay",zombie?.85f:0);tint.SetFloat("_Variant",visualVariant);tint.SetFloat("_PatternHeight",meshHeight);tint.SetFloat("_PatternBase",meshBase);if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
+   if(head)head.localScale=headScale;if(paused)return;UpdateHands(Time.deltaTime);hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(hurtFlash<=0&&tintApplied)return;tintApplied=hurtFlash<=0;if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();tint.SetFloat("_Decay",zombie?.85f:0);tint.SetFloat("_Variant",visualVariant);tint.SetFloat("_PatternHeight",meshHeight);tint.SetFloat("_PatternBase",meshBase);if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
   public void ApplyClothing(DistrictInventoryData data){
    if(zombie||bodyRenderers==null)return;int bits=(data.shirt?1:0)|(data.trousers?2:0)|(data.shoes?4:0);if(bits==clothingBits)return;clothingBits=bits;
    foreach(var renderer in bodyRenderers){if(renderer.name=="Shirt")renderer.gameObject.SetActive(data.shirt);if(renderer.name=="Trousers")renderer.gameObject.SetActive(data.trousers);if(renderer.name=="Shoes")renderer.gameObject.SetActive(data.shoes);}
   }
-  public bool Equip(int weapon){EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);if(!zombie&&bodyRenderers!=null)foreach(var renderer in bodyRenderers)if(renderer is SkinnedMeshRenderer skin&&skin.name=="Body"){for(int grip=0;grip<skin.sharedMesh.blendShapeCount;grip++)if(skin.sharedMesh.GetBlendShapeName(grip).EndsWith("GripL",StringComparison.Ordinal))skin.SetBlendShapeWeight(grip,weapon>0?100:0);}return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
+  float LooseGrip=>provisionMode>0||searching?0:state=="Run"?42:state=="Walk"?25:state=="Punch"?85:18;
+  void UpdateHands(float dt){if(!handSkin)return;float target=LooseGrip;void Set(int index,float value){if(index>=0)handSkin.SetBlendShapeWeight(index,Mathf.MoveTowards(handSkin.GetBlendShapeWeight(index),value,240*dt));}Set(leftGrip,EquippedWeapon>0?100:target);Set(rightGrip,target);}
+  public bool Equip(int weapon){bool changed=EquippedWeapon!=weapon;EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);if(handSkin&&leftGrip>=0&&(changed||weapon>0))handSkin.SetBlendShapeWeight(leftGrip,weapon>0?100:LooseGrip);return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
+
   void Play(string key,bool loop,float speed){
    if(!clips.TryGetValue(key,out string name))return;
    var s=animationPlayer[name];s.wrapMode=loop?WrapMode.Loop:WrapMode.ClampForever;s.speed=speed;
@@ -148,7 +153,7 @@ namespace Askich {
   public float ArtPhase(string key)=>animationPlayer[clips[key]].normalizedTime;
   public AnimationClip ArtClip(string key)=>animationPlayer[clips[key]].clip;
   public Transform ArtBone(string key){foreach(var bone in animationPlayer.GetComponentsInChildren<Transform>(true))if(bone.name==key)return bone;return null;}
-  public void ArtSample(string key,float phase){ArtClip(key).SampleAnimation(animationPlayer.gameObject,ArtClip(key).length*phase);}
+  public void ArtSample(string key,float phase){ArtClip(key).SampleAnimation(animationPlayer.gameObject,ArtClip(key).length*phase);if(handSkin){float weight=key=="Run"?42:key=="Walk"?25:18;if(leftGrip>=0)handSkin.SetBlendShapeWeight(leftGrip,EquippedWeapon>0?100:weight);if(rightGrip>=0)handSkin.SetBlendShapeWeight(rightGrip,weight);}}
 #endif
  }
 }
