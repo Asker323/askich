@@ -28,6 +28,7 @@ namespace Askich {
   }
   void BuildOrdinaryInterior(Home h,int id){
    if(id==5||id==6||id==StationHome)return;
+   if(BuildPlannedInterior(h,id))return;
    Vector2 p=h.p;int style=id%6;var cloth=Color.Lerp(HouseColours[(id+2)%6],new Color(.32f,.36f,.31f),.4f);
    var bed=Cube("Bed with worn blanket",V(p+new Vector2(2,-1.1f),.43f),new Vector3(1.45f,.55f,2.1f),cloth);if(style%2==1)bed.transform.rotation=Quaternion.Euler(0,90,0);
    Cube("Creased pillow",V(p+new Vector2(style%2==1?2.65f:2,style%2==1?-1.1f:-.4f),.76f),style%2==1?new Vector3(.45f,.15f,.9f):new Vector3(.9f,.15f,.45f),new Color(.64f,.63f,.54f));
@@ -45,7 +46,7 @@ namespace Askich {
     if(id%3==0){var shutter=Cube("Faded window shutter",V(h.p+new Vector2(side*3.38f,-4.32f),1.65f),new Vector3(.42f,1.13f,.09f),HouseColours[(id+1)%6]);h.cut.Add(shutter);}
     if(id%4==1){var board=Cube("Board over abandoned window",V(h.p+new Vector2(side*2.5f,-4.34f),1.55f),new Vector3(1.55f,.18f,.07f),frame);board.transform.rotation=Quaternion.Euler(0,0,side*11);h.cut.Add(board);}
    }
-   for(int n=0;n<3;n++)Cube("Distinct chipped plaster",V(h.p+new Vector2(-2.9f+n*1.6f+id%3*.13f,3.81f),.6f+n*.22f),new Vector3(.3f+id%3*.1f,.15f,.02f),new Color(.29f,.30f,.26f));
+   for(int n=0;n<3;n++)Cube("Distinct chipped plaster",V(h.p+new Vector2(HasHousePlan(id)?(n==2?2.9f:-3.4f+n*.55f):-2.9f+n*1.6f+id%3*.13f,3.81f),.6f+n*.22f),new Vector3(.3f+id%3*.1f,.15f,.02f),new Color(.29f,.30f,.26f));
    if(id%2==0){Cube("Front timber porch",V(h.p+Vector2.down*4.9f,.11f),new Vector3(2.5f,.16f,1.6f),new Color(.31f,.27f,.20f));for(int n=0;n<2;n++)Cube("House flower box",V(h.p+new Vector2(-3.1f+n*6.2f,-5.2f),.28f),new Vector3(1.1f,.4f,.55f),frame);}
    else Cube("Old firewood rack",V(h.p+new Vector2(4.8f,1),.45f),new Vector3(.9f,.8f,2.4f),new Color(.32f,.25f,.18f));
   }

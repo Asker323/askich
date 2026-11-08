@@ -44,11 +44,11 @@ namespace Askich {
   }
   void RefreshExploration(bool snap){if(snap){gardenAngle=(explorationFlags&GardenOpen)!=0?100:0;cacheSearching=false;cacheSearch=0;alarmRemaining=0;if(carAlarm)carAlarm.Stop();}if(gardenLeaf)gardenLeaf.rotation=Quaternion.Euler(0,-gardenAngle,0);if(gardenBarrier!=null)gardenBarrier.active=gardenAngle<70;if(cacheLid)cacheLid.localRotation=Quaternion.Euler((explorationFlags&GardenTaken)!=0?-105:cacheSearching?-35:0,0,0);}
   bool GardenDoorOccupied(){var r=gardenBarrier.rect;r.xMin-=.35f;r.xMax+=.35f;r.yMin-=.4f;r.yMax+=.4f;return r.Contains(hero.p)||infected.Exists(z=>z.hp>0&&r.Contains(z.p));}
-  void CancelCacheSearch(){cacheSearching=false;cacheSearch=0;}
+  void CancelCacheSearch(){cacheSearching=false;cacheSearch=0;containerAudio.SetSearching(searchSlot>=0);}
   bool UseExploration(){
    if(cacheSearching){CancelCacheSearch();return true;}
    if(NearExplore(gardenGate,2)){if((explorationFlags&GardenOpen)!=0&&GardenDoorOccupied()){Say("Проём занят");return true;}explorationFlags^=GardenOpen;Alert(gardenGate,6);foley.Door(V(gardenGate,1),(explorationFlags&GardenOpen)!=0);Save();return true;}
-   if(NearExplore(gardenCache,1.7f)){if((explorationFlags&GardenTaken)==0){cacheSearching=true;cacheSearch=0;cacheStartHealth=health;}else Say("Ящик пуст");return true;}
+   if(NearExplore(gardenCache,1.7f)){if((explorationFlags&GardenTaken)==0){cacheSearching=true;cacheSearch=0;cacheStartHealth=health;containerAudio.Play(V(gardenCache,1),5,false);}else Say("Ящик пуст");return true;}
    if(NearExplore(alarmSwitch,1.5f)){if(alarmRemaining>0){alarmRemaining=0;carAlarm.Stop();}else if((explorationFlags&AlarmSpent)==0){explorationFlags|=AlarmSpent;alarmRemaining=18;alarmPulse=0;carAlarm.Play();Alert(alarmSwitch,28);Save();}else Say("Аккумулятор разряжен");return true;}
    if(NearExplore(busNotice,1.7f)){Say("ЗАПИСКА НА ОСТАНОВКЕ: «Последний автобус ушёл пустым. Люди пошли пешком к водонапорной башне. Коля оставил инструменты в огороде за крайним западным домом. Жёлтую машину не трогайте — сигнализация ещё работает»");return true;}
    return false;

@@ -23,7 +23,7 @@ namespace Askich {
    Check(FindPath(gardenGate+Vector2.down*1.3f,gardenCache+Vector2.down*1.25f).Count>0,"path through the garden reaches equipment cache");
    Place(gardenGate);Use();Check((explorationFlags&GardenOpen)!=0,"occupied gate refuses to close on survivor");
    explorationFlags&=~GardenOpen;Save();Check((ReadSave(SavePath).exploration&GardenOpen)!=0,"snapshot keeps an occupied gate open for safe loading");explorationFlags|=GardenOpen;
-   Place(gardenCache+Vector2.down*1.25f);Use();Check(cacheSearching&&(explorationFlags&GardenTaken)==0,"cache starts a timed search without granting materials");paused=false;yield return new WaitForSeconds(.7f);paused=true;Check(cacheSearching&&cacheSearch>.4f&&cacheLid.localEulerAngles.x>300,"cache animates its lid and rummages before loot");
+   Place(gardenCache+Vector2.down*1.25f);Use();Check(cacheSearching&&(explorationFlags&GardenTaken)==0,"cache starts a timed search without granting materials");paused=false;yield return new WaitForSeconds(.7f);paused=true;Check(cacheSearching&&cacheSearch>.4f&&cacheLid.localEulerAngles.x>300&&containerAudio.Searching,"cache animates its lid and rummages before loot");
    float seconds=cacheSearch;yield return new WaitForSeconds(.2f);Check(cacheSearch==seconds,"pause freezes cache search");Use();Check(!cacheSearching&&(explorationFlags&GardenTaken)==0&&inventory.Count(DistrictItemKind.Wood)==0,"E cancels without granting or consuming the cache");
    Use();heroVelocity=Vector2.right;TickExploration(.1f);heroVelocity=Vector2.zero;Check(!cacheSearching,"movement interrupts equipment search");
    Use();health-=1;TickExploration(.1f);Check(!cacheSearching,"injury interrupts equipment search");health=100;
