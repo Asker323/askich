@@ -45,6 +45,7 @@ namespace Askich {
    vertices.Clear();colors.Clear();triangles.Clear();var uv=new List<Vector2>();
    for(int i=0;i<420;i++){
     float x=Rand(-21,21),z=i%2==0?Rand(-19.7f,-17):Rand(-30,-28);
+    if(new Rect(-10.1f,-20.8f,6.2f,2.9f).Contains(new Vector2(x,z)))continue;
     if(Mathf.Abs(x+12)<1.4f||Mathf.Abs(x-12)<1.4f||Mathf.Abs(x)<4)continue;
     float height=Rand(.16f,.44f);Color tint=new Color(Rand(.8f,1.2f),Rand(.8f,1.1f),Rand(.7f,1));
     for(int blade=0;blade<3;blade++){

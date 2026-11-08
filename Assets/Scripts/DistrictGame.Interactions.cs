@@ -46,7 +46,7 @@ namespace Askich {
      h.lids[i].localRotation=Quaternion.RotateTowards(h.lids[i].localRotation,Quaternion.Euler(angle,0,0),dt*240);
     }
    }
-   containerAudio.SetSearching(searchSlot>=0);
+   containerAudio.SetSearching(searchSlot>=0||cacheSearching);
   }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
   IEnumerator CheckInteractions(Action<bool,string> check,string folder){
