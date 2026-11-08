@@ -50,6 +50,7 @@ public sealed partial class DistrictGame:MonoBehaviour {
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-district-manual-check")>=0)testSave=Path.Combine(Application.temporaryCachePath,"district-manual-"+Guid.NewGuid().ToString("N")+".json");
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-district-check")>=0)StartCoroutine(Check());
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-district-character-art-check")>=0)StartCoroutine(CheckCharacterArt());
+ if(Array.IndexOf(Environment.GetCommandLineArgs(),"-zonbee-arm-check")>=0)StartCoroutine(CheckRelaxedArms());
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-zonbee-polish-check")>=0)StartCoroutine(CheckZonbeePolish());
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-district-world-life-check")>=0)StartCoroutine(CheckWorldLife());
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-district-storage-focus-check")>=0)StartCoroutine(CheckStorageFocus());

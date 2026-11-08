@@ -1,0 +1,3 @@
+Idle: elbow lateral offset 0.027 m; minimum shoulder/elbow drop 0.265 m; elbow flex 13.7–13.7 deg; minimum hand distance from body centre 0.189 m; hand height 0.944–0.950 m; hand travel 0.004/0.004 m.
+Walk: elbow lateral offset 0.029 m; minimum shoulder/elbow drop 0.239 m; elbow flex 15.4–22.9 deg; minimum hand distance from body centre 0.180 m; hand height 0.859–0.924 m; hand travel 0.342/0.342 m.
+Run: elbow lateral offset 0.036 m; minimum shoulder/elbow drop 0.178 m; elbow flex 72.2–88.1 deg; minimum hand distance from body centre 0.170 m; hand height 0.923–1.108 m; hand travel 0.381/0.381 m.

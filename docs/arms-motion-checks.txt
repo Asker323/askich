@@ -1,0 +1,25 @@
+PASS Idle: elbows stay close to shoulder line instead of flaring out
+PASS Idle: elbows remain below shoulders throughout the cycle
+PASS Idle: hands stay outside the torso
+PASS Idle: elbow bend matches relaxed walk or running carriage
+PASS Walk: elbows stay close to shoulder line instead of flaring out
+PASS Walk: elbows remain below shoulders throughout the cycle
+PASS Walk: hands stay outside the torso
+PASS Walk: elbow bend matches relaxed walk or running carriage
+PASS Walk: both hands have a forward/back swing
+PASS Run: elbows stay close to shoulder line instead of flaring out
+PASS Run: elbows remain below shoulders throughout the cycle
+PASS Run: hands stay outside the torso
+PASS Run: elbow bend matches relaxed walk or running carriage
+PASS Run: both hands have a forward/back swing
+PASS arms counter-swing against the opposite legs
+PASS arm swing reverses in the second half cycle
+PASS Idle: hand path loops without a seam
+PASS Walk: hand path loops without a seam
+PASS Run: hand path loops without a seam
+PASS equipped tool remains in palm: 1
+PASS equipped tool remains in palm: 2
+PASS real keyboard movement advances revised walk
+PASS real keyboard sprint switches to revised run
+PASS releasing movement returns to relaxed idle
+PASS ordinary save loads after arm changes

@@ -1,0 +1,6 @@
+2026-11-08 Asia/Vladivostok. Unity 6000.3.4f1, Windows x64.
+171 checks passed: 25 arm motion + 11 character + 30 combat + 20 wardrobe + 85 Zonbee polish.
+Final rerun of 25 arm checks also fixes inspection framing and hides the uninitialized fallback tools. Release gameplay code and animation assets did not change between those runs.
+Idle/Walk/Run sampled through full cycles. Real keyboard Walk/Run/Idle, grip locations and save roundtrip checked in the Development Player with unique temporary saves.
+Measurements are in arms-measurements.txt. Front/side poses use close gameplay camera, clipped foreground and added inspection fill light; infected are inactive. Video is sampled pose inspection at clip timing, three cycles per segment, not ordinary gameplay footage or a performance benchmark. Order: front Walk, front Run, side Walk, side Run. No audio.
+Release Windows build 0 errors, 0 warnings; normal startup title Zonbee, normal close, no startup exceptions/compiler/shader errors. No full outing. User save not modified. Android not built/tested. GitHub not updated.
