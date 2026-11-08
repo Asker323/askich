@@ -1,0 +1,11 @@
+2026-11-08 Asia/Vladivostok. Unity 6000.3.4f1, Windows x64.
+Release build: 0 errors, 0 warnings. Separate Development Player used for checks.
+291 checks passed: 11 character scenarios + 230 general + 30 PC combat + 20 wardrobe.
+Character suite includes actual Animation progression and gait transition plus sampled geometry checks.
+Mouse/keyboard and live AI also exercised by the PC combat suite. Test saves are isolated.
+Photos and video are prepared diagnostic states rendered by the real Windows gameplay camera.
+For photos, enemies are disabled, camera is close and poses are sampled. Video repeats in-place Walk/Run/Slash cycles.
+Video is silent; it is not an ordinary playthrough, transition recording or evidence of terrain foot planting.
+Release Player initialized its scene without Exception/Shader error/compiler error in startup log.
+No full outing attempted or required. No FPS measurement or subjective audio test.
+Existing user save untouched. Android not built/tested. GitHub not updated.

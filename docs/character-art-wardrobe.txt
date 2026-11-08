@@ -1,0 +1,20 @@
+PASS large-frame motion cannot tunnel through a closed door
+PASS fresh hero uses new adult mesh wearing only shorts
+PASS all infected use new adult meshes and skeletal clips
+PASS adult axe has human-scale dimensions
+PASS clothing pickup 0
+PASS equip found clothing 0
+PASS clothing cannot be collected twice 0
+PASS clothing pickup 1
+PASS equip found clothing 1
+PASS clothing cannot be collected twice 1
+PASS clothing pickup 2
+PASS equip found clothing 2
+PASS clothing cannot be collected twice 2
+PASS equipped garments are visible on the animated hero
+PASS v8 save restores clothing equipment and world pickups
+PASS v7 migration keeps formerly dressed survivor clothed
+PASS invalid equipped clothing is rejected before world mutation
+PASS valid v8 restores after rejected payload
+PASS full pockets cannot discard equipped clothing
+PASS removing clothing returns one item to a free pocket

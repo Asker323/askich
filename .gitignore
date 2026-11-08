@@ -54,3 +54,6 @@ sysinfo.txt
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Blender rolling backups; keep the authored .blend source
+*.blend[1-9]

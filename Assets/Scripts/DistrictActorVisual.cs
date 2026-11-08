@@ -97,12 +97,13 @@ namespace Askich {
    if(zombie||bodyRenderers==null)return;int bits=(data.shirt?1:0)|(data.trousers?2:0)|(data.shoes?4:0);if(bits==clothingBits)return;clothingBits=bits;
    foreach(var renderer in bodyRenderers){if(renderer.name=="Shirt")renderer.gameObject.SetActive(data.shirt);if(renderer.name=="Trousers")renderer.gameObject.SetActive(data.trousers);if(renderer.name=="Shoes")renderer.gameObject.SetActive(data.shoes);}
   }
-  public bool Equip(int weapon){EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
+  public bool Equip(int weapon){EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);if(!zombie&&bodyRenderers!=null)foreach(var renderer in bodyRenderers)if(renderer is SkinnedMeshRenderer skin&&skin.name=="Body"){for(int grip=0;grip<skin.sharedMesh.blendShapeCount;grip++)if(skin.sharedMesh.GetBlendShapeName(grip).EndsWith("GripL",StringComparison.Ordinal))skin.SetBlendShapeWeight(grip,weapon>0?100:0);}return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
   void Play(string key,bool loop,float speed){
    if(!clips.TryGetValue(key,out string name))return;
    var s=animationPlayer[name];s.wrapMode=loop?WrapMode.Loop:WrapMode.ClampForever;s.speed=speed;
    if(state==key)return;
-   s.time=0;animationPlayer.CrossFade(name,.12f);state=key;
+   float phase=state!=null&&(state=="Walk"||state=="Run")&&(key=="Walk"||key=="Run")?Mathf.Repeat(animationPlayer[clips[state]].normalizedTime,1):0;
+   s.normalizedTime=phase;animationPlayer.CrossFade(name,loop?.12f:.055f);state=key;
   }
   public void SetPaused(bool pause){paused=pause;if(animationPlayer)animationPlayer.enabled=!pause;}
   public void SetSurvivalPose(int mode,float progress){
@@ -142,5 +143,11 @@ namespace Askich {
   public void Revive(){dead=false;hurtFlash=0;tintApplied=false;actionRemaining=0;state=null;Play(crawler?"Crawl":"Idle",true,crawler?0:1);}
   public void Restore(bool corpse){Revive();if(!corpse)return;Die();var clip=animationPlayer[clips["Death"]];animationPlayer.Play(clips["Death"]);clip.time=clip.length;clip.speed=0;animationPlayer.Sample();}
   public void Die(){if(dead)return;dead=true;state=null;Play("Death",false,1);if(vocal)vocal.Stop();}
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+  public float ArtPhase(string key)=>animationPlayer[clips[key]].normalizedTime;
+  public AnimationClip ArtClip(string key)=>animationPlayer[clips[key]].clip;
+  public Transform ArtBone(string key){foreach(var bone in animationPlayer.GetComponentsInChildren<Transform>(true))if(bone.name==key)return bone;return null;}
+  public void ArtSample(string key,float phase){ArtClip(key).SampleAnimation(animationPlayer.gameObject,ArtClip(key).length*phase);}
+#endif
  }
 }

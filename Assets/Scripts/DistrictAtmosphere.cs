@@ -13,12 +13,12 @@ namespace Askich {
   public void Initialize(Transform hero){
    QualitySettings.antiAliasing=4;
    RenderSettings.ambientMode=UnityEngine.Rendering.AmbientMode.Trilight;
-   RenderSettings.ambientSkyColor=new Color(.30f,.37f,.47f);
-   RenderSettings.ambientEquatorColor=new Color(.18f,.23f,.28f);
-   RenderSettings.ambientGroundColor=new Color(.12f,.14f,.16f);
+   RenderSettings.ambientSkyColor=new Color(.34f,.36f,.39f);
+   RenderSettings.ambientEquatorColor=new Color(.24f,.25f,.27f);
+   RenderSettings.ambientGroundColor=new Color(.12f,.13f,.14f);
    RenderSettings.fogColor=new Color(.18f,.24f,.28f);RenderSettings.fogStartDistance=37;RenderSettings.fogEndDistance=92;
    GetComponent<Camera>().backgroundColor=RenderSettings.fogColor;
-   foreach(var light in FindObjectsByType<Light>(FindObjectsSortMode.None))if(light.type==LightType.Directional){light.color=new Color(.7f,.79f,.94f);light.intensity=.72f;light.transform.rotation=Quaternion.Euler(24,-28,0);}
+   foreach(var light in FindObjectsByType<Light>(FindObjectsSortMode.None))if(light.type==LightType.Directional){light.color=new Color(.88f,.91f,.97f);light.intensity=.72f;light.transform.rotation=Quaternion.Euler(24,-28,0);}
    var shader=Resources.Load<Shader>("Survival/Dusk");if(shader&&shader.isSupported)grade=new Material(shader);
    var torch=new GameObject("Survivor flashlight");torch.transform.SetParent(hero,false);torch.transform.localPosition=new Vector3(0,1.35f,.22f);torch.transform.localRotation=Quaternion.Euler(12,0,0);
    flashlight=torch.AddComponent<Light>();flashlight.type=LightType.Spot;flashlight.range=19;flashlight.spotAngle=62;flashlight.innerSpotAngle=30;flashlight.intensity=3.2f;flashlight.color=new Color(1,.91f,.72f);flashlight.shadows=LightShadows.Soft;flashlight.shadowBias=.035f;

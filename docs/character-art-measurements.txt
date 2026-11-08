@@ -1,0 +1,1 @@
+Walk stance foot speed 2.533 m/s; nominal 2.6. Foot y 0.109/0.090.

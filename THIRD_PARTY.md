@@ -56,3 +56,9 @@ Provisions stage: DrinkProvision, EatProvision and RestProvision are baked from 
 Visual-polish stage: WorldSurface and Canopy shaders, branching tree meshes and leaf geometry are project-generated. The existing licensed infected models retain their skeletons and attacks; material treatment, head proportions and tongue visibility were adjusted. No external assets or new speech recordings were acquired.
 
 Scavenging stage: storage boxes, meal, overturned chair, discarded clothing, dressing tray and footprints are project-authored geometry. Item icon details and wooden-drawer audio are project-generated. No new external assets or licenses were acquired.
+
+## Character art iteration (2026-11-08)
+
+No new external assets. The existing Julien Kaspar CC0 body remains the anatomical source. `Assets/CharacterSources/AdultBase.fbx` preserves the pre-stage derivative. `tools/CharacterArt/author_surface.py` and the packed `AdultStudio.blend` contain the local face adjustments, garment-edge smoothing/folds, hand grip shape, UVs and baked skin/cloth colour with ambient occlusion. These are procedural authored materials, not scanned human textures.
+
+`CharacterMotionAuthor.cs` authors Hero Idle/Walk/Run/Slash/Stab/Punch/HitReact and Lean Idle/Walk/Punch/HitReact directly on the final skeleton. Other clips still derive from the existing licensed animations described above. `CharacterToolAuthor.cs` replaces the runtime axe and spear meshes with project-authored geometry and wood/steel materials. The anatomy was not created from scratch. No motion capture or external speech service was used.
