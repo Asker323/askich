@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace Askich {
  public sealed partial class DistrictGame {
-  sealed class BackExit {public Home home;public int bit;public bool open;public float angle;public Barrier gate;public Transform leaf;public Vector2 p;}
+  sealed class BackExit {public GameObject[] boardArt;public int boards;public Home home;public int bit;public bool open;public float angle;public Barrier gate;public Transform leaf;public Vector2 p;}
   readonly List<BackExit> backExits=new List<BackExit>();
   static bool HasHousePlan(int id)=>id==4||id==8;
   void BuildNorthWall(Home h,int id,Color tint){
@@ -15,7 +15,7 @@ namespace Askich {
    for(int n=0;n<6;n++)Cube("Back door plank seam",new Vector3(-2.4f+n*.43f,1.2f,-.075f),new Vector3(.025f,2.25f,.015f),wood*.7f,exit.leaf);
    Cube("Back door latch",new Vector3(-2.25f,1.2f,-.12f),new Vector3(.23f,.06f,.11f),new Color(.46f,.45f,.35f),exit.leaf);
    for(int side=-1;side<=1;side+=2)Cube("Back door frame",V(exit.p+Vector2.right*side*1.36f,1.25f),new Vector3(.12f,2.5f,.25f),wood*.8f);
-   Cube("Back doorstep",V(exit.p+Vector2.up*.55f,.08f),new Vector3(2.8f,.16f,1.1f),new Color(.43f,.43f,.36f));Cube("Back yard worn path",V(exit.p+Vector2.up*2,.012f),new Vector3(1.4f,.025f,2.5f),new Color(.34f,.31f,.23f));backExits.Add(exit);
+   Cube("Back doorstep",V(exit.p+Vector2.up*.55f,.08f),new Vector3(2.8f,.16f,1.1f),new Color(.43f,.43f,.36f));Cube("Back yard worn path",V(exit.p+Vector2.up*2,.012f),new Vector3(1.4f,.025f,2.5f),new Color(.34f,.31f,.23f));backExits.Add(exit);BuildDoorBoards(exit);
   }
   void Partition(Home h,string name,Vector2 local,Vector2 size,Color tint){
    var p=h.p+local;barriers.Add(new Barrier{rect=new Rect(p-size/2,size)});
@@ -43,13 +43,13 @@ namespace Askich {
    return true;
   }
   bool BackOccupied(BackExit e){var r=e.gate.rect;r.xMin-=.28f;r.xMax+=.28f;r.yMin-=.28f;r.yMax+=.28f;return r.Contains(hero.p)||infected.Exists(z=>z.hp>0&&r.Contains(z.p));}
-  int CaptureBackExits(){int flags=0;foreach(var e in backExits)if(e.open||BackOccupied(e))flags|=e.bit;return flags;}
+  int CaptureBackExits(){int flags=0;foreach(var e in backExits)if(e.boards==0&&(e.open||BackOccupied(e)))flags|=e.bit;return flags;}
   void RestoreBackExits(int flags){foreach(var e in backExits){e.open=(flags&e.bit)!=0;e.angle=e.open?100:0;e.gate.active=!e.open;e.leaf.rotation=Quaternion.Euler(0,e.angle,0);}}
   BackExit NearbyBackExit(){
    foreach(var e in backExits){float distance=Vector2.Distance(hero.p,e.p);if(distance>=1.7f)continue;int slot=NearbyContainer(e.home);if(slot>=0&&Vector2.Distance(hero.p,e.home.p+e.home.containers[slot])<distance)continue;return e;}return null;
   }
-  bool UseBackExit(){var e=NearbyBackExit();if(e==null)return false;if(e.open&&BackOccupied(e)){Say("Проём занят");return true;}e.open=!e.open;Alert(e.p,7);foley.Door(V(e.p,1),e.open);Save();return true;}
-  void TickBackExits(float dt){foreach(var e in backExits){bool occupied=BackOccupied(e);e.angle=Mathf.MoveTowards(e.angle,e.open||occupied?100:0,dt*220);e.gate.active=!occupied&&e.angle<(e.open?70:25);e.leaf.rotation=Quaternion.Euler(0,e.angle,0);}}
-  void DrawBackExit(){var e=NearbyBackExit();if(e==null)return;var r=new Rect(390,495,500,36);Panel(r);GUI.Label(new Rect(r.x+12,r.y+7,r.width-24,27),"E · "+(e.open?"закрыть выход во двор":"открыть выход во двор"),small);}
+  bool UseBackExit(){var e=NearbyBackExit();if(e==null)return false;if(e.open&&BackOccupied(e)){Say("Проём занят");return true;}if(e.boards>0){if(RoomAt(hero.p)!=e.home)StartFort(e,2);else Say("V · снять доски изнутри");return true;}e.open=!e.open;Alert(e.p,7);foley.Door(V(e.p,1),e.open);Save();return true;}
+  void TickBackExits(float dt){foreach(var e in backExits){if(e.boards>0){RefreshBoards(e);continue;}bool occupied=BackOccupied(e);e.angle=Mathf.MoveTowards(e.angle,e.open||occupied?100:0,dt*220);e.gate.active=!occupied&&e.angle<(e.open?70:25);e.leaf.rotation=Quaternion.Euler(0,e.angle,0);}}
+  void DrawBackExit(){var e=NearbyBackExit();if(e==null)return;var r=new Rect(330,478,620,64);Panel(r);GUI.Label(new Rect(r.x+12,r.y+6,r.width-24,26),e.boards>0?"Баррикада · "+e.boards+"/3 · E взлом снаружи":"E · "+(e.open?"закрыть выход во двор":"открыть выход во двор"),small);if(RoomAt(hero.p)==e.home)GUI.Label(new Rect(r.x+12,r.y+32,r.width-24,26),e.boards>0?"V · снять доски · вернётся 1 доска":"V · укрепить · 2 доски + проволока · 6 с",small);}
  }
 }

@@ -37,6 +37,7 @@ namespace Askich {
     if(Vector2.Distance(z.p,hero.p)>40&&z.awareness==Awareness.Roam)continue;
     z.callCooldown=Mathf.Max(0,z.callCooldown-dt);z.rest-=dt;z.repath-=dt;ObserveEnemy(z,dt);
     if(TickEnemyAttack(z,dt))continue;
+    if(TryEnemyBarricade(z,dt))continue;
     float distance=Vector2.Distance(z.p,hero.p);
     if(distance<(IsCrawler(z)?CrawlerRange:1.35f)&&z.rest<=0&&CanSeeHero(z)){BeginEnemyAttack(z);continue;}
     Vector2 old=z.p;

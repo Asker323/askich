@@ -19,7 +19,7 @@ namespace Askich {
    }
   }
   bool SolidBlocked(Vector2 p){if(!solidCells.TryGetValue(new Vector2Int(Mathf.FloorToInt(p.x),Mathf.FloorToInt(p.y)),out var bucket))return false;foreach(var prop in bucket)if(prop.rect.Contains(p))return true;return false;}
-  bool SightBlocked(Vector2 p){if(!InsideWorld(p))return true;foreach(var b in barriers)if(b.active&&new Rect(b.rect.x-.28f,b.rect.y-.28f,b.rect.width+.56f,b.rect.height+.56f).Contains(p))return true;return false;}
+  bool SightBlocked(Vector2 p){if(!InsideWorld(p))return true;foreach(var b in barriers)if(b.active&&b.blocksSight&&new Rect(b.rect.x-.28f,b.rect.y-.28f,b.rect.width+.56f,b.rect.height+.56f).Contains(p))return true;return false;}
   readonly struct PathNode:IComparable<PathNode> {
    public readonly Vector2Int cell;public readonly int cost,priority,order;
    public PathNode(Vector2Int cell,int cost,int priority,int order){this.cell=cell;this.cost=cost;this.priority=priority;this.order=order;}

@@ -1,0 +1,35 @@
+PASS garden approach is clear and closed gate physically blocks passage
+PASS garden can be reached from the public street
+PASS gate starts opening while its leaf still blocks
+PASS gate passes through intermediate solid angles
+PASS pause freezes moving garden gate
+PASS open gate creates a traversable entrance
+PASS path through the garden reaches equipment cache
+PASS occupied gate refuses to close on survivor
+PASS snapshot keeps an occupied gate open for safe loading
+PASS cache starts a timed search without granting materials
+PASS cache animates its lid and rummages before loot
+PASS pause freezes cache search
+PASS E cancels without granting or consuming the cache
+PASS movement interrupts equipment search
+PASS injury interrupts equipment search
+PASS full inventory leaves all materials in the world atomically
+PASS complete search transfers the advertised crafting materials
+PASS empty cache cannot duplicate materials
+PASS cache and gate restore from ordinary save
+PASS alarm switch and sound target are on navigable ground
+PASS car alarm starts spatial audio and spends its only battery charge
+PASS infected investigate sound location rather than follow hidden survivor
+PASS infected have an actual path to alarm source
+PASS pause freezes alarm duration
+PASS alarm and warning lamps advance in live simulation
+PASS loading preserves empty battery without replaying alarm
+PASS spent car battery prevents endless free distractions
+PASS real E key reads the evacuation notice
+PASS nearby exploration reveals the bus stop marker
+PASS nearby shelter cuts away roof and rear panel to keep the survivor visible
+PASS bus shelter has reachable frontage and a solid back wall
+PASS legacy fixture omits newly added optional state
+PASS old v9 saves load with intact inventory and fresh exploration state
+PASS unknown exploration bits are rejected before mutation
+PASS valid exploration snapshot loads after rejection

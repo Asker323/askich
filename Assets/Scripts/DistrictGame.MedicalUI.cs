@@ -16,7 +16,7 @@ namespace Askich {
   MedicalAction QuickDressing()=>sterileBandages>0&&(infection>0||bandages==0)?MedicalAction.Sterile:MedicalAction.Bandage;
   string QuickDressingLabel=>QuickDressing()==MedicalAction.Sterile?"СТЕРИЛЬНЫЙ · "+sterileBandages:"БИНТ · "+bandages;
   string MedicalUnavailable(MedicalAction action){
-   if(medicalAction!=MedicalAction.None)return "Действие выполняется";
+   if(FortWorking||medicalAction!=MedicalAction.None)return "Действие выполняется";
    if(attack>0||heroStagger>0)return "После удара";
    if(action==MedicalAction.Read||action==MedicalAction.Make||action==MedicalAction.Salvage)return ProgressionReason(action);
    if(action==MedicalAction.Eat&&!HasAnyMeal)return "Нужна еда";

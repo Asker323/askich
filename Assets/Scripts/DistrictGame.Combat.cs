@@ -84,12 +84,14 @@ namespace Askich {
    bool crawler=IsCrawler(z);
    if(crawler&&(z.striking||z.recovery>0))z.root.rotation=Quaternion.LookRotation(V(z.strikeDirection));
    if(z.stagger>0||z.recovery>0){
+    z.barricadeTarget=null;
     z.stagger=Mathf.Max(0,z.stagger-dt);
     z.recovery=Mathf.Max(0,z.recovery-dt);
     if(crawler&&z.visual&&z.stagger==0)z.visual.SampleLunge(CrawlerEnd-z.recovery);
     Animate(z,Vector2.zero,true,.1f);
     return true;
    }
+   if(TickBarricadeImpact(z,dt))return true;
    if(!z.striking)return false;
    float before=z.wind;
    z.wind-=dt;

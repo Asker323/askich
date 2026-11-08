@@ -63,7 +63,7 @@ namespace Askich {
    }
   }
   bool BeginMedical(MedicalAction action){
-   if(!playing||paused||dead||attack>0||heroStagger>0||medicalAction!=MedicalAction.None)return false;
+   if(!playing||paused||dead||FortWorking||breakingWindow!=null||attack>0||heroStagger>0||medicalAction!=MedicalAction.None)return false;
    if(action==MedicalAction.Eat){if(inventorySelection>=0&&inventorySelection<inventory.Capacity&&Edible(inventory.Data.slots[inventorySelection].kind))selectedFood=inventory.Data.slots[inventorySelection].kind;else if(!HasMeal)selectedFood=FirstMealKind();}
    if(!CanTreat(action)){Say(MedicalUnavailable(action));return false;}
    inventory.Preferred=inventorySelection;medicalAction=action;medicalTime=0;if(foley&&action!=MedicalAction.Read)foley.StartTask(action==MedicalAction.Craft||action==MedicalAction.Make||action==MedicalAction.Salvage,action==MedicalAction.Drink||action==MedicalAction.Water);searchSlot=-1;suppliesOpen=journalOpen=false;workNoise=0;heroVelocity=Vector2.zero;return true;
