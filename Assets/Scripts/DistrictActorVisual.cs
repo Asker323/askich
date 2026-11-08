@@ -139,6 +139,7 @@ namespace Askich {
    lungeTime=pose.time=Mathf.Clamp(seconds,0,pose.length);
    actionRemaining=.1f;
   }
+  public void AlertCall(){if(zombie&&vocal&&vocal.isActiveAndEnabled&&voices!=null&&voices.Length>0){vocal.PlayOneShot(voices[visualVariant%voices.Length],.8f);nextVoice=4;}}
   public void Hurt(){if(dead)return;hurtFlash=.14f;if(clips.ContainsKey("HitReact")){state=null;Play("HitReact",false,1.4f);actionRemaining=.26f;}}
   public void Revive(){dead=false;hurtFlash=0;tintApplied=false;actionRemaining=0;state=null;Play(crawler?"Crawl":"Idle",true,crawler?0:1);}
   public void Restore(bool corpse){Revive();if(!corpse)return;Die();var clip=animationPlayer[clips["Death"]];animationPlayer.Play(clips["Death"]);clip.time=clip.length;clip.speed=0;animationPlayer.Sample();}

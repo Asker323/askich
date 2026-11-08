@@ -4,7 +4,9 @@ using UnityEngine;
 namespace Askich {
  public sealed class DistrictAtmosphere : MonoBehaviour {
   Material grade;
-  Light flashlight;
+  Light flashlight,sun;
+  float lastHour=-100;
+  public float Daylight {get;private set;}=1;
   readonly List<Light> lamps=new List<Light>();
   bool lowQuality;
   public bool FlashlightOn=>flashlight&&flashlight.enabled;
@@ -18,7 +20,7 @@ namespace Askich {
    RenderSettings.ambientGroundColor=new Color(.12f,.13f,.14f);
    RenderSettings.fogColor=new Color(.18f,.24f,.28f);RenderSettings.fogStartDistance=37;RenderSettings.fogEndDistance=92;
    GetComponent<Camera>().backgroundColor=RenderSettings.fogColor;
-   foreach(var light in FindObjectsByType<Light>(FindObjectsSortMode.None))if(light.type==LightType.Directional){light.color=new Color(.88f,.91f,.97f);light.intensity=.72f;light.transform.rotation=Quaternion.Euler(24,-28,0);}
+   foreach(var light in FindObjectsByType<Light>(FindObjectsSortMode.None))if(light.type==LightType.Directional){sun=light;light.color=new Color(.88f,.91f,.97f);light.intensity=.72f;light.transform.rotation=Quaternion.Euler(24,-28,0);}
    var shader=Resources.Load<Shader>("Survival/Dusk");if(shader&&shader.isSupported)grade=new Material(shader);
    var torch=new GameObject("Survivor flashlight");torch.transform.SetParent(hero,false);torch.transform.localPosition=new Vector3(0,1.35f,.22f);torch.transform.localRotation=Quaternion.Euler(12,0,0);
    flashlight=torch.AddComponent<Light>();flashlight.type=LightType.Spot;flashlight.range=19;flashlight.spotAngle=62;flashlight.innerSpotAngle=30;flashlight.intensity=3.2f;flashlight.color=new Color(1,.91f,.72f);flashlight.shadows=LightShadows.Soft;flashlight.shadowBias=.035f;
@@ -33,7 +35,16 @@ namespace Askich {
     if(i%2==0){Spawn("Barrel",p+new Vector3(1,0,-1.4f),0);Spawn("Pallet_Broken",p+new Vector3(1.2f,0,-2.2f),i*31);}
    }
    for(int i=0;i<6;i++)Spawn("TrafficCone_1",new Vector3(-3+i*1.3f,0,30),i*13);
-   SetLowQuality(Application.isMobilePlatform);
+   SetLowQuality(Application.isMobilePlatform);SetTime(16.5f);
+  }
+  public void SetTime(float hour){
+   if(Mathf.Abs(hour-lastHour)<.002f)return;lastHour=hour;
+   Daylight=Mathf.SmoothStep(0,1,Mathf.InverseLerp(5.5f,8,hour))*(1-Mathf.SmoothStep(0,1,Mathf.InverseLerp(17,20,hour)));
+   float day=Daylight;RenderSettings.ambientSkyColor=Color.Lerp(new Color(.13f,.15f,.20f),new Color(.51f,.54f,.58f),day);
+   RenderSettings.ambientEquatorColor=Color.Lerp(new Color(.09f,.105f,.13f),new Color(.34f,.35f,.37f),day);RenderSettings.ambientGroundColor=Color.Lerp(new Color(.055f,.06f,.07f),new Color(.17f,.18f,.18f),day);
+   RenderSettings.fogColor=Color.Lerp(new Color(.075f,.095f,.12f),new Color(.29f,.34f,.36f),day);GetComponent<Camera>().backgroundColor=RenderSettings.fogColor;
+   if(sun){sun.intensity=Mathf.Lerp(.16f,1.02f,day);sun.color=Color.Lerp(new Color(.55f,.62f,.78f),new Color(1,.94f,.83f),day);sun.transform.rotation=Quaternion.Euler(Mathf.Lerp(18,58,day),-55+hour/24*110,0);}
+   foreach(var lamp in lamps)lamp.enabled=day<.65f;
   }
   public static GameObject Spawn(string name,Vector3 position,float yaw=0){var prefab=Resources.Load<GameObject>("Survival/Art/"+name);return prefab?Instantiate(prefab,position,Quaternion.Euler(0,yaw,0)):null;}
   public static void Tree(Vector3 position,int seed)=>DistrictTreeArt.Build(position,seed);

@@ -18,7 +18,8 @@ namespace Askich {
   string MedicalUnavailable(MedicalAction action){
    if(medicalAction!=MedicalAction.None)return "Действие выполняется";
    if(attack>0||heroStagger>0)return "После удара";
-   if(action==MedicalAction.Eat&&food==0)return "Нужна еда";
+   if(action==MedicalAction.Read||action==MedicalAction.Make||action==MedicalAction.Salvage)return ProgressionReason(action);
+   if(action==MedicalAction.Eat&&!HasAnyMeal)return "Нужна еда";
    if(action==MedicalAction.Water&&inventory.Count(DistrictItemKind.Water)==0)return "Нужна питьевая вода";
    if(action==MedicalAction.Refill&&!NearCistern)return "Подойди к резервуару";
    if(action==MedicalAction.Refill&&inventory.WaterSlot(true)<0)return "Нужна неполная бутылка";
@@ -63,13 +64,13 @@ namespace Askich {
   }
   void DrawMedicalProgress(){
    if(medicalAction==MedicalAction.None)return;
-   float progress=Mathf.Clamp01(medicalTime/MedicalDuration(medicalAction));
+   float progress=medicalAction==MedicalAction.Read?progression.Data.books[readingBook]%360/360:Mathf.Clamp01(medicalTime/MedicalDuration(medicalAction));
    Panel(MedicalProgressArea);
-   string label=medicalAction==MedicalAction.Craft?"Стерилизация":medicalAction==MedicalAction.Drink||medicalAction==MedicalAction.Water?"Питьё":medicalAction==MedicalAction.Eat?"Еда":medicalAction==MedicalAction.Rest?"Отдых":medicalAction==MedicalAction.Refill?"Набираю воду":"Перевязка";
+   string label=medicalAction==MedicalAction.Read?"Чтение главы":medicalAction==MedicalAction.Make?"Изготовление":medicalAction==MedicalAction.Salvage?"Разбор двигателя":medicalAction==MedicalAction.Craft?"Стерилизация":medicalAction==MedicalAction.Drink||medicalAction==MedicalAction.Water?"Питьё":medicalAction==MedicalAction.Eat?"Еда":medicalAction==MedicalAction.Rest?"Отдых":medicalAction==MedicalAction.Refill?"Набираю воду":"Перевязка";
    GUI.Label(new Rect(344,558,290,30),label+" · "+Mathf.RoundToInt(progress*100)+"%",small);
    FillRect(new Rect(344,596,280,7),new Color(.17f,.22f,.20f));
    FillRect(new Rect(344,596,280*progress,7),MedicalAccent);
-   if(Button(CancelTreatment,"Отмена")){CancelMedical();Say("Действие прервано. Материалы сохранены.");}
+   if(Button(CancelTreatment,"Отмена")){bool reading=medicalAction==MedicalAction.Read;CancelMedical();Save();Say(reading?"Чтение прервано. Прочитанное сохранено.":"Действие прервано. Материалы сохранены.");}
   }
  }
 }

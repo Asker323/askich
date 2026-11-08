@@ -15,7 +15,7 @@ namespace Askich {
    void Check(bool ok,string message){results.Add((ok?"PASS ":"FAIL ")+message);File.WriteAllLines(Path.Combine(folder,"scavenge-checks.txt"),results);if(!ok){Application.Quit(1);throw new Exception(message);}}
    var h=homes[5];var clinic=homes[6];
    Check(homes.Count(v=>v.loot.Any(x=>x=="Топор"||x=="Копьё"))==3,"only three of 22 houses contain weapons");
-   Check(homes.Where(v=>v!=clinic).All(v=>v.loot[1]=="Еда"||v.loot[1]=="Пусто"),"kitchen drawers never contain weapons or bandages");
+   Check(homes.Where(v=>v!=clinic).All(v=>v.loot[1]=="Пусто"||Edible((int)StorageKind(v,1))),"kitchen drawers never contain weapons or bandages");
    Check(clinic.loot.All(x=>x=="Бинт"||x=="Пусто"),"clinic storage contains medical supplies");
    hero.p=h.p+h.containers[0]+Vector2.down;current=h;inventory.Load(new DistrictInventoryData());for(int i=0;i<6;i++)inventory.TryAdd(DistrictItemKind.Water,3);h.taken[0]=false;
    Loot(h,0);Check(h.taken[0]&&weapon==1,"unarmed survivor can carry found tool directly in hand");

@@ -31,7 +31,7 @@ namespace Askich {
   static readonly Rect GridPanel=new Rect(100,100,1080,530),HandSlot=new Rect(155,454,80,80),BagSlot=new Rect(265,454,80,80);
   static Rect ItemCell(int i)=>new Rect(400+i%6*80,190+i/6*80,72,72);
   static Rect StoreCell(int i)=>new Rect(400+i*80,470,72,72);
-  static readonly string[] ItemNames={"","Топор","Копьё","Консервы","Бинт","Стерильный бинт","Этиловый спирт","Камни","Школьный рюкзак","Питьевая вода","Пустая бутылка","Майка","Брюки","Кроссовки"};
+  static readonly string[] ItemNames={"","Топор","Копьё","Консервы","Бинт","Стерильный бинт","Этиловый спирт","Камни","Школьный рюкзак","Питьевая вода","Пустая бутылка","Майка","Брюки","Кроссовки","Сухари","Фасоль в банке","Шоколад","Лоскуты ткани","Доски","Металлолом","Проволока","Гаечный ключ","Устройство автомобиля","Домашняя мастерская"};
   bool TryCarry(DistrictItemKind kind,int amount){
    if((kind==DistrictItemKind.Axe||kind==DistrictItemKind.Spear)&&weapon==0&&amount==1){weapon=(int)kind;return true;}
    return inventory.TryAdd(kind,amount);
@@ -72,7 +72,7 @@ namespace Askich {
   }
   void DrawSuppliesMenu(){
    if(!suppliesOpen){dragSlot=-1;return;}
-   hoveredInventoryItem=null;EnsureInventoryArt();
+   hoveredInventoryItem=null;EnsureInventoryArt();PrepareBodyPreview();
    FillRect(new Rect(0,0,1280,720),new Color(.01f,.02f,.025f,.72f));FillRect(GridPanel,new Color(.04f,.065f,.07f));
    GUI.Label(new Rect(130,112,600,45),"СНАРЯЖЕНИЕ",large);
    if(Button(new Rect(1000,116,150,48),"Закрыть")){suppliesOpen=false;dragSlot=-1;}
@@ -96,12 +96,13 @@ namespace Askich {
    if(inventorySelection>=0&&inventorySelection<inventory.Capacity&&!inventory.Data.slots[inventorySelection].Empty){
     var item=inventory.Data.slots[inventorySelection];
     GUI.Label(new Rect(905,190,245,64),ItemNames[item.kind],text);
-    if(item.kind<=2||item.kind==8||item.kind>=11){
+    if(item.kind>=14){DrawNewItemActions(item,inventorySelection);}else if(item.kind<=2||item.kind==8||item.kind>=11){
      GUI.Label(new Rect(905,260,245,80),item.kind==8?"+12 ячеек":item.kind>=11?"Одежда":"",small);
      if(Button(new Rect(905,355,245,58),item.kind==8||item.kind>=11?"Надеть":"Взять в руки")&&medicalAction==MedicalAction.None&&inventory.Equip(inventorySelection)){inventorySelection=-1;Save();}
     }else{
      GUI.Label(new Rect(905,257,245,60),item.kind==10?"Пусто":item.kind==9?item.amount+" / 3 глотка":item.kind==6?item.amount+" / 3 дозы":item.kind==7?"Отвлечение":item.kind==3?"+35 сытости":item.kind==5?"Кровь и заражение":"Останавливает кровь",small);
      if(item.kind==10||item.kind==9&&item.amount<3)MedicalButton(new Rect(905,402,245,56),"Наполнить",MedicalAction.Refill);
+     if(item.kind==3)selectedFood=3;
      if(item.kind==3)MedicalButton(new Rect(905,334,245,56),"Поесть",MedicalAction.Eat);
      if(item.kind==9)MedicalButton(new Rect(905,334,245,56),"Выпить воды",MedicalAction.Water);
      if(item.kind==4)MedicalButton(new Rect(905,334,245,56),"Перевязать",MedicalAction.Bandage);

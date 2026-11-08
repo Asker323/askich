@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 
 namespace Askich {
- public enum DistrictItemKind {Empty,Axe,Spear,Food,Bandage,Sterile,Alcohol,Stone,Backpack,Water,EmptyBottle,Shirt,Trousers,Shoes}
+ public enum DistrictItemKind {Empty,Axe,Spear,Food,Bandage,Sterile,Alcohol,Stone,Backpack,Water,EmptyBottle,Shirt,Trousers,Shoes,Crackers,Beans,Chocolate,Cloth,Wood,Scrap,Wire,Wrench,MechanicsBook,CraftBook}
  [Serializable] public struct DistrictItem {
   public int kind,amount;
   public DistrictItem(DistrictItemKind type,int count){kind=(int)type;amount=count;}
@@ -25,8 +25,8 @@ namespace Askich {
   public int Preferred=-1;
   public int Capacity=>Data.backpack?18:6;
   public int Count(DistrictItemKind kind){int total=0;for(int i=0;i<Capacity;i++)if(Data.slots[i].kind==(int)kind)total+=Data.slots[i].amount;return total;}
-  public static int Limit(int kind){switch((DistrictItemKind)kind){case DistrictItemKind.Food:case DistrictItemKind.Bandage:case DistrictItemKind.Sterile:return 5;case DistrictItemKind.Alcohol:case DistrictItemKind.Water:return 3;case DistrictItemKind.Stone:return 10;default:return 1;}}
-  static bool ValidItem(DistrictItem item)=>item.kind>=0&&item.kind<=13&&(item.kind==0?item.amount==0:item.amount>0&&item.amount<=Limit(item.kind));
+  public static int Limit(int kind){switch((DistrictItemKind)kind){case DistrictItemKind.Crackers:case DistrictItemKind.Beans:case DistrictItemKind.Chocolate:case DistrictItemKind.Food:case DistrictItemKind.Bandage:case DistrictItemKind.Sterile:return 5;case DistrictItemKind.Alcohol:case DistrictItemKind.Water:return 3;case DistrictItemKind.Stone:case DistrictItemKind.Cloth:case DistrictItemKind.Scrap:case DistrictItemKind.Wire:return 10;case DistrictItemKind.Wood:return 6;default:return 1;}}
+  static bool ValidItem(DistrictItem item)=>item.kind>=0&&item.kind<=23&&(item.kind==0?item.amount==0:item.amount>0&&item.amount<=Limit(item.kind));
   public static void Validate(DistrictInventoryData data,int containerCount){
    if(data==null||data.slots==null||data.slots.Length!=18||data.overflow==null||data.overflow.Count>60000||data.containers==null||data.containers.Count>containerCount||data.weapon<0||data.weapon>2)throw new System.IO.InvalidDataException("Повреждён инвентарь");
    if(data.clothingFound<0||data.clothingFound>7||data.shirt&&(data.clothingFound&1)==0||data.trousers&&(data.clothingFound&2)==0||data.shoes&&(data.clothingFound&4)==0)throw new System.IO.InvalidDataException("Неверная одежда");

@@ -1,0 +1,17 @@
+2026-11-08 Asia/Vladivostok. Unity 6000.3.4f1, Windows x64.
+Release build: 0 errors, 0 warnings. Diagnostic Player tested with temporary saves.
+457 checks passed: 142 world-life scenarios + 230 general + 30 PC combat + 20 wardrobe + 17 scavenging + 18 storage focus.
+World-life checks include paths to all 66 storage points, day/night and midnight,
+new foods and shelter compatibility, atomic recipes and bundles, study interruption/resume,
+actual Update completing a prepared last second of reading and disassembly,
+daily educational radio cap, night perception, calls to nearby infected, real skill effects,
+v8 migration, malformed v9 rejection, real keyboard journal and mouse close control.
+A full six-minute chapter was not timed in real time; local partial/near-completion states were used.
+PC combat fixture isolates its input devices and resets baseline skills for deterministic balance checks.
+Old kitchen loot check now accepts all edible types while still rejecting weapons/bandages.
+Images are prepared diagnostic states rendered by the Windows Player. Items, time, doors
+and inactive infected are controlled by the scenario, not ordinary playthrough conditions.
+Night and day images share a location. Canopy cuts away when the player stands below it.
+Release Player initialized normally without exceptions, shader or compiler errors.
+No full outing attempted. No FPS benchmark or subjective audio verification.
+User save untouched. Android not built/tested. GitHub not updated.

@@ -39,6 +39,7 @@ namespace Askich {
   public void Step(GroundSound surface,bool running,bool quiet){LastSurface=surface;feet.pitch=UnityEngine.Random.Range(.96f,1.04f);feet.PlayOneShot(steps[(int)surface,variation++%3],quiet?.2f:running?.65f:.45f);}
   public void Door(Vector3 position,bool opening){door.transform.position=position;door.pitch=opening?1:.83f;door.PlayOneShot(creak,.55f);}
   public void Scrape(Vector3 position){door.transform.position=position;door.pitch=.9f;door.PlayOneShot(scrape,.6f);}
+  public void PageTurn(){breathing.PlayOneShot(cloth,.18f);}
   public void StartTask(bool crafting,bool drinking=false){task.clip=drinking?drink:crafting?craft:cloth;task.loop=true;task.volume=0;taskWanted=true;task.Play();}
   public void StopTask(){taskWanted=false;}
   public void FinishTask(bool drinking){StopTask();if(!drinking)breathing.PlayOneShot(finish,.45f);}

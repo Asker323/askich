@@ -3,12 +3,13 @@ namespace Askich {
  public sealed partial class DistrictGame {
   float searchNoiseClock,findUntil;int findKind;string findText;
   void ConfigureStorage(Home h,int id){
-   if(id!=5&&id!=6){h.labels=new[]{"Ящик в кладовке","Кухонный ящик","Домашняя аптечка"};h.loot=new[]{id==2?"Копьё":id==19?"Топор":"Пусто",id%3==1?"Пусто":"Еда",id%2==0?"Бинт":"Пусто"};h.seconds=new[]{2.8f,2.2f,1.3f};h.noise=new[]{10f,6f,3f};}
+   if(id!=5&&id!=6){h.labels=new[]{"Ящик в кладовке","Кухонный ящик","Домашняя аптечка"};h.loot=new[]{id==2?"Копьё":id==19?"Топор":id%4==0?"Доски":id%4==1?"Лоскуты ткани":"Пусто",id%3==1?"Пусто":ItemNames[14+(id/3)%3],id%2==0?"Бинт":"Пусто"};h.seconds=new[]{2.8f,2.2f,1.3f};h.noise=new[]{10f,6f,3f};}
+   if(id==StationHome){h.labels=new[]{"Полка магазина","Продуктовый ящик","Ящик электрика"};h.loot=new[]{"Сухари","Фасоль в банке","Проволока"};h.seconds=new[]{1.8f,2.2f,3.2f};h.noise=new[]{4f,5f,11f};}
   }
   void BuildStorageModel(Home h,int id,int i){
    var art=new System.Collections.Generic.List<Renderer>();
    GameObject Part(string name,Vector3 position,Vector3 size,Color tint,Transform parent=null){var obj=Cube(name,position,size,tint,parent);art.Add(obj.GetComponent<Renderer>());return obj;}
-   bool med=id==6||i==2;bool tool=!med&&i==0;
+   bool med=id!=StationHome&&(id==6||i==2);bool tool=id==StationHome?i==2:!med&&i==0;
    Vector2 p=h.p+h.containers[i];float height=med?.42f:tool?.6f:.9f;float width=med?.78f:1.2f;float depth=med?.52f:.7f;
    Color color=med?new Color(.68f,.69f,.6f):tool?new Color(.22f,.28f,.29f):new Color(.39f,.28f,.18f);
    Part(h.labels[i],V(p,.18f+height/2),new Vector3(width,height,depth),color);
@@ -21,11 +22,12 @@ namespace Askich {
    if(!med&&!tool)for(int n=0;n<2;n++){Part("Kitchen drawer seam",V(p+Vector2.down*(depth/2+.01f),.35f+n*.35f),new Vector3(width-.08f,.025f,.025f),new Color(.17f,.14f,.1f));}
    h.storageArt[i]=art.ToArray();
   }
-  DistrictItemKind StorageKind(Home h,int i)=>h.loot[i]=="Топор"?DistrictItemKind.Axe:h.loot[i]=="Копьё"?DistrictItemKind.Spear:h.loot[i]=="Еда"?DistrictItemKind.Food:h.loot[i]=="Бинт"?DistrictItemKind.Bandage:DistrictItemKind.Empty;
+  DistrictItemKind StorageKind(Home h,int i)=>h.loot[i]=="Топор"?DistrictItemKind.Axe:h.loot[i]=="Копьё"?DistrictItemKind.Spear:h.loot[i]=="Еда"?DistrictItemKind.Food:h.loot[i]=="Бинт"?DistrictItemKind.Bandage:NamedStorageKind(h.loot[i]);
+  DistrictItemKind NamedStorageKind(string name){for(int kind=14;kind<ItemNames.Length;kind++)if(ItemNames[kind]==name)return (DistrictItemKind)kind;return DistrictItemKind.Empty;}
   void RevealStorage(Home h,int i){
    if(h.taken[i])return;var kind=StorageKind(h,i);var items=inventory.Container(homes.IndexOf(h)*3+i);
    if(kind!=DistrictItemKind.Empty){items[0]=new DistrictItem(kind,1);if(TryCarry(kind,1))items[0]=default;}
-   h.taken[i]=true;findKind=(int)kind;findText=kind==DistrictItemKind.Empty?"Пусто":items[0].Empty?ItemNames[(int)kind]:"Нет места · оставлено: "+ItemNames[(int)kind];findUntil=Time.unscaledTime+3;
+   h.taken[i]=true;progression.Gain(DistrictSkill.Agility,1.5f);findKind=(int)kind;findText=kind==DistrictItemKind.Empty?"Пусто":items[0].Empty?ItemNames[(int)kind]:"Нет места · оставлено: "+ItemNames[(int)kind];findUntil=Time.unscaledTime+3;
    if(containerAudio)containerAudio.Play(V(h.p+h.containers[i],1),h.noise[i],true);Save();
   }
   void CancelSearch(){searchSlot=-1;searchTime=0;if(containerAudio)containerAudio.SetSearching(false);}

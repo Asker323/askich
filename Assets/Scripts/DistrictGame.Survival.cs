@@ -5,7 +5,7 @@ using System.IO;
 using UnityEngine;
 namespace Askich {
  public sealed partial class DistrictGame {
-  enum MedicalAction {None,Bandage,Sterile,Craft,Drink,Eat,Water,Rest,Refill}
+  enum MedicalAction {None,Bandage,Sterile,Craft,Drink,Eat,Water,Rest,Refill,Read,Make,Salvage}
   sealed class Supply {public Vector2 p;public string label;public int kind;public bool taken;public GameObject model;}
   readonly List<Supply> supplies=new List<Supply>();
 
@@ -47,13 +47,14 @@ namespace Askich {
    if(health<=0&&!dead){health=0;dead=true;attack=0;strikeSequence++;CancelMedical();if(hero.visual)hero.visual.Die();Say("Ранения оказались смертельными.");}
   }
   void CancelMedical(){if(foley)foley.StopTask();medicalAction=MedicalAction.None;medicalTime=0;}
-  float MedicalDuration(MedicalAction action)=>action==MedicalAction.Craft?3:action==MedicalAction.Drink?1.2f:action==MedicalAction.Eat?1.8f:action==MedicalAction.Water?1.5f:action==MedicalAction.Rest?6:action==MedicalAction.Refill?3:2.5f;
+  float MedicalDuration(MedicalAction action)=>action==MedicalAction.Read?progressionTaskDuration:action==MedicalAction.Make?Recipes[activeRecipe].seconds/(1+.07f*progression.Level(DistrictSkill.Craft)):action==MedicalAction.Salvage?45/(1+.1f*progression.Level(DistrictSkill.Mechanics)): action==MedicalAction.Craft?3:action==MedicalAction.Drink?1.2f:action==MedicalAction.Eat?1.8f:action==MedicalAction.Water?1.5f:action==MedicalAction.Rest?6:action==MedicalAction.Refill?3:2.5f;
   bool CanTreat(MedicalAction action){
    switch(action){
     case MedicalAction.Bandage:return bandages>0&&(bleeding||health<100);
     case MedicalAction.Sterile:return sterileBandages>0&&(bleeding||infection>0||health<100);
     case MedicalAction.Craft:return inventory.CanCraft();
-    case MedicalAction.Eat:return food>0&&nourishment<95;
+    case MedicalAction.Eat:return HasAnyMeal&&nourishment<95;
+    case MedicalAction.Read:case MedicalAction.Make:case MedicalAction.Salvage:return CanProgressionTask(action);
     case MedicalAction.Water:return inventory.Count(DistrictItemKind.Water)>0&&hydration<98;
     case MedicalAction.Refill:return NearCistern&&inventory.WaterSlot(true)>=0;
     case MedicalAction.Rest:return tiredness>5&&SafeToRest();
@@ -63,20 +64,25 @@ namespace Askich {
   }
   bool BeginMedical(MedicalAction action){
    if(!playing||paused||dead||attack>0||heroStagger>0||medicalAction!=MedicalAction.None)return false;
+   if(action==MedicalAction.Eat){if(inventorySelection>=0&&inventorySelection<inventory.Capacity&&Edible(inventory.Data.slots[inventorySelection].kind))selectedFood=inventory.Data.slots[inventorySelection].kind;else if(!HasMeal)selectedFood=FirstMealKind();}
    if(!CanTreat(action)){Say(MedicalUnavailable(action));return false;}
-   inventory.Preferred=inventorySelection;medicalAction=action;medicalTime=0;if(foley)foley.StartTask(action==MedicalAction.Craft,action==MedicalAction.Drink||action==MedicalAction.Water);searchSlot=-1;suppliesOpen=false;heroVelocity=Vector2.zero;return true;
+   inventory.Preferred=inventorySelection;medicalAction=action;medicalTime=0;if(foley&&action!=MedicalAction.Read)foley.StartTask(action==MedicalAction.Craft||action==MedicalAction.Make||action==MedicalAction.Salvage,action==MedicalAction.Drink||action==MedicalAction.Water);searchSlot=-1;suppliesOpen=journalOpen=false;workNoise=0;heroVelocity=Vector2.zero;return true;
   }
   void TickMedical(float dt){
    if(medicalAction==MedicalAction.None)return;
+   if(TickReading(dt))return;
+   if(medicalAction==MedicalAction.Salvage){if(!NearEngine){CancelMedical();return;}workNoise-=dt;if(workNoise<=0){workNoise=2;Alert(enginePosition,14);}}
+   if(medicalAction==MedicalAction.Make){workNoise-=dt;if(workNoise<=0){workNoise=2;Alert(hero.p,7);}}
    if(medicalAction==MedicalAction.Refill&&!NearCistern){CancelMedical();Say("Наполнение прервано.");return;}
    if(medicalAction==MedicalAction.Rest&&!SafeToRest()){CancelMedical();Say("Отдых прерван. Сначала обеспечь безопасность.");return;}
    medicalTime+=dt;if(medicalTime<MedicalDuration(medicalAction))return;
    var action=medicalAction;CancelMedical();if(!CanTreat(action))return;if(foley)foley.FinishTask(action==MedicalAction.Drink||action==MedicalAction.Water);
-   if(action==MedicalAction.Eat){food--;nourishment=Mathf.Min(100,nourishment+35);stamina=Mathf.Min(StaminaLimit,stamina+8);Say("Поел. Голод отступил.");}
+   if(action==MedicalAction.Eat)EatMeal();
+   if(action==MedicalAction.Make||action==MedicalAction.Salvage)FinishProgressionTask(action);
    if(action==MedicalAction.Water){if(!inventory.DrinkWater())return;hydration=Mathf.Min(100,hydration+28);Say("Выпил воды. В бутылке осталось "+inventory.Count(DistrictItemKind.Water)+" глотков в запасе.");}
    if(action==MedicalAction.Refill){if(!inventory.RefillWater())return;Say("Бутылка наполнена. Три глотка питьевой воды.");}
    if(action==MedicalAction.Rest){tiredness=Mathf.Max(0,tiredness-45);stamina=Mathf.Min(StaminaLimit,stamina+40);Say("Отдохнул. Можно готовиться к новой вылазке.");}
-   if(action==MedicalAction.Craft){if(!inventory.Craft())return;Say("Создан стерильный бинт: 1 бинт + 1 доза спирта.");}
+   if(action==MedicalAction.Craft){if(!inventory.Craft())return;progression.Gain(DistrictSkill.Craft,4);Say("Создан стерильный бинт: 1 бинт + 1 доза спирта.");}
    if(action==MedicalAction.Bandage){bandages--;bleeding=false;health=Mathf.Min(100,health+8);Say(infection>0?"Кровотечение остановлено. Заражение осталось: нужен стерильный бинт.":"Перевязка завершена.");}
    if(action==MedicalAction.Sterile){sterileBandages--;bleeding=false;infection=0;health=Mathf.Min(100,health+12);Say("Рана обработана: кровотечение и заражение сняты.");}
    if(action==MedicalAction.Drink){alcoholDoses--;drunkSeconds=Mathf.Min(90,drunkSeconds+45);Say("Опьянение: хуже координация и восстановление сил. Рана не вылечена.");}
@@ -84,7 +90,7 @@ namespace Askich {
   }
   Vector2 StoneTarget(Vector2 direction){Vector2 end=hero.p;for(float t=.4f;t<=8;t+=.4f){var next=hero.p+direction*t;if(Blocked(next))break;end=next;}return end;}
   bool ThrowStone(){
-   if(!playing||paused||dead||suppliesOpen||attack>0||heroStagger>0||throwCooldown>0)return false;
+   if(!playing||paused||dead||suppliesOpen||journalOpen||attack>0||heroStagger>0||throwCooldown>0)return false;
    if(stones<=0){Say("Нет камней. Ищи их у дороги рядом с началом района.");return false;}
    CancelMedical();Vector2 direction=face.sqrMagnitude>.01f?DrunkDirection(face.normalized):Vector2.up;Vector2 end=StoneTarget(direction);
    stones--;throwCooldown=.8f;StartCoroutine(StoneFlight(hero.p,end,worldGeneration));Save();return true;

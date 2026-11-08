@@ -7,18 +7,18 @@ namespace Askich {
   Camera inventoryCamera;GameObject inventoryStage,bodyModel,portraitBackpack;
   int previewWeapon=-1,previewClothing=-1;bool previewBag;
   float vitalTipTime;int vitalTip=-1;
-  Texture2D ItemIcon(int kind){EnsureInventoryArt();return inventoryIcons[Mathf.Clamp(kind,0,13)];}
+  Texture2D ItemIcon(int kind){EnsureInventoryArt();return inventoryIcons[Mathf.Clamp(kind,0,ItemNames.Length-1)];}
   void EnsureInventoryArt(){
    if(inventoryIcons!=null)return;
-   inventoryIcons=new Texture2D[14];
+   inventoryIcons=new Texture2D[ItemNames.Length];
    inventoryStage=new GameObject("Inventory portrait studio");inventoryStage.transform.position=Vector3.down*200;
    inventoryCamera=new GameObject("Inventory portrait camera",typeof(Camera)).GetComponent<Camera>();
    inventoryCamera.enabled=false;inventoryCamera.cullingMask=1<<31;inventoryCamera.clearFlags=CameraClearFlags.SolidColor;inventoryCamera.backgroundColor=Color.clear;inventoryCamera.orthographic=true;
    var key=new GameObject("Inventory studio key",typeof(Light));key.transform.SetParent(inventoryStage.transform,false);key.transform.rotation=Quaternion.Euler(35,-25,0);var light=key.GetComponent<Light>();light.type=LightType.Directional;light.intensity=1.4f;light.cullingMask=1<<31;
-   for(int kind=1;kind<=13;kind++){
+   for(int kind=1;kind<ItemNames.Length;kind++){
     var root=new GameObject(ItemNames[kind]);root.transform.SetParent(inventoryStage.transform,false);
     void Part(string name,Vector3 pos,Vector3 scale,Color color){Cube(name,pos,scale,color,root.transform);}
-    if(kind>=11)MakeClothingIcon(root.transform,kind);
+    if(kind>=14)MakeProgressionIcon(root.transform,kind);else if(kind>=11)MakeClothingIcon(root.transform,kind);
     else if(kind==9||kind==10){MakeWaterModel(root.transform);if(kind==10)foreach(var renderer in root.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=Mat(new Color(.49f,.58f,.59f));}
     else if(kind==8){var bag=MakeBackpack("School bag portrait",Vector3.zero,root.transform);bag.transform.localRotation=Quaternion.Euler(0,180,0);}
     else if(kind==1||kind==2){
@@ -66,7 +66,7 @@ namespace Askich {
    return image;
   }
   int ClothingBits=>(inventory.Data.shirt?1:0)|(inventory.Data.trousers?2:0)|(inventory.Data.shoes?4:0);
-  void DrawBodyPreview(Rect area){
+  void PrepareBodyPreview(){
    if(!bodyPicture||previewWeapon!=weapon||previewBag!=inventory.Data.backpack||previewClothing!=ClothingBits){
     if(bodyPicture)Destroy(bodyPicture);
     bodyModel.SetActive(true);
@@ -78,8 +78,8 @@ namespace Askich {
     if(inventory.Data.backpack){portraitBackpack=MakeBackpack("Portrait school backpack",new Vector3(0,1.15f,-.32f),bodyModel.transform);SetPortraitLayer(portraitBackpack);}
     bodyPicture=CapturePortrait(bodyModel,256,384,1.15f);bodyModel.SetActive(false);previewWeapon=weapon;previewBag=inventory.Data.backpack;previewClothing=ClothingBits;
    }
-   GUI.DrawTexture(area,bodyPicture,ScaleMode.ScaleToFit,true);
   }
+  void DrawBodyPreview(Rect area){PrepareBodyPreview();GUI.DrawTexture(area,bodyPicture,ScaleMode.ScaleToFit,true);}
   Texture2D[] vitalIcons;
   void EnsureVitalIcons(){
    if(vitalIcons!=null)return;vitalIcons=new Texture2D[8];

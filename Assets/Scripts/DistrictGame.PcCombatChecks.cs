@@ -17,16 +17,17 @@ namespace Askich {
    testSave=Path.Combine(Application.temporaryCachePath,"pc-combat-"+Guid.NewGuid()+".json");
    string folder=Environment.GetEnvironmentVariable("BEREZKI_PC_COMBAT_CHECK");Directory.CreateDirectory(folder);
    InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;Application.runInBackground=true;playing=true;paused=false;
+   foreach(var device in new List<InputDevice>(InputSystem.devices))if(device is Keyboard||device is Mouse)InputSystem.DisableDevice(device);
    var results=new List<string>();
    void Require(bool ok,string message){results.Add((ok?"PASS ":"FAIL ")+message);File.WriteAllLines(Path.Combine(folder,"pc-combat-checks.txt"),results);if(!ok){Application.Quit(1);throw new Exception(message);}}
    var guard=infected.Find(z=>z.id==0);var heavy=infected.Find(z=>z.id%3==1);var third=infected.Find(z=>z.id!=guard.id&&z.id!=heavy.id&&!IsCrawler(z));
    void Reset(){
     strikeSequence++;ClearPcCombat();foreach(var z in infected){z.hp=0;z.striking=false;z.recovery=z.stagger=0;z.root.gameObject.SetActive(false);}
-    hero.p=new Vector2(12,-20);heroVelocity=Vector2.zero;attack=heroStagger=damageDelay=0;health=stamina=100;bleeding=false;infection=drunkSeconds=0;suppliesOpen=false;paused=false;playing=true;dead=false;weapon=1;face=Vector2.up;zoom=7;
+    hero.p=new Vector2(12,-20);heroVelocity=Vector2.zero;attack=heroStagger=damageDelay=0;health=stamina=100;bleeding=false;infection=drunkSeconds=0;suppliesOpen=journalOpen=false;CancelMedical();progression.Load(new DistrictProgressionData());paused=false;playing=true;dead=false;weapon=1;face=Vector2.up;zoom=7;
     noticeTime=0;guard.root.gameObject.SetActive(true);guard.hp=guard.maxHp;guard.p=hero.p+Vector2.up*1.15f;guard.rest=guard.stagger=100;guard.visual.Revive();guard.root.position=V(guard.p);hero.visual.Revive();
    }
    Reset();yield return new WaitForSeconds(.5f);Vector2 before=guard.p;float hp=guard.hp;
-   Require(TryShove(Vector2.up),"shove starts with enough stamina");
+   Require(TryShove(Vector2.up),"shove starts with enough stamina (playing="+playing+", paused="+paused+", journal="+journalOpen+", supplies="+suppliesOpen+", attack="+attack+", stagger="+heroStagger+", stamina="+stamina+")");
    yield return new WaitForSeconds(.12f);Require(guard.p==before&&guard.hp==hp,"shove windup cannot push early");
    yield return new WaitForSeconds(.19f);
    Require(Vector2.Distance(before,guard.p)>.85f&&guard.hp==hp,"shove creates space without free damage");

@@ -6,7 +6,7 @@ namespace Askich {
   int queuedPcAction;float queuedPcTime;Vector2 queuedPcDirection;
   bool pcAiming;LineRenderer pcAimCue;
   void ClearPcCombat(){queuedPcAction=0;queuedPcTime=0;pcAiming=false;if(pcAimCue)pcAimCue.enabled=false;}
-  bool PcWorldPointer(){var mouse=Mouse.current;if(TouchControls.Enabled||mouse==null||suppliesOpen)return false;var p=mouse.position.ReadValue();return p.x>=0&&p.y>=0&&p.x<Screen.width&&p.y<Screen.height&&!PointerOnHud(ScreenLayout.ToUI(p));}
+  bool PcWorldPointer(){var mouse=Mouse.current;if(TouchControls.Enabled||mouse==null||suppliesOpen||journalOpen)return false;var p=mouse.position.ReadValue();return p.x>=0&&p.y>=0&&p.x<Screen.width&&p.y<Screen.height&&!PointerOnHud(ScreenLayout.ToUI(p));}
   void ReadPcAim(){
    pcAiming=PcWorldPointer()&&Mouse.current.rightButton.isPressed;
    if(!PcWorldPointer())return;
@@ -23,7 +23,7 @@ namespace Askich {
    queuedPcAction=shove?2:1;queuedPcTime=PcBufferWindow;queuedPcDirection=direction;return true;
   }
   void TickPcCombat(float dt){
-   if(TouchControls.Enabled||suppliesOpen){ClearPcCombat();return;}
+   if(TouchControls.Enabled||suppliesOpen||journalOpen){ClearPcCombat();return;}
    queuedPcTime-=dt;if(queuedPcTime<0&&attack>0)queuedPcAction=0;
    bool shove=Keyboard.current!=null&&Keyboard.current.spaceKey.wasPressedThisFrame;
    bool hit=!storageClickConsumed&&PcWorldPointer()&&Mouse.current.leftButton.wasPressedThisFrame;
@@ -31,7 +31,7 @@ namespace Askich {
    if(queuedPcAction!=0&&attack<=0){int action=queuedPcAction;queuedPcAction=0;if(action==2)TryShove(queuedPcDirection);else TryAttack(queuedPcDirection);}
   }
   void UpdatePcAimCue(){
-   bool show=pcAiming&&playing&&!paused&&!dead&&!won&&!suppliesOpen;
+   bool show=pcAiming&&playing&&!paused&&!dead&&!won&&!suppliesOpen&&!journalOpen;
    if(!show){if(pcAimCue)pcAimCue.enabled=false;return;}
    if(!pcAimCue){
     if(!attackCueMaterial)attackCueMaterial=new Material(Resources.Load<Shader>("Survival/AttackCue"));
@@ -44,8 +44,8 @@ namespace Askich {
   }
   void DrawPcControls(){
    if(TouchControls.Enabled||suppliesOpen)return;
-   GUI.Label(new Rect(34,602,650,24),"ЛКМ — обыск / удар    ПКМ — прицел    Пробел — толчок    I — снаряжение",small);
-   if(stones>0)GUI.Label(new Rect(1080,358,170,26),"G · камни: "+stones,small);
+   GUI.Label(new Rect(34,602,650,24),"ЛКМ — обыск / удар    ПКМ — прицел    Пробел — толчок    I — вещи    J — персонаж",small);
+   if(stones>0)GUI.Label(new Rect(1080,469,170,26),"G · камни: "+stones,small);
   }
  }
 }

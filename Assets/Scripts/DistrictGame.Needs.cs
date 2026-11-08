@@ -9,7 +9,7 @@ namespace Askich {
   readonly List<GameObject> waterModels=new List<GameObject>();
   static readonly Rect RestButton=new Rect(35,310,260,54);
   float StaminaLimit=>Mathf.Min(infection>=50?65:100,hydration<20?70:100,nourishment<20?80:100,tiredness>=70?65:100);
-  float StaminaRecovery=>Mathf.Clamp(1-tiredness*.006f-(hydration<20?.2f:0)-(nourishment<20?.15f:0),.25f,1);
+  float StaminaRecovery=>Mathf.Clamp(1-tiredness*.006f-(hydration<20?.2f:0)-(nourishment<20?.15f:0) ,.25f,1)*(1+.05f*progression.Level(DistrictSkill.Endurance));
   void TickNeeds(float dt,bool running){
    nourishment=Mathf.Max(0,nourishment-dt*(running?.033f:.022f));
    hydration=Mathf.Max(0,hydration-dt*(running?.052f:.035f));

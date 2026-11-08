@@ -20,7 +20,7 @@ namespace Askich {
    voice.clip=null;voice.loop=false;
   }
   void ToggleRadio(){
-   radioOn=!radioOn;voice.Stop();radioSpeaking=false;radioPart=-1;radioRemaining=0;radioGap=.8f;radioPulse=0;
+   trainingRadio=false;radioOn=!radioOn;voice.Stop();radioSpeaking=false;radioPart=-1;radioRemaining=0;radioGap=.8f;radioPulse=0;
    if(radioOn){staticSound.Play();Alert(radioPos,25);Say("Слабый сигнал. E — выключить.");}
    else{staticSound.Stop();Say("Приёмник выключен.");}
   }
@@ -31,6 +31,7 @@ namespace Askich {
    voice.GetComponent<AudioLowPassFilter>().cutoffFrequency=clear?3400:1100;
    radioPulse-=dt;
    if(radioPulse<=0){radioPulse=3;Alert(radioPos,25);}
+   if(trainingRadio){TickTraining(dt);return;}
    if(radioSpeaking){
     radioRemaining-=dt;
     if(radioRemaining<=0){
@@ -52,7 +53,7 @@ namespace Askich {
    }
   }
   string RadioCaption=>radioOn&&Vector2.Distance(hero.p,radioPos)<12
-   ?radioSpeaking?"РАДИО · "+radioLines[radioPart]:null:null;
+   ?trainingRadio?"УЧЕБНАЯ ЧАСТОТА · "+(progression.Data.lessonCompletedDay==progression.Data.day?"Сегодняшняя передача усвоена. Новая программа завтра.":TrainingLine+" · "+Mathf.FloorToInt(progression.Data.lessonSeconds)+" / 90 с"):radioSpeaking?"РАДИО · "+radioLines[radioPart]:null:null;
   void DrawRadioCaption(){
    if(RadioCaption==null||suppliesOpen)return;
    Panel(RadioCaptionArea);

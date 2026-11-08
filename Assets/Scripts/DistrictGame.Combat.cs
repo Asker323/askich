@@ -40,12 +40,12 @@ namespace Askich {
    return aim;
   }
   bool TryAttack(Vector2 direction){
-   return TryHeroStrike(direction,WeaponStrike(weapon));
+   return TryHeroStrike(direction,SkilledStrike(WeaponStrike(weapon)));
   }
   static Strike ShoveStrike()=>new Strike(.55f,.47f,1.5f,.35f,0,24,.8f,.9f,2,true);
-  bool TryShove(Vector2 direction)=>TryHeroStrike(direction,ShoveStrike());
+  bool TryShove(Vector2 direction)=>TryHeroStrike(direction,SkilledStrike(ShoveStrike()));
   bool TryHeroStrike(Vector2 direction,Strike strike){
-   if(!playing||paused||dead||suppliesOpen||attack>0||heroStagger>0||stamina<strike.cost)return false;
+   if(!playing||paused||dead||suppliesOpen||journalOpen||attack>0||heroStagger>0||stamina<strike.cost)return false;
    CancelMedical();activeStrike=strike;attack=strike.duration;stamina-=strike.cost;heroVelocity=Vector2.zero;searchSlot=-1;
    heroStrikeDirection=DrunkDirection(direction.sqrMagnitude>.001f?direction.normalized:Vector2.up);
    hero.root.rotation=Quaternion.LookRotation(V(heroStrikeDirection));
@@ -69,6 +69,7 @@ namespace Askich {
     z.root.position=V(z.p);
     if(z.hp<=0){if(z.visual)z.visual.Die();else z.root.rotation=Quaternion.Euler(0,0,85);}else if(z.visual)z.visual.Hurt();
    }
+   if(hits>0)progression.Gain(DistrictSkill.Strength,hits*(strike.shove?2:3));
    if(hits>0)sound.Play(strike.shove?"shove":"hit");return hits;
   }
   void BeginEnemyAttack(Person z){

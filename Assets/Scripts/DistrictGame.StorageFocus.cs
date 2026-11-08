@@ -31,7 +31,7 @@ namespace Askich {
   }
   void ClearStorageFocus(){hoveredStorage=openedStorage=-1;storageClickConsumed=false;if(storageCue)storageCue.enabled=false;}
   void UpdateStorageCue(){
-   int slot=FocusedStorageSlot();bool show=playing&&!paused&&!dead&&!won&&!suppliesOpen&&!pcAiming&&current!=null&&StorageReachable(current,slot);
+   int slot=FocusedStorageSlot();bool show=playing&&!paused&&!dead&&!won&&!suppliesOpen&&!journalOpen&&!pcAiming&&current!=null&&StorageReachable(current,slot);
    if(!show){if(storageCue)storageCue.enabled=false;return;}
    if(!storageCue){
     if(!attackCueMaterial)attackCueMaterial=new Material(Resources.Load<Shader>("Survival/AttackCue"));
