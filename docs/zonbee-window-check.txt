@@ -1,0 +1,8 @@
+2026-11-08 Asia/Vladivostok. Unity 6000.3.4f1, Windows x64.
+553 checks: 85 Zonbee polish + 11 character + 142 world-life + 230 general + 30 PC combat + 20 wardrobe + 17 scavenging + 18 storage focus.
+Real Development Player, unique temporary saves. A separate copy of the user's previous v9 save was used as a legacy import fixture; the source profile was not modified.
+Checks include all 66 storage approaches, table collision and recovery of an embedded position, head-height sight over low furniture, full camera viewport and fresh pixels at both screen edges, keyboard M/F1 toggles, real locomotion progression and phase, legacy import and rejection of stale fallback after corruption.
+Ordinary release build: 0 errors, 0 warnings. Release startup opened a window titled Zonbee and closed normally; no runtime, shader or compiler errors in its startup log.
+Screenshot: prepared radio-home state with inactive infected and training broadcast. Real Windows Player output, not a UI mockup.
+Video: actual moving Player captured using keyboard input in the diagnostic scenario. Sequence encoded at 12 fps, without audio; playback timing is not a performance measurement. No full outing attempted. No mass-chase benchmark or terrain foot-plant proof.
+Android not built or tested. Current version not published to GitHub. Remote old GOIDA binary cleanup remains blocked by browser capability; local listed binaries moved to Recycle Bin.

@@ -35,7 +35,7 @@ namespace Askich {
   void SpawnOutskirts(){
    legacyEnemyCount=infected.Count;
    Vector2[] positions={new Vector2(67,-24),new Vector2(82,-24),new Vector2(109,-24),new Vector2(65,0),new Vector2(88,0),new Vector2(112,0),new Vector2(74,24),new Vector2(94,24),new Vector2(103,34)};
-   for(int i=0;i<positions.Length;i++)if(!Blocked(positions[i]))infected.Add(MakePerson(positions[i],true,100+i));
+   for(int i=0;i<positions.Length;i++)if(!SightBlocked(positions[i]))infected.Add(MakePerson(positions[i],true,100+i));
   }
   bool UseDepot(){
    if(Vector2.Distance(hero.p,depot)>=2)return false;

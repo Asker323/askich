@@ -1,0 +1,142 @@
+PASS gas station reuses stable home identity without renumbering old containers
+PASS every accessible building has its own identity
+PASS gable hipped and station flat roofs use different geometry
+PASS reachable storage: Дом садовода · №1 / 0
+PASS reachable storage: Дом садовода · №1 / 1
+PASS reachable storage: Дом садовода · №1 / 2
+PASS reachable storage: Дом железнодорожника · №2 / 0
+PASS reachable storage: Дом железнодорожника · №2 / 1
+PASS reachable storage: Дом железнодорожника · №2 / 2
+PASS reachable storage: Дом столяра · №3 / 0
+PASS reachable storage: Дом столяра · №3 / 1
+PASS reachable storage: Дом столяра · №3 / 2
+PASS reachable storage: Дом с остывшим ужином · №4 / 0
+PASS reachable storage: Дом с остывшим ужином · №4 / 1
+PASS reachable storage: Дом с остывшим ужином · №4 / 2
+PASS reachable storage: Семейный дом · №5 / 0
+PASS reachable storage: Семейный дом · №5 / 1
+PASS reachable storage: Семейный дом · №5 / 2
+PASS reachable storage: Дом связиста / 0
+PASS reachable storage: Дом связиста / 1
+PASS reachable storage: Дом связиста / 2
+PASS reachable storage: Временный медпункт / 0
+PASS reachable storage: Временный медпункт / 1
+PASS reachable storage: Временный медпункт / 2
+PASS reachable storage: Дом железнодорожника · №8 / 0
+PASS reachable storage: Дом железнодорожника · №8 / 1
+PASS reachable storage: Дом железнодорожника · №8 / 2
+PASS reachable storage: Дом столяра · №9 / 0
+PASS reachable storage: Дом столяра · №9 / 1
+PASS reachable storage: Дом столяра · №9 / 2
+PASS reachable storage: Дом с остывшим ужином · №10 / 0
+PASS reachable storage: Дом с остывшим ужином · №10 / 1
+PASS reachable storage: Дом с остывшим ужином · №10 / 2
+PASS reachable storage: Семейный дом · №11 / 0
+PASS reachable storage: Семейный дом · №11 / 1
+PASS reachable storage: Семейный дом · №11 / 2
+PASS reachable storage: Дом учительницы · №12 / 0
+PASS reachable storage: Дом учительницы · №12 / 1
+PASS reachable storage: Дом учительницы · №12 / 2
+PASS reachable storage: Дом садовода · №13 / 0
+PASS reachable storage: Дом садовода · №13 / 1
+PASS reachable storage: Дом садовода · №13 / 2
+PASS reachable storage: Дом железнодорожника · №14 / 0
+PASS reachable storage: Дом железнодорожника · №14 / 1
+PASS reachable storage: Дом железнодорожника · №14 / 2
+PASS reachable storage: Дом столяра · №15 / 0
+PASS reachable storage: Дом столяра · №15 / 1
+PASS reachable storage: Дом столяра · №15 / 2
+PASS reachable storage: Дом с остывшим ужином · №16 / 0
+PASS reachable storage: Дом с остывшим ужином · №16 / 1
+PASS reachable storage: Дом с остывшим ужином · №16 / 2
+PASS reachable storage: Семейный дом · №17 / 0
+PASS reachable storage: Семейный дом · №17 / 1
+PASS reachable storage: Семейный дом · №17 / 2
+PASS reachable storage: Дом учительницы · №18 / 0
+PASS reachable storage: Дом учительницы · №18 / 1
+PASS reachable storage: Дом учительницы · №18 / 2
+PASS reachable storage: Дом садовода · №19 / 0
+PASS reachable storage: Дом садовода · №19 / 1
+PASS reachable storage: Дом садовода · №19 / 2
+PASS reachable storage: Дом железнодорожника · №20 / 0
+PASS reachable storage: Дом железнодорожника · №20 / 1
+PASS reachable storage: Дом железнодорожника · №20 / 2
+PASS reachable storage: Дом столяра · №21 / 0
+PASS reachable storage: Дом столяра · №21 / 1
+PASS reachable storage: Дом столяра · №21 / 2
+PASS reachable storage: АЗС «Восточная» / 0
+PASS reachable storage: АЗС «Восточная» / 1
+PASS reachable storage: АЗС «Восточная» / 2
+PASS daylight disables sodium street lamps
+PASS night changes ambient light and enables street lamps
+PASS world clock crosses midnight into next day
+PASS pause freezes the world clock
+PASS inventory keeps survival world and clock running
+PASS new item keeps valid stack and refuses clothing equip: Сухари
+PASS new item keeps valid stack and refuses clothing equip: Фасоль в банке
+PASS new item keeps valid stack and refuses clothing equip: Шоколад
+PASS new item keeps valid stack and refuses clothing equip: Лоскуты ткани
+PASS new item keeps valid stack and refuses clothing equip: Доски
+PASS new item keeps valid stack and refuses clothing equip: Металлолом
+PASS new item keeps valid stack and refuses clothing equip: Проволока
+PASS new item keeps valid stack and refuses clothing equip: Гаечный ключ
+PASS new item keeps valid stack and refuses clothing equip: Устройство автомобиля
+PASS new item keeps valid stack and refuses clothing equip: Домашняя мастерская
+PASS all new food material tool and book icons render in Player
+PASS dry food starts from its selected inventory cell
+PASS crackers spend one item and raise hunger relief while increasing thirst
+PASS beans start from selected inventory cell
+PASS beans have a different nourishment and hydration effect
+PASS chocolate starts as food rather than equipment
+PASS chocolate restores a smaller meal and more immediate stamina
+PASS new dry food is accepted as the food supply for establishing shelter
+PASS established shelter recovery consumes actual new food rather than refusing a full pantry
+PASS craft with no output space atomically preserves all ingredients
+PASS begin making a bandage from cloth
+PASS interrupted recipe consumes no ingredients and creates no output
+PASS restart cloth recipe
+PASS completed recipe spends exact ingredients and grants practice once
+PASS spear recipe is locked before craft level one
+PASS mechanics book starts a six minute chapter
+PASS partial reading advances persisted progress without premature chapter experience
+PASS wound interrupts reading and prevents study while bleeding
+PASS reading resumes instead of starting from zero
+PASS interrupted book progress survives save and load
+PASS prepared last second of chapter starts through ordinary action
+PASS actual Player Update completes chapter grants mechanics one and keeps the book
+PASS completed book cannot replay for duplicate experience
+PASS engine approach is reachable and canopy cuts away above the player
+PASS engine disassembly requires mechanical knowledge
+PASS mechanic with wrench can start engine disassembly
+PASS engine work makes noise that attracts infected to the worksite
+PASS interrupted disassembly does not remove engine or grant scrap
+PASS disassembly can restart after interruption
+PASS actual Update completes salvage once without consuming the wrench
+PASS removed engine and yielded materials persist without repeat salvage
+PASS craft one unlocks a real spear recipe
+PASS spear consumes wood metal wire and cloth and is an equippable weapon
+PASS new world book pickup is collected and visibly removed
+PASS collected world book cannot duplicate
+PASS full pockets leave a new multi-item world find untouched
+PASS partially fitting material bundle cannot grant half a pickup
+PASS radio education requires actually listening nearby
+PASS full radio lesson grants craft experience
+PASS same daily radio lesson cannot be farmed repeatedly
+PASS ordinary interaction switches training receiver off
+PASS darkness shortens infected visual detection
+PASS flashlight beam gives away the survivor at night
+PASS spotting infected calls others to its own position without revealing hidden hero coordinates
+PASS strength changes actual strike damage
+PASS agility changes actual search duration
+PASS endurance changes actual stamina recovery
+PASS pressing movement against a wall cannot earn movement experience
+PASS v8 migration preserves inventory and searched world while initializing new clock and skills
+PASS nonfinite skill experience rejects entire save before mutation
+PASS out of range book progress cannot corrupt current world
+PASS invalid clock rejects entire save before mutation
+PASS valid v9 snapshot still loads after rejected payloads
+PASS reading can start in an accessible house
+PASS reading displays an authored book following the survivor hands
+PASS J opens the new character journal through ordinary keyboard input
+PASS journal blocks accidental world attacks
+PASS journal close control accepts an actual mouse click without attacking the world

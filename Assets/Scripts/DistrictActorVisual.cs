@@ -117,7 +117,7 @@ namespace Askich {
    actionRemaining-=dt;
    if(!zombie&&searching&&actionRemaining<=0){Play("Search",true,1);return;}
    if(actionRemaining<=0&&crawler&&speed<=.1f)Play("Crawl",true,0);
-   else if(actionRemaining<=0)Play(speed>.1f?(crawler?"Crawl":speed>3.5f&&!zombie?"Run":"Walk"):"Idle",true,speed>.1f?Mathf.Clamp(speed/(crawler?1.1f:zombie?1.45f:speed>3.5f?5f:2.6f),.35f,1.9f)*(!zombie&&ReverseWalk&&speed<=3.5f?-1:1):1);
+   else if(actionRemaining<=0)Play(speed>.1f?(crawler?"Crawl":speed>3.5f&&!zombie?"Run":"Walk"):"Idle",true,speed>.1f?Mathf.Clamp(speed/(crawler?1.1f:zombie?1.45f:speed>3.5f?4.6f:1.8f),.35f,1.9f)*(!zombie&&ReverseWalk&&speed<=3.5f?-1:1):1);
    if(!zombie)return;
    vocal.volume=Mathf.Lerp(vocal.volume,clear?(distance<6?.55f:.36f):.12f,dt*4);
    occlusion.cutoffFrequency=Mathf.Lerp(occlusion.cutoffFrequency,clear?12000:1000,dt*4);

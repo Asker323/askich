@@ -16,8 +16,8 @@ namespace Askich {
    Check(body.sharedMaterial.mainTexture&&body.sharedMaterial.mainTexture.width==1024,"authored 1024 skin colour and ambient occlusion texture present in Player");
    Check(hero.visual.ArtClip("Walk").frameRate==40&&hero.visual.ArtClip("Run").frameRate==40,"survivor uses newly authored locomotion clips");
    hero.visual.ArtSample("Walk",.08f);var foot=hero.visual.ArtBone("Foot.L");var a=hero.root.InverseTransformPoint(foot.position);hero.visual.ArtSample("Walk",.18f);var b=hero.root.InverseTransformPoint(foot.position);float stanceSpeed=(a.z-b.z)/(hero.visual.ArtClip("Walk").length*.1f);
-   File.WriteAllText(Path.Combine(folder,"character-art-measurements.txt"),$"Walk stance foot speed {stanceSpeed:F3} m/s; nominal 2.6. Foot y {a.y:F3}/{b.y:F3}.\n");
-   Check(Mathf.Abs(stanceSpeed-2.6f)<.55f,"walk stance foot travel matches world movement within measured tolerance");
+   File.WriteAllText(Path.Combine(folder,"character-art-measurements.txt"),$"Walk stance foot speed {stanceSpeed:F3} m/s; nominal 1.8. Foot y {a.y:F3}/{b.y:F3}.\n");
+   Check(Mathf.Abs(stanceSpeed-1.8f)<.55f,"walk stance foot travel matches world movement within measured tolerance");
    float low=100;for(int i=0;i<=40;i++){hero.visual.ArtSample("Walk",i/40f);low=Mathf.Min(low,hero.visual.ArtBone("Foot.L").position.y,hero.visual.ArtBone("Foot.R").position.y);}
    Check(low>-.02f,"walking ankles remain above street ground throughout cycle");
    hero.visual.ArtSample("Slash",.20f);a=hero.root.InverseTransformPoint(hero.visual.Hand.position);hero.visual.ArtSample("Slash",.36f);b=hero.root.InverseTransformPoint(hero.visual.Hand.position);

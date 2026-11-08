@@ -101,18 +101,19 @@ namespace Askich {
   }
   void DrawCompactVitals(){
    EnsureVitalIcons();var names=new[]{"Здоровье","Выносливость","Кровотечение","Заражение раны","Опьянение","Сытость","Вода","Усталость"};
+   int visible=0;
    for(int i=0;i<8;i++){
     if(i==2&&!bleeding||i==3&&infection<=0||i==4&&drunkSeconds<=0)continue;
-    var area=new Rect(28+i*66,24,46,46);
+    var area=new Rect(29+visible++*43,22,32,32);
     float value=VitalValue(i);
     GUI.color=i==0||i==2?new Color(.92f,.5f,.43f):i==1||i==5?new Color(.83f,.76f,.46f):i==6?new Color(.48f,.74f,.87f):i==7&&tiredness>=60?MedicalWarning:MedicalAccent;
     GUI.DrawTexture(area,vitalIcons[i]);GUI.color=Color.white;
-    FillRect(new Rect(area.x,76,46,5),new Color(.17f,.22f,.20f));FillRect(new Rect(area.x,76,46*Mathf.Clamp01(value),5),MedicalAccent);
+    FillRect(new Rect(area.x,60,32,3),new Color(.17f,.22f,.20f));FillRect(new Rect(area.x,60,32*Mathf.Clamp01(value),3),MedicalAccent);
     if(area.Contains(pointer.Position)&&(!TouchControls.Enabled||pointer.Held)){vitalTip=i;vitalTipTime=Time.unscaledTime+1.5f;}
    }
    if(vitalTip>=0&&Time.unscaledTime<vitalTipTime){
-    Panel(new Rect(590,24,460,64));string detail=vitalTip==2?"нужна перевязка":Mathf.CeilToInt(VitalValue(vitalTip)*100)+"%";
-    GUI.Label(new Rect(603,31,435,50),names[vitalTip]+" · "+detail+(vitalTip>=5?"\n"+NeedsAdvice:""),small);
+    Panel(new Rect(27,83,340,39));string detail=vitalTip==2?"нужна перевязка":Mathf.CeilToInt(VitalValue(vitalTip)*100)+"%";
+    GUI.Label(new Rect(39,92,315,25),names[vitalTip]+" · "+detail,small);
    }
   }
   float VitalValue(int index){

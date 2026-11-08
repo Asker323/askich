@@ -6,7 +6,7 @@ namespace Askich {
   int queuedPcAction;float queuedPcTime;Vector2 queuedPcDirection;
   bool pcAiming;LineRenderer pcAimCue;
   void ClearPcCombat(){queuedPcAction=0;queuedPcTime=0;pcAiming=false;if(pcAimCue)pcAimCue.enabled=false;}
-  bool PcWorldPointer(){var mouse=Mouse.current;if(TouchControls.Enabled||mouse==null||suppliesOpen||journalOpen)return false;var p=mouse.position.ReadValue();return p.x>=0&&p.y>=0&&p.x<Screen.width&&p.y<Screen.height&&!PointerOnHud(ScreenLayout.ToUI(p));}
+  bool PcWorldPointer(){var mouse=Mouse.current;if(TouchControls.Enabled||mouse==null||!mouse.enabled||suppliesOpen||journalOpen)return false;var p=mouse.position.ReadValue();return p.x>=0&&p.y>=0&&p.x<Screen.width&&p.y<Screen.height&&!PointerOnHud(ScreenLayout.ToUI(p));}
   void ReadPcAim(){
    pcAiming=PcWorldPointer()&&Mouse.current.rightButton.isPressed;
    if(!PcWorldPointer())return;
@@ -42,10 +42,6 @@ namespace Askich {
    pcAimCue.SetPosition(0,V(hero.p,.065f));
    for(int i=0;i<18;i++){float a=yaw+Mathf.Lerp(-half,half,i/17f);pcAimCue.SetPosition(i+1,V(hero.p+new Vector2(Mathf.Sin(a),Mathf.Cos(a))*strike.range,.065f));}
   }
-  void DrawPcControls(){
-   if(TouchControls.Enabled||suppliesOpen)return;
-   GUI.Label(new Rect(34,602,650,24),"ЛКМ — обыск / удар    ПКМ — прицел    Пробел — толчок    I — вещи    J — персонаж",small);
-   if(stones>0)GUI.Label(new Rect(1080,469,170,26),"G · камни: "+stones,small);
-  }
+  void DrawPcControls(){}
  }
 }

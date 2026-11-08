@@ -82,7 +82,7 @@ namespace Askich {
    before=hero.p;InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.D,Key.LeftShift));yield return new WaitForSeconds(1.05f);
    Require(health==100&&Vector2.Distance(hero.p,before)>4&&Vector2.Distance(hero.p,guard.p)>4,"live shove and sprint escape creates distance without wounds");
    InputSystem.QueueStateEvent(keyboard,new KeyboardState());guard.stagger=100;yield return null;
-   var ui=ScreenLayout.Offset+new Vector2(200,135)*ScreenLayout.Scale;ui.y=Screen.height-ui.y;mouse.MakeCurrent();InputSystem.QueueStateEvent(mouse,new MouseState{position=ui}.WithButton(MouseButton.Left));yield return null;yield return null;
+   var ui=ScreenLayout.Offset+HudVitals.center*ScreenLayout.Scale;ui.y=Screen.height-ui.y;mouse.MakeCurrent();InputSystem.QueueStateEvent(mouse,new MouseState{position=ui}.WithButton(MouseButton.Left));yield return null;yield return null;
    Require(attack<=0&&queuedPcAction==0&&!pcAiming,"HUD click cannot attack or leave aiming active");
    Require(!PointerOnHud(new Vector2(900,400)),"former mobile buttons no longer block PC world clicks");
    InputSystem.RemoveDevice(mouse);foreach(var native in mice)InputSystem.EnableDevice(native);InputSystem.RemoveDevice(keyboard);

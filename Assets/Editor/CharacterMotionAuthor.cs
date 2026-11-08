@@ -25,36 +25,39 @@ namespace Askich.Editor {
     var mat=AssetDatabase.LoadAssetAtPath<Material>(Folder+pair.Item1+".mat");if(!mat)continue;mat.color=pair.Item2;mat.SetFloat("_Glossiness",pair.Item1.StartsWith("Eye")?.32f:.07f);EditorUtility.SetDirty(mat);
    }
   }
+  public static void ReviseLocomotionAndBuild(){Bake("Hero");Bake("Lean");AssetDatabase.SaveAssets();BuildDistrict.Pair();}
   public static void BakeAndBuild(){AdultCharacterAuthor.Bake();Surface();CharacterToolAuthor.Bake();Bake("Hero");Bake("Lean");AssetDatabase.SaveAssets();BuildDistrict.Pair();}
   static void Bake(string type){
    bool zombie=type=="Lean";var prefab=AssetDatabase.LoadAssetAtPath<GameObject>(Folder+type+".prefab");var root=UnityEngine.Object.Instantiate(prefab);root.transform.SetPositionAndRotation(Vector3.zero,Quaternion.identity);
    try{
     var player=root.GetComponent<Animation>();AssetDatabase.LoadAssetAtPath<AnimationClip>(Folder+"Hero_Idle.anim").SampleAnimation(root,0);
     var bones=root.GetComponentsInChildren<Transform>(true);var map=bones.GroupBy(t=>t.name).ToDictionary(g=>g.Key,g=>g.First());var restP=bones.Select(t=>t.localPosition).ToArray();var restQ=bones.Select(t=>t.localRotation).ToArray();var restS=bones.Select(t=>t.localScale).ToArray();
-    Vector3 hip=map["Hips"].position;var feet=new[]{map["Foot.L"].position,map["Foot.R"].position};var footQ=new[]{map["Foot.L"].rotation,map["Foot.R"].rotation};var hands=new[]{map["Hand.L"].position,map["Hand.R"].position};
+    Vector3 hip=map["Hips"].position;var feet=new[]{map["Foot.L"].position,map["Foot.R"].position};var footQ=new[]{map["Foot.L"].rotation,map["Foot.R"].rotation};var hands=new[]{map["Hand.L"].position,map["Hand.R"].position};var handQ=new[]{map["Hand.L"].rotation,map["Hand.R"].rotation};
     Debug.Log($"Art rig {type}: hips={hip}, feet={feet[0]},{feet[1]}, hands={hands[0]},{hands[1]}");
-    var durations=zombie?new Dictionary<string,float>{{"Idle",3.2f},{"Walk",1.12f},{"Punch",1.2f},{"HitReact",.36f}}:new Dictionary<string,float>{{"Idle",3.4f},{"Walk",.72f},{"Run",.64f},{"Slash",.85f},{"Stab",.8f},{"Punch",.55f},{"HitReact",.36f}};
+    var durations=zombie?new Dictionary<string,float>{{"Idle",3.2f},{"Walk",1.12f},{"Punch",1.2f},{"HitReact",.36f}}:new Dictionary<string,float>{{"Idle",3.4f},{"Walk",.86f},{"Run",.72f},{"Slash",.85f},{"Stab",.8f},{"Punch",.55f},{"HitReact",.36f}};
     foreach(var entry in durations){
      string key=entry.Key;float duration=entry.Value;int frames=Mathf.CeilToInt(duration*40);var output=new AnimationClip{name=key,legacy=true,frameRate=40};var curves=new Dictionary<EditorCurveBinding,AnimationCurve>();
      for(int frame=0;frame<=frames;frame++){
       float u=(float)frame/frames,time=duration*u,wave=Mathf.Sin(u*Mathf.PI*2),breath=Mathf.Sin(u*Mathf.PI*2);
       for(int i=0;i<bones.Length;i++){bones[i].localPosition=restP[i];bones[i].localRotation=restQ[i];bones[i].localScale=restS[i];}
-      bool gait=key=="Walk"||key=="Run",run=key=="Run";float crouch=zombie?.095f:gait?.035f:0;
-      map["Hips"].position=hip+new Vector3(gait?wave*.012f:breath*.004f,-crouch+(gait?Mathf.Cos(u*Mathf.PI*4)*.013f:breath*.003f),0);
-      map["Chest"].rotation=Quaternion.Euler(zombie?17:run?10:gait?3:0,gait?wave*(zombie?5:7):breath*.6f,zombie?4:0)*map["Chest"].rotation;
+      bool gait=key=="Walk"||key=="Run",run=key=="Run";float support=.5f+.5f*Mathf.Cos(u*Mathf.PI*4);float crouch=zombie?.095f:gait?(run?.10f:.025f+.09f*support):0;
+      map["Hips"].position=hip+new Vector3(gait?-wave*(run?.018f:.012f):breath*.004f,-crouch+(run?Mathf.Sin(u*Mathf.PI*4)*.018f:gait?0:breath*.003f),0);
+      if(gait)map["Hips"].rotation=Quaternion.Euler(0,wave*(run?6:3.5f),0)*map["Hips"].rotation;
+      map["Chest"].rotation=Quaternion.Euler(zombie?17:run?12:gait?2:0,gait?-wave*(zombie?5:run?8:5):breath*.6f,zombie?4:0)*map["Chest"].rotation;
       map["Head"].rotation=Quaternion.Euler(zombie?-8:-1,0,zombie?-5:breath*.35f)*map["Head"].rotation;
       for(int side=0;side<2;side++){
-       string suffix=side==0?"L":"R";float phase=Mathf.Repeat(u+side*.5f,1),stance=zombie?.56f:run?.31f:.46f;float nominal=zombie?1.45f:run?5:2.6f;
+       string suffix=side==0?"L":"R";float phase=Mathf.Repeat(u+side*.5f,1),stance=zombie?.56f:run?.27f:.54f;float nominal=zombie?1.45f:run?4.6f:1.8f;
        Vector3 goal=feet[side];
        if(gait){
         float length=nominal*duration*stance;
-        if(phase<stance)goal.z+=Mathf.Lerp(length/2,-length/2,phase/stance);
-        else{float swing=(phase-stance)/(1-stance);goal.z+=Mathf.Lerp(-length/2,length/2,Mathf.SmoothStep(0,1,swing));goal.y+=Mathf.Sin(swing*Mathf.PI)*(zombie?.075f:run?.24f:.12f);}
+        if(phase<stance){goal.z+=Mathf.Lerp(length/2,-length/2,phase/stance);goal.y+=Mathf.SmoothStep(0,.035f,Mathf.InverseLerp(.75f,1,phase/stance));}
+        else{float swing=(phase-stance)/(1-stance);goal.z+=Mathf.Lerp(-length/2,length/2,Mathf.SmoothStep(0,1,swing));goal.y+=Mathf.Sin(swing*Mathf.PI)*(zombie?.06f:run?.15f:.065f);}
        }
        Limb(map["UpperLeg."+suffix],map["LowerLeg."+suffix],map["Foot."+suffix],goal,Vector3.forward);
-       map["Foot."+suffix].rotation=footQ[side]*Quaternion.Euler(gait&&phase>stance?Mathf.Sin((phase-stance)/(1-stance)*Mathf.PI)*(run?-28:-12):0,0,0);
+       float roll=0;if(gait&&phase<stance){float contact=phase/stance;roll=contact<.2f?Mathf.Lerp(-5,0,contact/.2f):contact>.75f?Mathf.Lerp(0,18,(contact-.75f)/.25f):0;}else if(gait)roll=-Mathf.Sin((phase-stance)/(1-stance)*Mathf.PI)*(run?18:8);
+       map["Foot."+suffix].rotation=footQ[side]*Quaternion.Euler(roll,0,0);
        Vector3 hand=hands[side]+new Vector3(0,breath*.003f,0);
-       if(gait)hand+=new Vector3(0,run?.18f:.015f,Mathf.Sin((u+side*.5f)*Mathf.PI*2)*(run?.23f:.15f));
+       if(gait){float swing=-Mathf.Cos((u+side*.5f)*Mathf.PI*2);hand+=new Vector3(0,(run?.18f:.015f)+(1-swing*swing)*.015f,swing*(run?.23f:.16f));}
        if(zombie)hand=new Vector3(hands[side].x*(side==0?1.1f:.9f),1.08f+wave*.025f,.25f+(side==0?.04f:-.02f));
        if(!zombie&&key=="Slash"&&side==0)hand=Path(u,new[]{0f,.20f,.36f,.58f,.86f,1f},new[]{hands[0],new Vector3(hands[0].x,1.53f,-.08f),new Vector3(-.08f,1.24f,.52f),new Vector3(.08f,.97f,.38f),hands[0],hands[0]});
        if(!zombie&&key=="Stab"&&side==0)hand=Path(u,new[]{0f,.2f,.4f,.55f,1f},new[]{hands[0],new Vector3(hands[0].x,1.17f,.02f),new Vector3(-.08f,1.23f,.58f),new Vector3(-.1f,1.21f,.55f),hands[0]});
@@ -62,7 +65,8 @@ namespace Askich.Editor {
         float weight=u<.47f?Smooth(0,1,u/.47f):Smooth(1,0,(u-.47f)/.53f);var target=new Vector3(side==0?-.20f:.20f,zombie?1.30f:1.28f,zombie?.64f:.57f);hand=Vector3.Lerp(hand,target,zombie&&side==0?weight*.55f:weight);
        }
        if(key=="HitReact"){float w=Mathf.Sin(u*Mathf.PI);hand+=Vector3.forward*.12f*w;}
-       Limb(map["UpperArm."+suffix],map["LowerArm."+suffix],map["Hand."+suffix],hand,new Vector3(side==0?-1:1,-.2f,-.4f));
+       Limb(map["UpperArm."+suffix],map["LowerArm."+suffix],map["Hand."+suffix],hand,new Vector3(side==0?-.25f:.25f,-.3f,-1));
+       if(gait&&!zombie)map["Hand."+suffix].rotation=Quaternion.Euler(run?10:0,wave*2,0)*handQ[side];
       }
       if(key=="HitReact")map["Chest"].rotation=Quaternion.Euler(-13*Mathf.Sin(u*Mathf.PI),0,3*Mathf.Sin(u*Mathf.PI))*map["Chest"].rotation;
       if(!zombie){
@@ -75,7 +79,7 @@ namespace Askich.Editor {
          float gripWeight=Mathf.SmoothStep(0,1,u/.15f)*Mathf.SmoothStep(1,0,(u-.82f)/.18f);
          hand.rotation=Quaternion.Slerp(hand.rotation,target,gripWeight);
         }
-        tool.rotation=Quaternion.FromToRotation(axis,direction.normalized);
+        tool.rotation=Quaternion.FromToRotation(axis,direction.normalized)*(toolName=="Axe"?Quaternion.AngleAxis(180,Vector3.up):Quaternion.identity);
         tool.position=map["Hand.L"].position+(map["Index1.L"].position-map["Hand.L"].position)*.68f;
        }
       }

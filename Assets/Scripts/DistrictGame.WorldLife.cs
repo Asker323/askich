@@ -83,8 +83,6 @@ namespace Askich {
   void TickWorldLife(float dt){progression.Advance(dt);atmosphere.SetTime(progression.Data.minute/60);bool underCanopy=new Rect(89.5f,-.3f,13,8).Contains(hero.p);canopyPanel.SetActive(!underCanopy);canopyStripe.SetActive(!underCanopy);foreach(var light in worldNightLights)light.enabled=atmosphere.Daylight<.65f;}
   string ClockText{get{int minute=Mathf.FloorToInt(progression.Data.minute);return (minute/60).ToString("D2")+":"+(minute%60).ToString("D2");}}
   void DrawWorldLife(){
-   Panel(new Rect(1080,342,170,61));GUI.Label(new Rect(1092,348,145,23),"ДЕНЬ "+progression.Data.day,small);GUI.Label(new Rect(1092,369,145,31),ClockText,text);
-   if(Button(new Rect(1080,413,170,43),"Персонаж · J")){journalOpen=true;suppliesOpen=false;}
    int find=NearbyLifeFind();if(find>=0)GUI.Label(new Rect(35,235,720,30),lifeFinds[find].title+" · подобрать / E",small);
    else if(NearEngine)GUI.Label(new Rect(35,235,820,40),progression.Data.engineDismantled?"Двигатель разобран":(ProgressionReason(MedicalAction.Salvage)??"Разобрать двигатель · E · шумно"),small);
   }

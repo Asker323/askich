@@ -40,13 +40,13 @@ namespace Askich {
   }
   void DrawInteriorHint(){
    if(current==null)return;
-   GUI.Label(new Rect(35,174,700,30),current.title, text);
+
    int i=FocusedStorageSlot();if(i>=0){
     string risk=current.noise[i]>=9?"громко":current.noise[i]<=3?"тихо":"умеренный шум";
-    GUI.Label(new Rect(35,210,800,42),current.labels[i]+(current.taken[i]?" · открыть · E / ЛКМ":" · E / ЛКМ · "+current.seconds[i].ToString("0.0")+" с · "+risk),small);return;
+    GUI.Label(new Rect(35,130,520,30),"E · "+current.labels[i]+(current.taken[i]?"":" · "+risk),small);return;
    }
    if(current.note!=null&&Vector2.Distance(hero.p,current.p+new Vector2(-2,0))<1.7f)
-    GUI.Label(new Rect(35,210,800,42),"Записка на столе · действие / E",small);
+    GUI.Label(new Rect(35,130,520,30),"E · записка",small);
   }
   void DressInterior(Home h,int id){
    if(id!=5&&id!=6)return;
@@ -103,7 +103,7 @@ namespace Askich {
    var home=homes[5];var clinic=homes[6];
    check(home.title!=clinic.title&&home.labels[0]!=clinic.labels[0],"radio home and clinic have distinct container identities");
    check(home.noise[0]>clinic.noise[1]&&home.seconds[0]>clinic.seconds[1],"toolbox trades longer exposure and noise for weapon");
-   foreach(var h in new[]{home,clinic}){h.open=true;SnapDoor(h);for(int i=0;i<3;i++)check(FindPath(h.p+new Vector2(0,-2),h.p+h.containers[i]+Vector2.down).Count>0,"container approach accessible: "+h.labels[i]);}
+   foreach(var h in new[]{home,clinic}){h.open=true;SnapDoor(h);for(int i=0;i<3;i++)check(ContainerReachable(h,i),"container approach accessible: "+h.labels[i]);}
    foreach(var e in infected){e.rest=100;e.alert=0;}
    var witness=infected[0];witness.hp=witness.maxHp;witness.p=home.p+new Vector2(2,8);witness.path.Clear();
    home.taken[0]=false;hero.p=home.p+home.containers[0]+Vector2.up;current=home;Use();

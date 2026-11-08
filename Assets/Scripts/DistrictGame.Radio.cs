@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Askich {
  public sealed partial class DistrictGame {
-  static readonly Rect RadioCaptionArea=new Rect(250,305,550,106);
+  static Rect RadioCaptionArea=>HudCaption;
   readonly string[] radioLines={
    "Если Анна ещё в медпункте — скажите ей: мы ушли. Повторяю, ушли.",
    "Нина, не жди у дома. На голос идут заражённые. Закрой дверь.",
@@ -56,8 +56,8 @@ namespace Askich {
    ?trainingRadio?"УЧЕБНАЯ ЧАСТОТА · "+(progression.Data.lessonCompletedDay==progression.Data.day?"Сегодняшняя передача усвоена. Новая программа завтра.":TrainingLine+" · "+Mathf.FloorToInt(progression.Data.lessonSeconds)+" / 90 с"):radioSpeaking?"РАДИО · "+radioLines[radioPart]:null:null;
   void DrawRadioCaption(){
    if(RadioCaption==null||suppliesOpen)return;
-   Panel(RadioCaptionArea);
-   GUI.Label(new Rect(265,316,520,86),RadioCaption,small);
+   Panel(HudCaption);
+   GUI.Label(new Rect(333,635,614,50),RadioCaption,small);
   }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
   IEnumerator CheckRadio(System.Action<bool,string> check,string folder){

@@ -17,7 +17,7 @@ namespace Askich {
    Check(homes.Count==22&&homes[StationHome].title.Contains("АЗС"),"gas station reuses stable home identity without renumbering old containers");
    Check(homes.Select(h=>h.title).Distinct().Count()==22,"every accessible building has its own identity");
    Check(homes[0].roof.GetComponentInChildren<MeshFilter>().sharedMesh!=homes[1].roof.GetComponentInChildren<MeshFilter>().sharedMesh&&homes[StationHome].roof.name.Contains("Station"),"gable hipped and station flat roofs use different geometry");
-   foreach(var h in homes){h.open=true;SnapDoor(h);for(int slot=0;slot<3;slot++)Check(FindPath(h.p+Vector2.down*5,h.p+h.containers[slot]+Vector2.down*.9f).Count>0,"reachable storage: "+h.title+" / "+slot);}
+   foreach(var h in homes){h.open=true;SnapDoor(h);for(int slot=0;slot<3;slot++)Check(ContainerReachable(h,slot),"reachable storage: "+h.title+" / "+slot);}
    progression.Data.minute=720;TickWorldLife(0);Check(atmosphere.Daylight>.99f&&!GameObject.Find("Street sodium light").GetComponent<Light>().enabled,"daylight disables sodium street lamps");
    progression.Data.minute=1320;TickWorldLife(0);Check(atmosphere.Daylight<.01f&&GameObject.Find("Street sodium light").GetComponent<Light>().enabled,"night changes ambient light and enables street lamps");
    progression.Data.minute=1439.5f;int day=progression.Data.day;TickWorldLife(1);Check(progression.Data.day==day+1&&progression.Data.minute<1,"world clock crosses midnight into next day");

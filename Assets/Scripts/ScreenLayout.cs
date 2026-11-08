@@ -19,6 +19,7 @@ namespace Askich
         public static Vector2 ToUI(Vector2 screen) => (new Vector2(screen.x,Screen.height-screen.y)-Offset)/Scale;
         public static void Fit(Camera camera)
         {
+            if(!Application.isMobilePlatform){camera.rect=new Rect(0,0,1,1);return;}
             var r=Current;float w=Mathf.Max(1,Screen.width),h=Mathf.Max(1,Screen.height);
             camera.rect=new Rect(r.x/w,r.y/h,r.width/w,r.height/h);
         }
