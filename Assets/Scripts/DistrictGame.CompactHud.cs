@@ -10,8 +10,8 @@ namespace Askich {
   void DrawCompactChrome(){
    Panel(HudVitals);DrawCompactVitals();
    if(playing&&!paused&&!dead&&!TouchControls.Enabled){
-   if(Button(HudInventory,"I")){suppliesOpen=!suppliesOpen;journalOpen=false;}
-   if(Button(HudJournal,"J")){journalOpen=true;suppliesOpen=false;}
+   if(!Climbing&&Button(HudInventory,"I")){suppliesOpen=!suppliesOpen;journalOpen=false;}
+   if(!Climbing&&Button(HudJournal,"J")){journalOpen=true;suppliesOpen=false;}
    if(Button(HudMap,"M"))showMap=!showMap;
    }
    if(playing&&!TouchControls.Enabled&&Button(HudPause,"Ⅱ")){paused=!paused;CancelMedical();CancelSearch();Save();}

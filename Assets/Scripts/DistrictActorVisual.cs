@@ -10,6 +10,7 @@ namespace Askich {
   Animation animationPlayer;
   AnimationClip crawlerLunge;
   readonly AnimationClip[] provisions=new AnimationClip[3];int provisionMode;float provisionTime;
+  AnimationClip windowClimb;float windowClimbPhase=-1;
   float lungeTime;
   AudioSource vocal;
   AudioLowPassFilter occlusion;
@@ -56,6 +57,7 @@ namespace Askich {
     clips["CrawlerLunge"]="CrawlerLunge";
    }
    if(!zombie){
+    windowClimb=Resources.Load<AnimationClip>("Survival/Human/Hero_WindowClimb");if(!windowClimb)throw new InvalidOperationException("Missing window climb animation");animationPlayer.AddClip(windowClimb,"WindowClimb");clips["WindowClimb"]="WindowClimb";
     for(int i=0;i<3;i++){provisions[i]=Resources.Load<AnimationClip>("Survival/Human/Hero_"+new[]{"DrinkProvision","EatProvision","RestProvision"}[i]);if(!provisions[i])throw new InvalidOperationException("Missing provision animation");animationPlayer.AddClip(provisions[i],ProvisionKey(i+1));clips[ProvisionKey(i+1)]=ProvisionKey(i+1);}
     var search=Resources.Load<AnimationClip>("Survival/Human/Hero_Search");
     if(!search)throw new InvalidOperationException("Missing survivor search clip");
@@ -94,13 +96,14 @@ namespace Askich {
    // at the same simulation time, including the frame before resuming gameplay.
    if(state=="CrawlerLunge"&&lungeTime>=.12f) crawlerLunge.SampleAnimation(animationPlayer.gameObject,lungeTime);
    if(!zombie&&provisionMode>0&&provisionMode<=3&&state==ProvisionKey(provisionMode))provisions[provisionMode-1].SampleAnimation(animationPlayer.gameObject,provisionTime);
+   if(windowClimbPhase>=0)windowClimb.SampleAnimation(animationPlayer.gameObject,windowClimbPhase*windowClimb.length);
    if(head)head.localScale=headScale;if(paused)return;UpdateHands(Time.deltaTime);hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(hurtFlash<=0&&tintApplied)return;tintApplied=hurtFlash<=0;if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();tint.SetFloat("_Decay",zombie?.85f:0);tint.SetFloat("_Variant",visualVariant);tint.SetFloat("_PatternHeight",meshHeight);tint.SetFloat("_PatternBase",meshBase);if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
   public void ApplyClothing(DistrictInventoryData data){
    if(zombie||bodyRenderers==null)return;int bits=(data.shirt?1:0)|(data.trousers?2:0)|(data.shoes?4:0);if(bits==clothingBits)return;clothingBits=bits;
    foreach(var renderer in bodyRenderers){if(renderer.name=="Shirt")renderer.gameObject.SetActive(data.shirt);if(renderer.name=="Trousers")renderer.gameObject.SetActive(data.trousers);if(renderer.name=="Shoes")renderer.gameObject.SetActive(data.shoes);}
   }
   static float LocomotionGrip(string key,float phase)=>key=="Run"?60+2*Mathf.Sin(phase*Mathf.PI*2-1):key=="Walk"?46+3*Mathf.Sin(phase*Mathf.PI*2-1):38;
-  float LooseGrip=>provisionMode>0||searching?0:state=="Punch"?85:LocomotionGrip(state,state!=null&&clips.ContainsKey(state)?animationPlayer[clips[state]].normalizedTime:0);
+  float LooseGrip=>windowClimbPhase>=0?0:provisionMode>0||searching?0:state=="Punch"?85:LocomotionGrip(state,state!=null&&clips.ContainsKey(state)?animationPlayer[clips[state]].normalizedTime:0);
   void UpdateHands(float dt){if(!handSkin)return;float target=LooseGrip;void Set(int index,float value){if(index>=0)handSkin.SetBlendShapeWeight(index,Mathf.MoveTowards(handSkin.GetBlendShapeWeight(index),value,240*dt));}Set(leftGrip,EquippedWeapon>0?100:target);Set(rightGrip,target);}
   public bool Equip(int weapon){bool changed=EquippedWeapon!=weapon;EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);if(handSkin&&leftGrip>=0&&(changed||weapon>0))handSkin.SetBlendShapeWeight(leftGrip,weapon>0?100:LooseGrip);return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
 
@@ -117,6 +120,7 @@ namespace Askich {
    if(provisionMode!=mode){state=null;Play(mode==4?"Search":ProvisionKey(mode),false,0);}
    provisionMode=mode;provisionTime=Mathf.Clamp01(progress);actionRemaining=.2f;
   }
+  public void SetWindowClimb(float phase){windowClimbPhase=phase;if(phase<0){if(state=="WindowClimb"){state=null;actionRemaining=0;}return;}Play("WindowClimb",false,0);actionRemaining=.2f;}
   public void SetSearching(bool active){searching=active;}
   public void Tick(float speed,float dt,float distance,bool clear){
    if(dead)return;
@@ -146,7 +150,7 @@ namespace Askich {
    actionRemaining=.1f;
   }
   public void AlertCall(){if(zombie&&vocal&&vocal.isActiveAndEnabled&&voices!=null&&voices.Length>0){vocal.PlayOneShot(voices[visualVariant%voices.Length],.8f);nextVoice=4;}}
-  public void Hurt(){if(dead)return;hurtFlash=.14f;if(clips.ContainsKey("HitReact")){state=null;Play("HitReact",false,1.4f);actionRemaining=.26f;}}
+  public void Hurt(){if(dead)return;hurtFlash=.14f;if(windowClimbPhase>=0)return;if(clips.ContainsKey("HitReact")){state=null;Play("HitReact",false,1.4f);actionRemaining=.26f;}}
   public void Revive(){dead=false;hurtFlash=0;tintApplied=false;actionRemaining=0;state=null;Play(crawler?"Crawl":"Idle",true,crawler?0:1);}
   public void Restore(bool corpse){Revive();if(!corpse)return;Die();var clip=animationPlayer[clips["Death"]];animationPlayer.Play(clips["Death"]);clip.time=clip.length;clip.speed=0;animationPlayer.Sample();}
   public void Die(){if(dead)return;dead=true;state=null;Play("Death",false,1);if(vocal)vocal.Stop();}

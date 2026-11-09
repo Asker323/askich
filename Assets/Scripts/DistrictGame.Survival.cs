@@ -44,7 +44,7 @@ namespace Askich {
    drunkSeconds=Mathf.Max(0,drunkSeconds-dt);throwCooldown=Mathf.Max(0,throwCooldown-dt);
    if(infection>0)infection=Mathf.Min(100,infection+dt*.22f);
    health-=dt*((bleeding?.4f:0)+(infection>=50?.15f:0));
-   if(health<=0&&!dead){health=0;dead=true;attack=0;strikeSequence++;CancelMedical();if(hero.visual)hero.visual.Die();Say("Ранения оказались смертельными.");}
+   if(health<=0&&!dead){ClearWindowClimb(true);health=0;dead=true;attack=0;strikeSequence++;CancelMedical();if(hero.visual)hero.visual.Die();Say("Ранения оказались смертельными.");}
   }
   void CancelMedical(){if(foley)foley.StopTask();medicalAction=MedicalAction.None;medicalTime=0;}
   float MedicalDuration(MedicalAction action)=>action==MedicalAction.Read?progressionTaskDuration:action==MedicalAction.Make?Recipes[activeRecipe].seconds/(1+.07f*progression.Level(DistrictSkill.Craft)):action==MedicalAction.Salvage?45/(1+.1f*progression.Level(DistrictSkill.Mechanics)): action==MedicalAction.Craft?3:action==MedicalAction.Drink?1.2f:action==MedicalAction.Eat?1.8f:action==MedicalAction.Water?1.5f:action==MedicalAction.Rest?6:action==MedicalAction.Refill?3:2.5f;
@@ -63,7 +63,7 @@ namespace Askich {
    }
   }
   bool BeginMedical(MedicalAction action){
-   if(!playing||paused||dead||FortWorking||breakingWindow!=null||attack>0||heroStagger>0||medicalAction!=MedicalAction.None)return false;
+   if(Climbing||!playing||paused||dead||FortWorking||breakingWindow!=null||attack>0||heroStagger>0||medicalAction!=MedicalAction.None)return false;
    if(action==MedicalAction.Eat){if(inventorySelection>=0&&inventorySelection<inventory.Capacity&&Edible(inventory.Data.slots[inventorySelection].kind))selectedFood=inventory.Data.slots[inventorySelection].kind;else if(!HasMeal)selectedFood=FirstMealKind();}
    if(!CanTreat(action)){Say(MedicalUnavailable(action));return false;}
    inventory.Preferred=inventorySelection;medicalAction=action;medicalTime=0;if(foley&&action!=MedicalAction.Read)foley.StartTask(action==MedicalAction.Craft||action==MedicalAction.Make||action==MedicalAction.Salvage,action==MedicalAction.Drink||action==MedicalAction.Water);searchSlot=-1;suppliesOpen=journalOpen=false;workNoise=0;heroVelocity=Vector2.zero;return true;
@@ -90,7 +90,7 @@ namespace Askich {
   }
   Vector2 StoneTarget(Vector2 direction){Vector2 end=hero.p;for(float t=.4f;t<=8;t+=.4f){var next=hero.p+direction*t;if(Blocked(next))break;end=next;}return end;}
   bool ThrowStone(){
-   if(!playing||paused||dead||suppliesOpen||journalOpen||attack>0||heroStagger>0||throwCooldown>0)return false;
+   if(Climbing||!playing||paused||dead||suppliesOpen||journalOpen||attack>0||heroStagger>0||throwCooldown>0)return false;
    if(stones<=0){Say("Нет камней. Ищи их у дороги рядом с началом района.");return false;}
    CancelMedical();Vector2 direction=face.sqrMagnitude>.01f?DrunkDirection(face.normalized):Vector2.up;Vector2 end=StoneTarget(direction);
    stones--;throwCooldown=.8f;StartCoroutine(StoneFlight(hero.p,end,worldGeneration));Save();return true;

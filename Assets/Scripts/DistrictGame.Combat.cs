@@ -45,7 +45,7 @@ namespace Askich {
   static Strike ShoveStrike()=>new Strike(.55f,.47f,1.5f,.35f,0,24,.8f,.9f,2,true);
   bool TryShove(Vector2 direction)=>TryHeroStrike(direction,SkilledStrike(ShoveStrike()));
   bool TryHeroStrike(Vector2 direction,Strike strike){
-   if(!playing||paused||dead||suppliesOpen||journalOpen||attack>0||heroStagger>0||stamina<strike.cost)return false;
+   if(Climbing||!playing||paused||dead||suppliesOpen||journalOpen||attack>0||heroStagger>0||stamina<strike.cost)return false;
    CancelMedical();activeStrike=strike;attack=strike.duration;stamina-=strike.cost;heroVelocity=Vector2.zero;searchSlot=-1;
    heroStrikeDirection=DrunkDirection(direction.sqrMagnitude>.001f?direction.normalized:Vector2.up);
    hero.root.rotation=Quaternion.LookRotation(V(heroStrikeDirection));
@@ -110,7 +110,7 @@ namespace Askich {
     if(contact&&damageDelay<=0&&Sight(z.p,hero.p)){
      health-=EnemyDamage(z);WoundHero();damageDelay=.8f;heroStagger=.28f;heroVelocity=Vector2.zero;attack=0;strikeSequence++;ClearPcCombat();searchSlot=-1;sound.Play("hit");
      if(hero.visual)hero.visual.Hurt();
-     if(health<=0){health=0;dead=true;if(hero.visual)hero.visual.Die();else hero.root.rotation=Quaternion.Euler(0,0,80);}
+     if(health<=0){ClearWindowClimb(true);health=0;dead=true;if(hero.visual)hero.visual.Die();else hero.root.rotation=Quaternion.Euler(0,0,80);}
     }
    }
    Animate(z,Vector2.zero,true,.3f);return true;

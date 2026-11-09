@@ -1,0 +1,38 @@
+PASS two planned homes have independent windows and barricades
+PASS closed window blocks body and sight from a clear approach
+PASS quiet window begins opening before sight clears
+PASS window swings through intermediate angles
+PASS pause freezes window swing
+PASS open window exposes room while sill still blocks walking through
+PASS quiet closing does not attract distant infected
+PASS closed window restores sight obstruction
+PASS locked window resists bare hands without silently breaking
+PASS breaking starts a tool swing before glass changes
+PASS glass remains intact before impact
+PASS pause freezes glass impact timing
+PASS tool impact removes broken pane and frame
+PASS breaking glass alerts infected to the accessible sound source
+PASS broken glass permits observation without fake window traversal
+PASS barricading requires the named materials
+PASS starting work reserves no materials prematurely
+PASS movement cancels construction without consuming materials
+PASS injury cancels construction
+PASS real V starts barricading from inside
+PASS pause freezes construction progress
+PASS live construction consumes exactly two boards and one wire at completion
+PASS visible barricade closes the physical exit
+PASS ordinary E cannot open a barricaded door
+PASS full inventory prevents dismantling from losing its recovered board
+PASS dismantling returns one board and does not regenerate wire
+PASS construction fastenings are accessible only from inside
+PASS forced entry begins before damage is committed
+PASS tool impact damages barricade and spends stamina
+PASS damaged boards and broken window persist through load
+PASS infected finds an approach and winds up against the barricade
+PASS pause freezes infected barricade strike
+PASS stagger interrupts the infected strike before damage
+PASS persistent infected can break through the barricade
+PASS older v9 saves initialize new windows and boards without loss
+PASS invalid barricade state rejected before mutation
+PASS invalid window state rejected
+PASS valid fortified snapshot reloads after invalid fixtures

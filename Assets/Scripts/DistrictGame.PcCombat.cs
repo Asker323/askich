@@ -6,7 +6,7 @@ namespace Askich {
   int queuedPcAction;float queuedPcTime;Vector2 queuedPcDirection;
   bool pcAiming;LineRenderer pcAimCue;
   void ClearPcCombat(){queuedPcAction=0;queuedPcTime=0;pcAiming=false;if(pcAimCue)pcAimCue.enabled=false;}
-  bool PcWorldPointer(){var mouse=Mouse.current;if(TouchControls.Enabled||mouse==null||!mouse.enabled||suppliesOpen||journalOpen)return false;var p=mouse.position.ReadValue();return p.x>=0&&p.y>=0&&p.x<Screen.width&&p.y<Screen.height&&!PointerOnHud(ScreenLayout.ToUI(p));}
+  bool PcWorldPointer(){var mouse=Mouse.current;if(Climbing||TouchControls.Enabled||mouse==null||!mouse.enabled||suppliesOpen||journalOpen)return false;var p=mouse.position.ReadValue();return p.x>=0&&p.y>=0&&p.x<Screen.width&&p.y<Screen.height&&!PointerOnHud(ScreenLayout.ToUI(p));}
   void ReadPcAim(){
    pcAiming=PcWorldPointer()&&Mouse.current.rightButton.isPressed;
    if(!PcWorldPointer())return;
@@ -17,13 +17,13 @@ namespace Askich {
    zoom=Mathf.Clamp(zoom-Mouse.current.scroll.ReadValue().y*.01f,7,22);
   }
   bool RequestPcStrike(Vector2 direction,bool shove){
-   if(!playing||paused||dead||won||suppliesOpen||heroStagger>0)return false;
+   if(Climbing||!playing||paused||dead||won||suppliesOpen||heroStagger>0)return false;
    if(attack<=0)return shove?TryShove(direction):TryAttack(direction);
    if(attack>PcBufferWindow)return false;
    queuedPcAction=shove?2:1;queuedPcTime=PcBufferWindow;queuedPcDirection=direction;return true;
   }
   void TickPcCombat(float dt){
-   if(TouchControls.Enabled||suppliesOpen||journalOpen){ClearPcCombat();return;}
+   if(Climbing||TouchControls.Enabled||suppliesOpen||journalOpen){ClearPcCombat();return;}
    queuedPcTime-=dt;if(queuedPcTime<0&&attack>0)queuedPcAction=0;
    bool shove=Keyboard.current!=null&&Keyboard.current.spaceKey.wasPressedThisFrame;
    bool hit=!storageClickConsumed&&PcWorldPointer()&&Mouse.current.leftButton.wasPressedThisFrame;

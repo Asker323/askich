@@ -4,6 +4,7 @@ namespace Askich {
   const float BodySpacing=.64f;
   bool ActorSpaceFree(Person actor,Vector2 from,Vector2 to){
    bool Clear(Vector2 other){float before=(from-other).sqrMagnitude,after=(to-other).sqrMagnitude;return after>=BodySpacing*BodySpacing||after>before+.000001f;}
+   if(actor!=hero&&Climbing&&(!Clear(climbFrom)||!Clear(climbTo)))return false;
    if(actor!=hero&&!Clear(hero.p))return false;
    foreach(var other in infected)if(other!=actor&&other.hp>0&&!Clear(other.p))return false;
    return true;
