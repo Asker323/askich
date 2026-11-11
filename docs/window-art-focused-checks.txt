@@ -1,0 +1,9 @@
+PASS dedicated transparent glass shader survives Windows build
+PASS glass is a thin surface rather than an opaque cube
+PASS window has two gathered cloth curtains
+PASS opening rotates the sash and preserves intact glass
+PASS break removes only glass and retains sash, casing and jagged edges
+PASS one impact emits one shard burst
+PASS repeated refresh does not retrigger the shatter
+PASS restoring broken glass does not replay its impact
+PASS saved broken window restores glass damage without deleting its frame

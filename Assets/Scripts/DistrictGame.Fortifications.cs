@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 namespace Askich {
  public sealed partial class DistrictGame {
-  sealed class HouseWindow {public Home home;public Vector2 p;public int state;public float angle;public Barrier pane,sill;public Transform leaf;public GameObject glass;}
+  sealed class HouseWindow {public DistrictWindowArt art;public Home home;public Vector2 p;public int state;public float angle;public Barrier pane,sill;public Transform leaf;public GameObject glass;}
   readonly List<HouseWindow> houseWindows=new List<HouseWindow>();AudioClip glassBreak;
   HouseWindow breakingWindow;float glassTime,glassHealth;
   BackExit fortTarget;int fortMode;float fortTime,fortHealth,fortNoise;
@@ -12,19 +12,16 @@ namespace Askich {
    if(!HasHousePlan(id)){Wall("East wall",h.p+new Vector2(4,0),new Vector2(.3f,8),2.8f,tint);return;}
    Wall("East window wall south",h.p+new Vector2(4,-2),new Vector2(.3f,4),2.8f,tint);Wall("East window wall north",h.p+new Vector2(4,3),new Vector2(.3f,2),2.8f,tint);
    var sill=Wall("Window sill wall",h.p+new Vector2(4,1),new Vector2(.3f,2),.8f,tint);sill.blocksSight=false;
-   Cube("Window upper wall",V(h.p+new Vector2(4,1),2.65f),new Vector3(.3f,.3f,2),tint);
+   Cube("Window upper wall",V(h.p+new Vector2(4,1),2.50f),new Vector3(.3f,.60f,2),tint);
    var w=new HouseWindow{home=h,sill=sill,p=h.p+new Vector2(4,1)};w.pane=new Barrier{rect=new Rect(w.p-new Vector2(.15f,1),new Vector2(.3f,2))};barriers.Add(w.pane);
-   w.leaf=new GameObject("Hinged window frame").transform;w.leaf.position=V(h.p+new Vector2(4,0));var wood=new Color(.60f,.59f,.47f);
-   foreach(float z in new[]{0f,2f})Cube("Window frame upright",new Vector3(0,1.6f,z),new Vector3(.12f,1.7f,.10f),wood,w.leaf);
-   foreach(float y in new[]{.8f,2.4f})Cube("Window frame rail",new Vector3(0,y,1),new Vector3(.12f,.1f,2),wood,w.leaf);
-   w.glass=Cube("Window glass",new Vector3(0,1.6f,1),new Vector3(.045f,1.5f,1.9f),new Color(.25f,.38f,.39f),w.leaf);houseWindows.Add(w);
+   var dressing=new GameObject("Detailed domestic window");dressing.transform.position=V(h.p+new Vector2(4,0));w.art=dressing.AddComponent<DistrictWindowArt>();w.art.Build(id==8);w.leaf=w.art.Leaf;w.glass=w.art.Glass;houseWindows.Add(w);
   }
   void BuildDoorBoards(BackExit e){e.boardArt=new GameObject[2];for(int i=0;i<2;i++){var board=Cube("Removable back door barricade",V(e.p+Vector2.down*.15f,.8f+i*.7f),new Vector3(2.85f,.22f,.10f),new Color(.35f,.27f,.18f));board.transform.rotation=Quaternion.Euler(0,0,i==0?8:-8);board.SetActive(false);e.boardArt[i]=board;}}
   void RefreshBoards(BackExit e){foreach(var art in e.boardArt)art.SetActive(e.boards>0);if(e.boards>0){e.open=false;e.angle=0;e.gate.active=true;e.leaf.rotation=Quaternion.identity;}}
   int CaptureBoards(){return backExits[0].boards|(backExits[1].boards<<2);}
   int CaptureWindows(){return houseWindows[0].state|(houseWindows[1].state<<2);}
-  void RestoreFortifications(int boards,int windows){ClearWindowClimb(false);breakingWindow=null;CancelFort();for(int i=0;i<backExits.Count;i++){backExits[i].boards=(boards>>(i*2))&3;RefreshBoards(backExits[i]);}for(int i=0;i<houseWindows.Count;i++){var w=houseWindows[i];w.state=(windows>>(i*2))&3;w.angle=w.state==1?95:0;RefreshWindow(w);}foreach(var z in infected){z.barricadeTarget=z.barricadeRoute=null;z.barricadeWind=0;}}
-  void RefreshWindow(HouseWindow w){w.pane.active=w.state!=2&&w.angle<50;w.leaf.localRotation=Quaternion.Euler(0,w.angle,0);w.leaf.gameObject.SetActive(w.state!=2);}
+  void RestoreFortifications(int boards,int windows){ClearWindowClimb(false);breakingWindow=null;CancelFort();for(int i=0;i<backExits.Count;i++){backExits[i].boards=(boards>>(i*2))&3;RefreshBoards(backExits[i]);}for(int i=0;i<houseWindows.Count;i++){var w=houseWindows[i];w.state=(windows>>(i*2))&3;w.angle=w.state==1?95:0;w.art.SetState(w.state,w.angle,false);RefreshWindow(w);}foreach(var z in infected){z.barricadeTarget=z.barricadeRoute=null;z.barricadeWind=0;}}
+  void RefreshWindow(HouseWindow w){w.pane.active=w.state!=2&&w.angle<50;w.art.SetState(w.state,w.angle,true);}
   HouseWindow NearbyWindow(){foreach(var w in houseWindows)if(Vector2.Distance(hero.p,w.p)<1.8f)return w;return null;}
   void PlayGlass(Vector2 p){
    if(!glassBreak){const int rate=22050;var data=new float[rate/2];var random=new System.Random(422);for(int i=0;i<data.Length;i++){float t=(float)i/rate;data[i]=((float)random.NextDouble()*2-1)*Mathf.Exp(-t*14)*.55f+Mathf.Sin(t*8700)*Mathf.Exp(-t*25)*.12f;}glassBreak=AudioClip.Create("Authored breaking glass",data.Length,1,rate,false);glassBreak.SetData(data,0);}AudioSource.PlayClipAtPoint(glassBreak,V(p,1.6f),.55f);

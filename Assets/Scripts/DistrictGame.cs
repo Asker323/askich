@@ -50,6 +50,7 @@ public sealed partial class DistrictGame:MonoBehaviour {
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-district-manual-check")>=0)testSave=Path.Combine(Application.temporaryCachePath,"district-manual-"+Guid.NewGuid().ToString("N")+".json");
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-district-check")>=0)StartCoroutine(Check());
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-district-character-art-check")>=0)StartCoroutine(CheckCharacterArt());
+ if(Array.IndexOf(Environment.GetCommandLineArgs(),"-zonbee-window-art-check")>=0)StartCoroutine(CheckWindowArt());
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-zonbee-climb-check")>=0)StartCoroutine(CheckWindowClimb());
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-zonbee-fort-check")>=0)StartCoroutine(CheckFortifications());
  if(Array.IndexOf(Environment.GetCommandLineArgs(),"-zonbee-house-check")>=0)StartCoroutine(CheckHousePlans());

@@ -1,0 +1,34 @@
+PASS closed window cannot be traversed
+PASS moving sash must fully clear before traversal
+PASS exhausted survivor cannot begin
+PASS blocked landing rejects traversal without spending stamina
+PASS living infected occupies landing
+PASS family cot prevents starting through furniture
+PASS clear family window starts and charges exactly twelve stamina
+PASS starting traversal does not remove global sill collision
+PASS repeated climb command cannot charge stamina twice
+PASS traversal owns hands and excludes conflicting actions
+PASS preparation turns smoothly instead of snapping to the window
+PASS real C input enters dedicated animation through Update
+PASS pause freezes root and animation time
+PASS both hands are available during crossing
+PASS early mid-action save stores safe departure rather than sill
+PASS live movement lands inside family home without overlapping furniture
+PASS sill still blocks ordinary movement after landing
+PASS window traversal works from inside toward outside
+PASS reverse crossing lands on the original outside
+PASS late mid-action save stores safe destination
+PASS load discards transient climb and restores safe destination
+PASS hit during approach cancels before committing to sill
+PASS committed crossing remains vulnerable to wounds
+PASS wounded survivor completes crossing and staggers on clear ground
+PASS landing reservation prevents a pursuer occupying the endpoint mid-climb
+PASS broken workshop window can be climbed
+PASS workshop crossing lands safely
+PASS traversal preserves broken glass and sill state
+PASS both feet and toes clear sill throughout all 113 authored frames
+PASS supporting palm stays on sill at phase 0.3
+PASS foot clears sill at phase 0.42 Foot.L
+PASS supporting palm stays on sill at phase 0.42
+PASS foot clears sill at phase 0.66 Foot.R
+PASS interrupted diagnostic pose settles to safe side
