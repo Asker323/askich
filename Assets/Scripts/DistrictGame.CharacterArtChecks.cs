@@ -7,11 +7,17 @@ using UnityEngine;
 namespace Askich {
  public sealed partial class DistrictGame {
   IEnumerator CheckCharacterArt(){
-   string folder=Environment.GetEnvironmentVariable("BEREZKI_CHARACTER_ART_CHECK");Directory.CreateDirectory(folder);testSave=Path.Combine(Application.temporaryCachePath,"character-art-"+Guid.NewGuid()+".json");Application.runInBackground=true;playing=true;paused=false;yield return null;yield return null;paused=true;
+   string folder=Environment.GetEnvironmentVariable("BEREZKI_CHARACTER_ART_CHECK");Directory.CreateDirectory(folder);testSave=Path.Combine(Application.temporaryCachePath,"character-art-"+Guid.NewGuid()+".json");Application.runInBackground=true;foreach(var device in UnityEngine.InputSystem.InputSystem.devices.ToArray())if(device is UnityEngine.InputSystem.Keyboard||device is UnityEngine.InputSystem.Mouse)UnityEngine.InputSystem.InputSystem.DisableDevice(device);playing=true;paused=false;yield return null;yield return null;paused=true;
    foreach(var z in infected){z.hp=0;z.root.gameObject.SetActive(false);}hero.p=new Vector2(0,-24);hero.root.position=V(hero.p);hero.root.rotation=Quaternion.identity;inventory.Load(new DistrictInventoryData());UpdateClothing();item.gameObject.SetActive(false);axeHead.gameObject.SetActive(false);spearHead.gameObject.SetActive(false);yield return null;
    var results=new System.Collections.Generic.List<string>();
    void Check(bool ok,string message){results.Add((ok?"PASS ":"FAIL ")+message);File.WriteAllLines(Path.Combine(folder,"character-art-checks.txt"),results);if(!ok){Application.Quit(1);throw new Exception(message);}}
    var body=hero.root.GetComponentsInChildren<SkinnedMeshRenderer>().First(r=>r.name=="Body");
+   var anatomical=new System.Collections.Generic.List<Vector3>();body.sharedMesh.GetUVs(2,anatomical);
+   Check(body.sharedMesh.name.Contains("Refined")&&anatomical.Count==body.sharedMesh.vertexCount,"refined hero has anatomical surface coordinates without replacing enemy meshes");
+   Check(body.sharedMaterial.HasProperty("_HeroDetail")&&body.sharedMaterial.GetFloat("_HeroDetail")>.9f,"anatomical skin detail is enabled in the built Player material");
+   var shorts=hero.root.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r=>r.name=="Shorts");Check(shorts.sharedMaterial.shader.name=="Zonbee/HeroCloth"&&shorts.sharedMesh.name.Contains("Refined"),"shorts use independent reshaped garment and woven material");
+   float hipMin=100,hipMax=-100,heelMax=-100;for(int i=0;i<=80;i++){hero.visual.ArtSample("Walk",i/80f);float y=hero.visual.ArtBone("Hips").position.y;hipMin=Mathf.Min(hipMin,y);hipMax=Mathf.Max(hipMax,y);hero.visual.ArtSample("Run",i/80f);heelMax=Mathf.Max(heelMax,hero.visual.ArtBone("Foot.L").position.y);}
+   Check(hipMax-hipMin<.035f,"walk pelvis oscillation reduced below 3.5 centimetres");Check(heelMax>.34f,"run has a lifted recovery foot instead of a low shuffle");
    File.WriteAllText(Path.Combine(folder,"character-material.txt"),$"Material {body.sharedMaterial.name}, shader {body.sharedMaterial.shader.name}, colour {body.sharedMaterial.color}, saturation {body.sharedMaterial.GetFloat("_Saturation")}, texture {body.sharedMaterial.mainTexture.name}\n");
    Check(body.sharedMaterial.mainTexture&&body.sharedMaterial.mainTexture.width==1024,"authored 1024 skin colour and ambient occlusion texture present in Player");
    Check(hero.visual.ArtClip("Walk").frameRate==40&&hero.visual.ArtClip("Run").frameRate==40,"survivor uses newly authored locomotion clips");
@@ -24,7 +30,7 @@ namespace Askich {
    Check(b.z-a.z>.25f,"axe hand moves from readable windup to forward impact at damage phase");
    var keyboard=UnityEngine.InputSystem.InputSystem.AddDevice<UnityEngine.InputSystem.Keyboard>();keyboard.MakeCurrent();UnityEngine.InputSystem.InputSystem.settings.backgroundBehavior=UnityEngine.InputSystem.InputSettings.BackgroundBehavior.IgnoreFocus;
    paused=false;UnityEngine.InputSystem.InputSystem.QueueStateEvent(keyboard,new UnityEngine.InputSystem.LowLevel.KeyboardState(UnityEngine.InputSystem.Key.W));yield return new WaitForSeconds(.35f);
-   Check(hero.visual.State=="Walk"&&hero.visual.ArtPhase("Walk")>0,"actual Player Animation advances the authored walk");
+   Check(hero.visual.State=="Walk"&&hero.visual.ArtPhase("Walk")>0,$"actual Player Animation advances the authored walk: state={hero.visual.State}, phase={hero.visual.ArtPhase("Walk"):F3}");
    float phase=Mathf.Repeat(hero.visual.ArtPhase("Walk"),1);hero.visual.Tick(5,.016f,0,true);
    Check(Mathf.Abs(Mathf.Repeat(hero.visual.ArtPhase("Run"),1)-phase)<.002f,"actual walk to run transition preserves gait phase");
    paused=true;hero.visual.SetPaused(true);UnityEngine.InputSystem.InputSystem.RemoveDevice(keyboard);heroVelocity=Vector2.zero;hero.p=new Vector2(0,-24);hero.root.position=V(hero.p);
@@ -38,7 +44,7 @@ namespace Askich {
    var lean=infected.First(z=>z.id%3==0);lean.root.gameObject.SetActive(true);lean.root.position=V(hero.p);lean.root.rotation=Quaternion.Euler(0,195,0);lean.visual.SetPaused(true);lean.visual.ArtSample("Idle",.2f);hero.root.gameObject.SetActive(false);
    Check(lean.visual.ArtClip("Walk").frameRate==40&&lean.visual.ArtClip("Punch").frameRate==40,"lean infected has distinct authored gait and attack");
    yield return CaptureGameCamera(Path.Combine(folder,"character-art-infected.png"),1.25f);
-   hero.root.gameObject.SetActive(true);lean.root.gameObject.SetActive(false);hero.root.rotation=Quaternion.Euler(0,225,0);cam.transform.rotation=Quaternion.Euler(18,0,0);
+   hero.visual.Equip(0);hero.root.gameObject.SetActive(true);lean.root.gameObject.SetActive(false);hero.root.rotation=Quaternion.Euler(0,225,0);cam.transform.rotation=Quaternion.Euler(18,0,0);
    string film=Path.Combine(folder,"motion-frames");Directory.CreateDirectory(film);
    foreach(string key in new[]{"Walk","Run","Slash"})for(int frame=0;frame<32;frame++){hero.visual.ArtSample(key,frame/32f);yield return CaptureGameCamera(Path.Combine(film,key+"-"+frame.ToString("D3")+".png"),1.6f);}
    Save();Check(Load()&&inventory.Data.weapon==0&&!inventory.Data.shirt&&!inventory.Data.trousers&&!inventory.Data.shoes,"visual stage preserves ordinary save loading and shorts-only initial equipment");Application.Quit();

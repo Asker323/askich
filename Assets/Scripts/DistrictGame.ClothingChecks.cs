@@ -19,8 +19,9 @@ namespace Askich {
    for(int i=0;i<3;i++){
     hero.p=clothingPositions[i];Require(UseClothingFind(),"clothing pickup "+i);int slot=Array.FindIndex(inventory.Data.slots,v=>v.kind==11+i);Require(slot>=0&&inventory.Equip(slot),"equip found clothing "+i);UpdateClothing();Require(!UseClothingFind(),"clothing cannot be collected twice "+i);
    }
-   hero.p=new Vector2(-12,-13);yield return new WaitForSeconds(1);Require(Visible("Shirt")&&Visible("Trousers")&&Visible("Shoes"),"equipped garments are visible on the animated hero");
+   hero.p=new Vector2(-12,-13);yield return new WaitForSeconds(1);Require(Visible("Shirt")&&Visible("Trousers")&&Visible("Shoes")&&!Visible("Shorts"),"equipped garments are visible and shorts cannot protrude through trousers");
    yield return CaptureGameCamera(Path.Combine(folder,"wardrobe-equipped.png"),2.8f);
+   inventory.Data.trousers=false;UpdateClothing();bool shortsRestored=Visible("Shorts")&&!Visible("Trousers");inventory.Data.trousers=true;UpdateClothing();Require(shortsRestored&&!Visible("Shorts")&&Visible("Trousers"),"removing and re-equipping trousers switches the underlying shorts correctly");
    Save();string snapshot=File.ReadAllText(SavePath);inventory.Data.shirt=false;Require(Load()&&inventory.Data.shirt&&inventory.Data.clothingFound==7,"v8 save restores clothing equipment and world pickups");
    var old=JsonUtility.FromJson<SaveData>(snapshot);old.version=7;old.inventory.shirt=old.inventory.trousers=old.inventory.shoes=false;old.inventory.clothingFound=0;File.WriteAllText(SavePath,JsonUtility.ToJson(old));Require(Load()&&inventory.Data.shirt&&inventory.Data.trousers&&inventory.Data.shoes&&inventory.Data.clothingFound==7,"v7 migration keeps formerly dressed survivor clothed");
    var bad=JsonUtility.FromJson<SaveData>(snapshot);bad.inventory.clothingFound=0;File.WriteAllText(SavePath,JsonUtility.ToJson(bad));File.WriteAllText(SavePath+".bak","broken");Require(!Load()&&inventory.Data.shirt,"invalid equipped clothing is rejected before world mutation");File.WriteAllText(SavePath,snapshot);Require(Load(),"valid v8 restores after rejected payload");

@@ -4,6 +4,7 @@ Shader "Berezki/Weathered" {
   _Color("Tint",Color)=(.9,.9,.85,1)
   _Saturation("Saturation",Range(0,1))=.42
   _Glossiness("Smoothness",Range(0,1))=.16
+  _HeroDetail("Survivor detail",Range(0,1))=0
   _Decay("Decay",Range(0,1))=0
   _Variant("Variation",Float)=0
   _PatternHeight("Mesh height",Float)=1
@@ -15,9 +16,9 @@ Shader "Berezki/Weathered" {
   CGPROGRAM
   #pragma surface surf Standard fullforwardshadows vertex:vert
   #pragma target 3.0
-  sampler2D _MainTex; fixed4 _Color; half _Saturation,_Glossiness,_Decay;float _Variant,_PatternHeight,_PatternBase;
+  sampler2D _MainTex; fixed4 _Color; half _Saturation,_Glossiness,_Decay,_HeroDetail;float _Variant,_PatternHeight,_PatternBase;
   struct Input {float2 uv_MainTex;float3 objectPosition;};
-  void vert(inout appdata_full v,out Input o){UNITY_INITIALIZE_OUTPUT(Input,o);o.objectPosition=v.vertex.xyz;}
+  void vert(inout appdata_full v,out Input o){UNITY_INITIALIZE_OUTPUT(Input,o);o.objectPosition=_HeroDetail>.5?v.texcoord2.xyz:v.vertex.xyz;}
   float hash(float3 p){return frac(sin(dot(p,float3(127.1,311.7,74.7)))*43758.5453);}
   float noise(float3 p){float3 c=floor(p),f=frac(p);f=f*f*(3-2*f);return lerp(lerp(lerp(hash(c),hash(c+float3(1,0,0)),f.x),lerp(hash(c+float3(0,1,0)),hash(c+float3(1,1,0)),f.x),f.y),lerp(lerp(hash(c+float3(0,0,1)),hash(c+float3(1,0,1)),f.x),lerp(hash(c+float3(0,1,1)),hash(c+1),f.x),f.y),f.z);}
 
@@ -31,6 +32,15 @@ Shader "Berezki/Weathered" {
    float stain=smoothstep(.57,.76,mottle)*smoothstep(.25,.45,p.y)*(1-smoothstep(.82,.96,p.y));
    decayed=lerp(decayed,float3(.20,.075,.06),stain*.68);
    o.Albedo=lerp(lerp(l.xxx,c,_Saturation),decayed*(.75+.35*dirt),_Decay)*_Color.rgb*wear;
+   if(_HeroDetail>.5){
+    float3 a=i.objectPosition;float front=smoothstep(.025,.085,a.z);float face=exp(-pow((a.y-1.65)/.12,4))*front;
+    float beard=exp(-pow((a.y-1.602)/.038,4))*exp(-pow(a.x/.066,4))*front;
+    float brow=exp(-pow((abs(a.x)-.031)/.018,4))*exp(-pow((a.y-1.716)/.006,2))*front;
+    float lips=exp(-pow(a.x/.030,4))*exp(-pow((a.y-1.609)/.006,2))*front;
+    float pores=noise(a*700);float warm=exp(-pow((a.y-.54)/.045,2))+exp(-pow((a.y-1.20)/.03,2))*smoothstep(.20,.30,abs(a.x));
+    o.Albedo*=1-beard*(.14+.07*pores)-brow*.45;o.Albedo=lerp(o.Albedo,o.Albedo*float3(1.1,.78,.77),lips*.5+warm*.12);o.Albedo*=.975+.05*pores;
+    float soil=(1-smoothstep(.03,.20,a.y))*smoothstep(.42,.70,noise(a*35));o.Albedo=lerp(o.Albedo,float3(.12,.10,.075),soil*.32);o.Occlusion=1-face*.025;
+   }
    o.Metallic=0;o.Smoothness=_Glossiness;o.Alpha=1;
   }
   ENDCG

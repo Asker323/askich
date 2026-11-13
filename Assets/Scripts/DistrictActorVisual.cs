@@ -100,7 +100,7 @@ namespace Askich {
    if(head)head.localScale=headScale;if(paused)return;UpdateHands(Time.deltaTime);hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(hurtFlash<=0&&tintApplied)return;tintApplied=hurtFlash<=0;if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();tint.SetFloat("_Decay",zombie?.85f:0);tint.SetFloat("_Variant",visualVariant);tint.SetFloat("_PatternHeight",meshHeight);tint.SetFloat("_PatternBase",meshBase);if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
   public void ApplyClothing(DistrictInventoryData data){
    if(zombie||bodyRenderers==null)return;int bits=(data.shirt?1:0)|(data.trousers?2:0)|(data.shoes?4:0);if(bits==clothingBits)return;clothingBits=bits;
-   foreach(var renderer in bodyRenderers){if(renderer.name=="Shirt")renderer.gameObject.SetActive(data.shirt);if(renderer.name=="Trousers")renderer.gameObject.SetActive(data.trousers);if(renderer.name=="Shoes")renderer.gameObject.SetActive(data.shoes);}
+   foreach(var renderer in bodyRenderers){if(renderer.name=="Shirt")renderer.gameObject.SetActive(data.shirt);if(renderer.name=="Trousers")renderer.gameObject.SetActive(data.trousers);if(renderer.name=="Shorts")renderer.gameObject.SetActive(!data.trousers);if(renderer.name=="Shoes")renderer.gameObject.SetActive(data.shoes);}
   }
   static float LocomotionGrip(string key,float phase)=>key=="Run"?60+2*Mathf.Sin(phase*Mathf.PI*2-1):key=="Walk"?46+3*Mathf.Sin(phase*Mathf.PI*2-1):38;
   float LooseGrip=>windowClimbPhase>=0?0:provisionMode>0||searching?0:state=="Punch"?85:LocomotionGrip(state,state!=null&&clips.ContainsKey(state)?animationPlayer[clips[state]].normalizedTime:0);

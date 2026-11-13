@@ -25,6 +25,8 @@ License stated on the asset page: CC0 1.0 Universal, https://creativecommons.org
 
 ## Blender Studio / community — Human Base Meshes v1.0.0
 
+November 2026 hero refinement also derives from this same CC0 source. `HeroRefinementAuthor.cs` adjusts the existing body and shorts, preserving the rig and hand shapes; `HeroCloth.shader` and the optional survivor detail in `Weathered.shader` are project-authored procedural surfaces. No new third-party textures, paid assets or motion-capture recordings were added.
+
 Official listing: https://www.blender.org/download/demo-files/
 Pinned download: https://download.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.0.0.zip
 Archive SHA256: `46a912c0524072ac3b78c35d5d2471df7b8df102394a050ca8cd7184e3393648`.
