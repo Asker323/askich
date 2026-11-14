@@ -33,7 +33,10 @@ namespace Askich.Editor {
      for(int i=0;i<vertices.Length;i++){vertices[i]=Edit(vertices[i]);anatomical.Add(frame.MultiplyPoint3x4(vertices[i]));}mesh.vertices=vertices;mesh.SetUVs(2,anatomical);
      // Preserve all existing shape keys, including the two hand grips.
      mesh.ClearBlendShapes();for(int shape=0;shape<original.blendShapeCount;shape++)for(int f=0;f<original.GetBlendShapeFrameCount(shape);f++){
-      var delta=new Vector3[vertices.Length];var normal=new Vector3[vertices.Length];var tangent=new Vector3[vertices.Length];original.GetBlendShapeFrameVertices(shape,f,delta,normal,tangent);var basis=original.vertices;for(int i=0;i<delta.Length;i++)delta[i]=Edit(basis[i]+delta[i])-vertices[i];mesh.AddBlendShapeFrame(original.GetBlendShapeName(shape),original.GetBlendShapeFrameWeight(shape,f),delta,normal,tangent);
+      var delta=new Vector3[vertices.Length];var normal=new Vector3[vertices.Length];var tangent=new Vector3[vertices.Length];original.GetBlendShapeFrameVertices(shape,f,delta,normal,tangent);var basis=original.vertices;for(int i=0;i<delta.Length;i++)delta[i]=Edit(basis[i]+delta[i])-vertices[i];
+      string shapeName=original.GetBlendShapeName(shape);
+      if(name=="Body"&&f==0&&(shapeName.EndsWith("GripL")||shapeName.EndsWith("GripR")))AddRelaxedHandFrames(mesh,shapeName,vertices,delta,normal,tangent,frame);
+      mesh.AddBlendShapeFrame(shapeName,original.GetBlendShapeFrameWeight(shape,f),delta,normal,tangent);
      }
      // Preserve the source split normals across UV seams; recalculation makes skin faceted.
      mesh.RecalculateBounds();string path=Folder+"Hero"+name+"Refined.asset";Store(mesh,path);skin.sharedMesh=AssetDatabase.LoadAssetAtPath<Mesh>(path);
@@ -59,6 +62,23 @@ namespace Askich.Editor {
     }
     PrefabUtility.SaveAsPrefabAsset(root,Folder+"Hero.prefab");
    }finally{PrefabUtility.UnloadPrefabContents(root);}
+  }
+  static void AddRelaxedHandFrames(Mesh mesh,string shape,Vector3[] vertices,Vector3[] full,Vector3[] normals,Vector3[] tangents,Matrix4x4 frame){
+   // Intermediate poses follow an arc instead of shrinking each finger along
+   // the straight chord to the weapon grip. The full weapon pose stays exact.
+   float side=0,curl=0;for(int i=0;i<full.Length;i++)if(full[i].sqrMagnitude>1e-10f){side+=frame.MultiplyPoint3x4(vertices[i]).x;curl+=frame.MultiplyVector(full[i]).z;}
+   Vector3 direction=new Vector3(Mathf.Sign(side)*.053f,-.125f,0).normalized;
+   Vector3 axis=frame.inverse.MultiplyVector(Vector3.Cross(direction,Vector3.forward*Mathf.Sign(curl))).normalized;
+   const float angle=1.5f;
+   foreach(float weight in new[]{38f,60f}){
+    var delta=new Vector3[full.Length];var normal=new Vector3[full.Length];var tangent=new Vector3[full.Length];float fraction=weight/100;
+    for(int i=0;i<full.Length;i++){
+     Vector3 chord=Vector3.ProjectOnPlane(full[i],axis);Vector3 centre=chord*.5f+Vector3.Cross(axis,chord)*(.5f/Mathf.Tan(angle*.5f));
+     delta[i]=centre+Quaternion.AngleAxis(angle*Mathf.Rad2Deg*fraction,axis)*(-centre)+(full[i]-chord)*fraction;
+     normal[i]=normals[i]*fraction;tangent[i]=tangents[i]*fraction;
+    }
+    mesh.AddBlendShapeFrame(shape,weight,delta,normal,tangent);
+   }
   }
   static void Limb(Transform upper,Transform lower,Transform foot,Vector3 goal){float a=Vector3.Distance(upper.position,lower.position),b=Vector3.Distance(lower.position,foot.position);var d=goal-upper.position;float distance=Mathf.Clamp(d.magnitude,.02f,a+b-.002f);var direction=d.normalized;float x=(a*a-b*b+distance*distance)/(2*distance);var knee=upper.position+direction*x+Vector3.ProjectOnPlane(Vector3.forward,direction).normalized*Mathf.Sqrt(Mathf.Max(0,a*a-x*x));upper.rotation=Quaternion.FromToRotation(lower.position-upper.position,knee-upper.position)*upper.rotation;lower.rotation=Quaternion.FromToRotation(foot.position-lower.position,goal-lower.position)*lower.rotation;}
   static void Gait(){

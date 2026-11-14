@@ -1,0 +1,16 @@
+PASS refined hero has anatomical surface coordinates without replacing enemy meshes
+PASS anatomical skin detail is enabled in the built Player material
+PASS shorts use independent reshaped garment and woven material
+PASS walk pelvis oscillation reduced below 3.5 centimetres
+PASS run has a lifted recovery foot instead of a low shuffle
+PASS authored 1024 skin colour and ambient occlusion texture present in Player
+PASS survivor uses newly authored locomotion clips
+PASS walk stance foot travel matches world movement within measured tolerance
+PASS walking ankles remain above street ground throughout cycle
+PASS axe hand moves from readable windup to forward impact at damage phase
+PASS actual Player Animation advances the authored walk: state=Walk, phase=0.333
+PASS actual walk to run transition preserves gait phase
+PASS equipped tool closes authored hand shape in actual Player
+PASS unequipping releases the weapon fist into a loose locomotion curl
+PASS lean infected has distinct authored gait and attack
+PASS visual stage preserves ordinary save loading and shorts-only initial equipment

@@ -1,0 +1,21 @@
+PASS hand L has a curved relaxed pose rather than a linear blend to the weapon fist, deviation=0.0291 m
+PASS hand R has a curved relaxed pose rather than a linear blend to the weapon fist, deviation=0.0290 m
+PASS mouse-driven pivot changes facing without moving the collision body: 130
+PASS pivot reaches requested facing: 130
+PASS pivot lifts one foot while supporting foot stays planted: 130, drift=0.0016
+PASS pivot feet stay above the road: 130
+PASS shoulders lead the turn before the feet settle: 130
+PASS mouse-driven pivot changes facing without moving the collision body: -70
+PASS pivot reaches requested facing: -70
+PASS pivot lifts one foot while supporting foot stays planted: -70, drift=0.0017
+PASS pivot feet stay above the road: -70
+PASS shoulders lead the turn before the feet settle: -70
+PASS pause freezes both turning body and foot placement
+PASS keyboard movement releases stationary foot anchors
+PASS sprint transition still responds to keyboard input
+PASS small speed fluctuations do not restart running animation
+PASS slowing below the hysteresis band returns to walking
+PASS releasing movement blends back to idle
+PASS turning shoulders keeps equipped axe in the palm
+PASS attack cancels foot placement without overriding the combat clip
+PASS existing save loads after new presentation state

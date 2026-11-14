@@ -1,0 +1,30 @@
+PASS shove starts with enough stamina (playing=True, paused=False, journal=False, supplies=False, attack=0.55, stagger=0, stamina=76)
+PASS shove windup cannot push early
+PASS shove creates space without free damage
+PASS shove spends 24 stamina and interrupts infected
+PASS shove recovery rejects repeated presses
+PASS exhaustion refuses shove without spending stamina
+PASS heavy infected resists shove displacement without damage reduction changes
+PASS shove cannot clear an entire group
+PASS closed clinic door blocks shove
+PASS survivor cannot run through a living infected
+PASS pursuers step around each other without stacking
+PASS pre-existing overlapping save positions can separate
+PASS corpses do not create invisible body barriers
+PASS early presses do not queue an automatic combo
+PASS late press enters short recovery buffer
+PASS buffered attack executes once even across a long frame
+PASS pause clears buffered action
+PASS inventory clears buffered action
+PASS loading clears buffered action without a save-format change
+PASS real enemy impact interrupts buffer and retains 26 damage
+PASS Space input starts live shove through Update
+PASS holding Space does not repeat shove
+PASS right mouse aims hero and displays weapon reach
+PASS aimed backstep reverses walking animation and suppresses sprint
+PASS mouse click hits aimed infected at normal axe damage
+PASS live clinic guard commits to attack before contact
+PASS Space interrupts live AI windup without inflicting free damage
+PASS live shove and sprint escape creates distance without wounds
+PASS HUD click cannot attack or leave aiming active
+PASS former mobile buttons no longer block PC world clicks

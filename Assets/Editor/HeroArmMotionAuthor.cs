@@ -40,8 +40,8 @@ namespace Askich.Editor {
        Quaternion palmFrame=Quaternion.LookRotation(bindFingers,bindThumb);
        // A little pronation and delayed wrist flex keep the palms from staying
        // locked to the thighs. Use an anatomical palm frame, not bone Euler axes.
-       float wrist=(run?7:walk?6:2)*Mathf.Sin(cycle-.65f);
-       float roll=12+(run?9:walk?12:3)*Mathf.Sin(cycle-.8f);
+       float wrist=(run?6:walk?5:2)*Mathf.Sin(cycle-.65f);
+       float roll=6+(run?8:walk?7:3)*Mathf.Sin(cycle-.8f);
        Vector3 fingers=Quaternion.AngleAxis(wrist,torso*Vector3.right)*lowerDirection;
        Vector3 thumbDirection=Quaternion.AngleAxis(sign*roll,fingers)*Vector3.Cross(fingers,torso*Vector3.right);
        hand.rotation=Quaternion.LookRotation(fingers,thumbDirection)*Quaternion.Inverse(palmFrame)*BindRotation(hand);
@@ -58,7 +58,7 @@ namespace Askich.Editor {
       }
       void Track(string path,string property,float value){var binding=EditorCurveBinding.FloatCurve(path,typeof(Transform),property);if(!curves.TryGetValue(binding,out var curve))curves[binding]=curve=new AnimationCurve();curve.AddKey(time,value);}
      }
-     foreach(var pair in curves)AnimationUtility.SetEditorCurve(output,pair.Key,pair.Value);output.EnsureQuaternionContinuity();EditorUtility.CopySerialized(output,source);UnityEngine.Object.DestroyImmediate(output);
+     foreach(var pair in curves)AnimationUtility.SetEditorCurve(output,pair.Key,pair.Value);output.EnsureQuaternionContinuity();EditorUtility.CopySerialized(output,source);EditorUtility.SetDirty(source);UnityEngine.Object.DestroyImmediate(output);
     }
     AssetDatabase.LoadAssetAtPath<AnimationClip>(Folder+"Hero_Idle.anim").SampleAnimation(root,0);PrefabUtility.SaveAsPrefabAsset(root,Folder+"Hero.prefab");AssetDatabase.SaveAssets();
    }finally{UnityEngine.Object.DestroyImmediate(root);}

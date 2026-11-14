@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Askich {
  // Presentation only: movement, damage and hearing remain owned by DistrictGame.
- public sealed class DistrictActorVisual : MonoBehaviour {
+ public sealed partial class DistrictActorVisual : MonoBehaviour {
   static AudioClip[] voices;
   readonly Dictionary<string,string> clips=new Dictionary<string,string>();
   Animation animationPlayer;
@@ -80,6 +80,7 @@ namespace Askich {
      if(skin.name=="Shirt")skin.gameObject.SetActive(variant%3!=1);if(skin.name=="Trousers")skin.gameObject.SetActive(variant%3!=2);if(skin.name=="Shoes")skin.gameObject.SetActive(variant%3==0);if(skin.name=="Hair")skin.gameObject.SetActive(variant%3==0);
     }
    }
+   PrepareTurning(model);
    Play(crawler?"Crawl":"Idle",true,crawler?0:1);
    animationPlayer[clips[state]].normalizedTime=(variant*.173f)%1;
    if(zombie){
@@ -97,14 +98,14 @@ namespace Askich {
    if(state=="CrawlerLunge"&&lungeTime>=.12f) crawlerLunge.SampleAnimation(animationPlayer.gameObject,lungeTime);
    if(!zombie&&provisionMode>0&&provisionMode<=3&&state==ProvisionKey(provisionMode))provisions[provisionMode-1].SampleAnimation(animationPlayer.gameObject,provisionTime);
    if(windowClimbPhase>=0)windowClimb.SampleAnimation(animationPlayer.gameObject,windowClimbPhase*windowClimb.length);
-   if(head)head.localScale=headScale;if(paused)return;UpdateHands(Time.deltaTime);hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(hurtFlash<=0&&tintApplied)return;tintApplied=hurtFlash<=0;if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();tint.SetFloat("_Decay",zombie?.85f:0);tint.SetFloat("_Variant",visualVariant);tint.SetFloat("_PatternHeight",meshHeight);tint.SetFloat("_PatternBase",meshBase);if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
+   if(head)head.localScale=headScale;if(paused)return;ApplyTurning(Time.deltaTime);UpdateHands(Time.deltaTime);hurtFlash=Mathf.Max(0,hurtFlash-Time.deltaTime);if(hurtFlash<=0&&tintApplied)return;tintApplied=hurtFlash<=0;if(bodyRenderers!=null)foreach(var r in bodyRenderers){tint.Clear();tint.SetFloat("_Decay",zombie?.85f:0);tint.SetFloat("_Variant",visualVariant);tint.SetFloat("_PatternHeight",meshHeight);tint.SetFloat("_PatternBase",meshBase);if(hurtFlash>0)tint.SetColor("_Color",new Color(1.35f,.65f,.5f));r.SetPropertyBlock(tint);}}
   public void ApplyClothing(DistrictInventoryData data){
    if(zombie||bodyRenderers==null)return;int bits=(data.shirt?1:0)|(data.trousers?2:0)|(data.shoes?4:0);if(bits==clothingBits)return;clothingBits=bits;
    foreach(var renderer in bodyRenderers){if(renderer.name=="Shirt")renderer.gameObject.SetActive(data.shirt);if(renderer.name=="Trousers")renderer.gameObject.SetActive(data.trousers);if(renderer.name=="Shorts")renderer.gameObject.SetActive(!data.trousers);if(renderer.name=="Shoes")renderer.gameObject.SetActive(data.shoes);}
   }
   static float LocomotionGrip(string key,float phase)=>key=="Run"?60+2*Mathf.Sin(phase*Mathf.PI*2-1):key=="Walk"?46+3*Mathf.Sin(phase*Mathf.PI*2-1):38;
   float LooseGrip=>windowClimbPhase>=0?0:provisionMode>0||searching?0:state=="Punch"?85:LocomotionGrip(state,state!=null&&clips.ContainsKey(state)?animationPlayer[clips[state]].normalizedTime:0);
-  void UpdateHands(float dt){if(!handSkin)return;float target=LooseGrip;void Set(int index,float value){if(index>=0)handSkin.SetBlendShapeWeight(index,Mathf.MoveTowards(handSkin.GetBlendShapeWeight(index),value,240*dt));}Set(leftGrip,EquippedWeapon>0?100:target);Set(rightGrip,target);}
+  void UpdateHands(float dt){if(!handSkin)return;float target=LooseGrip;void Set(int index,float value){if(index>=0)handSkin.SetBlendShapeWeight(index,Mathf.Lerp(handSkin.GetBlendShapeWeight(index),value,1-Mathf.Exp(-18*dt)));}Set(leftGrip,EquippedWeapon>0?100:target);Set(rightGrip,target);}
   public bool Equip(int weapon){bool changed=EquippedWeapon!=weapon;EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);if(handSkin&&leftGrip>=0&&(changed||weapon>0))handSkin.SetBlendShapeWeight(leftGrip,weapon>0?100:LooseGrip);return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
 
   void Play(string key,bool loop,float speed){
@@ -112,7 +113,7 @@ namespace Askich {
    var s=animationPlayer[name];s.wrapMode=loop?WrapMode.Loop:WrapMode.ClampForever;s.speed=speed;
    if(state==key)return;
    float phase=state!=null&&(state=="Walk"||state=="Run")&&(key=="Walk"||key=="Run")?Mathf.Repeat(animationPlayer[clips[state]].normalizedTime,1):0;
-   s.normalizedTime=phase;animationPlayer.CrossFade(name,loop?.12f:.055f);state=key;
+   s.normalizedTime=phase;animationPlayer.CrossFade(name,loop?(key=="Idle"?.20f:.16f):.055f);state=key;
   }
   public void SetPaused(bool pause){paused=pause;if(animationPlayer)animationPlayer.enabled=!pause;}
   public void SetSurvivalPose(int mode,float progress){
@@ -127,7 +128,7 @@ namespace Askich {
    actionRemaining-=dt;
    if(!zombie&&searching&&actionRemaining<=0){Play("Search",true,1);return;}
    if(actionRemaining<=0&&crawler&&speed<=.1f)Play("Crawl",true,0);
-   else if(actionRemaining<=0)Play(speed>.1f?(crawler?"Crawl":speed>3.5f&&!zombie?"Run":"Walk"):"Idle",true,speed>.1f?Mathf.Clamp(speed/(crawler?1.1f:zombie?1.45f:speed>3.5f?4.6f:1.8f),.35f,1.9f)*(!zombie&&ReverseWalk&&speed<=3.5f?-1:1):1);
+   else if(actionRemaining<=0){bool running=!zombie&&!ReverseWalk&&speed>(state=="Run"?3.0f:3.5f);Play(speed>.1f?(crawler?"Crawl":running?"Run":"Walk"):"Idle",true,speed>.1f?Mathf.Clamp(speed/(crawler?1.1f:zombie?1.45f:running?4.6f:1.8f),.35f,1.9f)*(!zombie&&ReverseWalk?-1:1):1);}
    if(!zombie)return;
    vocal.volume=Mathf.Lerp(vocal.volume,clear?(distance<6?.55f:.36f):.12f,dt*4);
    occlusion.cutoffFrequency=Mathf.Lerp(occlusion.cutoffFrequency,clear?12000:1000,dt*4);
