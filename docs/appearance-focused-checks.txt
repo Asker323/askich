@@ -1,0 +1,10 @@
+PASS revised infected face has supported anatomical skin material
+PASS loose trousers use refined mesh without shorts protruding
+PASS lean infected uses independent worn garment with supported material
+PASS idle silhouette has visibly asymmetric arms
+PASS uneven recovery heights distinguish the gait while ankles stay above ground
+PASS walk cycle joins without a hand jump
+PASS attack has a backward preparation and forward reach at the damage phase
+PASS authored contact phase matches existing combat timing
+PASS hit reaction remains available on the revised skeleton
+PASS save still restores world after visual revision

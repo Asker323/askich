@@ -12,6 +12,9 @@ namespace Askich {
    foreach(var z in infected){z.hp=0;z.root.gameObject.SetActive(false);}hero.p=new Vector2(0,-24);hero.root.gameObject.SetActive(false);
    var enemy=infected.First(z=>z.id%3==0);enemy.root.gameObject.SetActive(true);enemy.root.position=V(hero.p);enemy.root.rotation=Quaternion.identity;enemy.visual.SetPaused(true);
    var results=new List<string>();void Check(bool ok,string label){results.Add((ok?"PASS ":"FAIL ")+label);File.WriteAllLines(Path.Combine(folder,"infected-art-checks.txt"),results);if(!ok){Application.Quit(1);throw new Exception(label);}}
+   var skins=enemy.root.GetComponentsInChildren<SkinnedMeshRenderer>(true);var skin=skins.First(r=>r.name=="Body");var anatomy=new List<Vector3>();skin.sharedMesh.GetUVs(2,anatomy);
+   Check(skin.sharedMaterial.shader.name=="Zonbee/InfectedSkin"&&skin.sharedMaterial.shader.isSupported&&anatomy.Count==skin.sharedMesh.vertexCount,"revised infected face has supported anatomical skin material");
+   Check(!skins.First(r=>r.name=="Shorts").gameObject.activeSelf&&skins.First(r=>r.name=="Trousers").sharedMesh==Resources.Load<Mesh>("Survival/Human/LeanTrousersRefined"),"loose trousers use refined mesh without shorts protruding");
    Vector3 Point(string bone)=>enemy.root.InverseTransformPoint(enemy.visual.ArtBone(bone).position);
    var shirt=enemy.root.GetComponentsInChildren<SkinnedMeshRenderer>(true).First(r=>r.name=="Shirt");Check(shirt.sharedMesh==Resources.Load<Mesh>("Survival/Human/LeanShirt")&&shirt.sharedMaterial.shader.isSupported&&shirt.sharedMaterial.shader.name=="Zonbee/InfectedCloth","lean infected uses independent worn garment with supported material");
    enemy.visual.ArtSample("Idle",0);Check(Mathf.Abs(Point("Hand.L").y-Point("Hand.R").y)>.10f,"idle silhouette has visibly asymmetric arms");
@@ -22,9 +25,11 @@ namespace Askich {
    Check(windup<rest-.08f&&contact>windup+.35f,"attack has a backward preparation and forward reach at the damage phase");
    Check(Mathf.Abs(EnemyImpact/EnemyDuration-.47f)<.001f&&Mathf.Abs(enemy.visual.ArtClip("Punch").length-EnemyDuration)<.001f,"authored contact phase matches existing combat timing");
    enemy.visual.ArtSample("HitReact",.5f);Check(enemy.visual.Ready,"hit reaction remains available on the revised skeleton");
-   cam.transform.rotation=Quaternion.Euler(12,180,0);enemy.visual.ArtSample("Idle",.15f);yield return CaptureGameCamera(Path.Combine(folder,"infected-idle.png"),1.3f);
+   var fill=new GameObject("Infected inspection fill",typeof(Light)).GetComponent<Light>();fill.type=LightType.Directional;fill.intensity=.65f;fill.color=new Color(.9f,.93f,1);fill.transform.rotation=Quaternion.Euler(12,180,0);
+   cam.transform.rotation=Quaternion.Euler(12,180,0);enemy.visual.ArtSample("Idle",.15f);yield return CaptureGameCamera(Path.Combine(folder,"infected-idle.png"),1.3f);yield return CaptureGameCamera(Path.Combine(folder,"infected-face.png"),.40f,1.56f);
    enemy.visual.ArtSample("Punch",.28f);yield return CaptureGameCamera(Path.Combine(folder,"infected-windup.png"),1.3f);enemy.visual.ArtSample("Punch",.47f);yield return CaptureGameCamera(Path.Combine(folder,"infected-contact.png"),1.3f);
    string frames=Path.Combine(folder,"frames");Directory.CreateDirectory(frames);foreach(string key in new[]{"Walk","Punch"})for(int i=0;i<40;i++){enemy.visual.ArtSample(key,i/40f);yield return CaptureGameCamera(Path.Combine(frames,key+"-"+i.ToString("D3")+".png"),1.5f);}
+   Destroy(fill.gameObject);cam.transform.rotation=Quaternion.Euler(42,45,0);yield return null;yield return CaptureGameCamera(Path.Combine(folder,"infected-gameplay-view.png"),5);
    hero.root.gameObject.SetActive(true);enemy.root.gameObject.SetActive(false);Save();Check(Load(),"save still restores world after visual revision");Application.Quit();
   }
  }

@@ -206,7 +206,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: bad353558fe97004fb48bf0fe42d64b5, type: 2}
+  - {fileID: 2100000, guid: 7d8a361277a5d9c4db0bac2bc9c96d96, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -233,7 +233,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 1
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: -1648397573723019588, guid: f2bac970e8d96a8448de3f0c9e29ed71, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 33f4201a253ebb04db67cdf9ac3fae1f, type: 2}
   m_Bones:
   - {fileID: 4714171739356615853}
   - {fileID: 8218188329384198254}
@@ -325,7 +325,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9820c9ebb57fc784e853b69e47109c3b, type: 2}
+  - {fileID: 2100000, guid: 1604489c4f458b74da4cf7d0156bff32, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -352,7 +352,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 1
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: -3178576508544696699, guid: f2bac970e8d96a8448de3f0c9e29ed71, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 277492b443f0ffb4e9302ba1f54f2fcd, type: 2}
   m_Bones:
   - {fileID: 4714171739356615853}
   - {fileID: 8218188329384198254}
@@ -1009,7 +1009,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: e202428f4c77b1d4b9b7236b11eb9d74, type: 2}
+  - {fileID: 2100000, guid: 4aa9aa59564f9ad4e8f82eea35ba8d5e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1036,7 +1036,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 1
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: 2959467708922500008, guid: f2bac970e8d96a8448de3f0c9e29ed71, type: 3}
+  m_Mesh: {fileID: 4300000, guid: 1f9a78017587c5048a4a0b9d76674a54, type: 2}
   m_Bones:
   - {fileID: 4714171739356615853}
   - {fileID: 8218188329384198254}

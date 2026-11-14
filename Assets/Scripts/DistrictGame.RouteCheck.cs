@@ -35,7 +35,7 @@ namespace Askich {
   }
   IEnumerator RouteUse(float wait=.3f){RouteKeys(Key.E);yield return new WaitForSeconds(.12f);yield return RouteWait(wait);}
   IEnumerator RoutePhoto(string name)=>CaptureGameCamera(Path.Combine(routeFolder,name+".png"));
-  IEnumerator CaptureGameCamera(string file,float inspectionSize=0){
+  IEnumerator CaptureGameCamera(string file,float inspectionSize=0,float inspectionHeight=.9f){
    // Capture the current gameplay camera even when the desktop window is hidden.
    yield return new WaitForEndOfFrame();
    var skins=FindObjectsByType<SkinnedMeshRenderer>(FindObjectsSortMode.None);var force=new bool[skins.Length];for(int i=0;i<skins.Length;i++){force[i]=skins[i].forceMatrixRecalculationPerRender;skins[i].forceMatrixRecalculationPerRender=true;}
@@ -44,7 +44,7 @@ namespace Askich {
    var target=RenderTexture.GetTemporary(1280,720,24,RenderTextureFormat.ARGB32);
    var frame=new Texture2D(target.width,target.height,TextureFormat.RGB24,false);
    try {
-    if(inspectionSize>0){cam.orthographicSize=inspectionSize;cam.transform.position=V(hero.p,.9f)-cam.transform.forward*35;}
+    if(inspectionSize>0){cam.orthographicSize=inspectionSize;cam.transform.position=V(hero.p,inspectionHeight)-cam.transform.forward*35;}
     cam.targetTexture=target;
     cam.Render();
     RenderTexture.active=target;

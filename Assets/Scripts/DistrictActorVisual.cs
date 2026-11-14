@@ -77,7 +77,7 @@ namespace Askich {
    if(infected){
     foreach(var skin in model.GetComponentsInChildren<SkinnedMeshRenderer>(true)){
      for(int i=0;i<skin.sharedMesh.blendShapeCount;i++)skin.SetBlendShapeWeight(i,skin.sharedMesh.GetBlendShapeName(i).Contains(variant%3==1?"Heavy":"Gaunt")?80:0);
-     if(skin.name=="Shirt")skin.gameObject.SetActive(variant%3!=1);if(skin.name=="Trousers")skin.gameObject.SetActive(variant%3!=2);if(skin.name=="Shoes")skin.gameObject.SetActive(variant%3==0);if(skin.name=="Hair")skin.gameObject.SetActive(variant%3==0);
+     if(skin.name=="Shirt")skin.gameObject.SetActive(variant%3!=1);if(skin.name=="Trousers")skin.gameObject.SetActive(variant%3!=2);if(skin.name=="Shorts")skin.gameObject.SetActive(variant%3==2);if(skin.name=="Shoes")skin.gameObject.SetActive(variant%3==0);if(skin.name=="Hair")skin.gameObject.SetActive(variant%3==0);
     }
    }
    PrepareTurning(model);
