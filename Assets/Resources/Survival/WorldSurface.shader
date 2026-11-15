@@ -27,7 +27,7 @@ Shader "Berezki/WorldSurface" {
     float fibres=noise(float2(uv.x*115,uv.y*3));c*=.86+.2*fibres-seam*.3;relief=fibres*.15;
    }else if(_Surface<2.5){
     float seam=pow(abs(sin(p.z*8.5)),14);float rust=smoothstep(.56,.75,patch*.45+broad*.55);
-    c=lerp(c,float3(.28,.19,.13),rust*.65);c*=1-seam*.22;relief=sin(p.z*8.5)*.06;
+    c=lerp(c,float3(.28,.19,.13),rust*.35);c*=1-seam*.22;relief=sin(p.z*8.5)*.06;
    }else{
     c*=.88+.16*broad;relief=grain*.12;
    }

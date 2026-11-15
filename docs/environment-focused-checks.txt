@@ -1,0 +1,25 @@
+PASS asphalt_01: colour, normal and roughness maps loaded with mipmaps
+PASS plaster_stone_wall_02: colour, normal and roughness maps loaded with mipmaps
+PASS plastered_wall_02: colour, normal and roughness maps loaded with mipmaps
+PASS wood_floor_deck: colour, normal and roughness maps loaded with mipmaps
+PASS brown_mud_leaves_01: colour, normal and roughness maps loaded with mipmaps
+PASS main road uses scanned material rather than a flat colour
+PASS interior floor uses scanned wood
+PASS kerbstones share one compact mesh
+PASS worn road paint shader supported
+PASS starting homes have four glazed facade openings
+PASS fixed facade window remains a solid wall footprint
+PASS fixed facade window remains a solid wall footprint
+PASS fixed facade window remains a solid wall footprint
+PASS fixed facade window remains a solid wall footprint
+PASS low graphics disables extra depth/normal rendering
+PASS high graphics restores contact shading and supported colour pass
+PASS street and animated grass shaders included in Windows build
+PASS street decoration fits two compact meshes
+PASS wooden cover blocks movement and enemy sight
+PASS starting stones and radio doorstep remain reachable
+PASS legacy positions overlapping new fence move less than one metre to clear ground
+PASS saved survivor and living enemy load beside newly added fence
+PASS world snapshot reloads after street migration scenario
+PASS street crossing and clinic approach remain reachable
+PASS world save still loads after environment changes

@@ -27,7 +27,7 @@ namespace Askich {
    // Layer 30 is reserved for the survivor's visual meshes. They retain moonlight
    // shadows, but cannot obscure their own chest-mounted flashlight.
    foreach(var renderer in hero.GetComponentsInChildren<Renderer>(true))renderer.gameObject.layer=30;
-   flashlight.cullingMask=~(1<<30);
+   flashlight.cullingMask=~(1<<30);flashlight.enabled=false;
    for(int i=0;i<8;i++){
     Vector3 p=new Vector3(i%2==0?-20:4,0,-43+(i/2)*27);
     Spawn("StreetLights",p,90);var lamp=Point("Street sodium light",p+new Vector3(-.7f,4.7f,0),new Color(1,.58f,.23f),1.7f,11);lamps.Add(lamp);
@@ -43,7 +43,7 @@ namespace Askich {
    float day=Daylight;RenderSettings.ambientSkyColor=Color.Lerp(new Color(.13f,.15f,.20f),new Color(.51f,.54f,.58f),day);
    RenderSettings.ambientEquatorColor=Color.Lerp(new Color(.09f,.105f,.13f),new Color(.34f,.35f,.37f),day);RenderSettings.ambientGroundColor=Color.Lerp(new Color(.055f,.06f,.07f),new Color(.17f,.18f,.18f),day);
    RenderSettings.fogColor=Color.Lerp(new Color(.075f,.095f,.12f),new Color(.29f,.34f,.36f),day);GetComponent<Camera>().backgroundColor=RenderSettings.fogColor;
-   if(sun){sun.intensity=Mathf.Lerp(.16f,1.02f,day);sun.color=Color.Lerp(new Color(.55f,.62f,.78f),new Color(1,.94f,.83f),day);sun.transform.rotation=Quaternion.Euler(Mathf.Lerp(18,58,day),-55+hour/24*110,0);}
+   if(sun){float altitude=Mathf.Max(0,Mathf.Sin((hour-6)/12*Mathf.PI));sun.intensity=Mathf.Lerp(.16f,1.08f,day);sun.color=Color.Lerp(new Color(.55f,.62f,.78f),Color.Lerp(new Color(1,.78f,.57f),new Color(1,.95f,.86f),altitude),day);sun.transform.rotation=Quaternion.Euler(day>.05f?Mathf.Lerp(12,58,altitude):18,-55+hour/24*110,0);}
    foreach(var lamp in lamps)lamp.enabled=day<.65f;
   }
   public static GameObject Spawn(string name,Vector3 position,float yaw=0){var prefab=Resources.Load<GameObject>("Survival/Art/"+name);return prefab?Instantiate(prefab,position,Quaternion.Euler(0,yaw,0)):null;}
@@ -51,7 +51,7 @@ namespace Askich {
   public static Light Point(string name,Vector3 position,Color color,float intensity,float range){var o=new GameObject(name);o.transform.position=position;var l=o.AddComponent<Light>();l.type=LightType.Point;l.color=color;l.intensity=intensity;l.range=range;l.shadows=LightShadows.None;return l;}
   public void Aim(Vector2 direction){if(flashlight&&direction.sqrMagnitude>.01f)flashlight.transform.rotation=Quaternion.LookRotation(new Vector3(direction.x,-.20f,direction.y));}
   public void ToggleFlashlight(){flashlight.enabled=!flashlight.enabled;}
-  public void SetLowQuality(bool value){lowQuality=value;QualitySettings.antiAliasing=value?0:4;QualitySettings.shadowDistance=value?28:55;QualitySettings.shadows=value?ShadowQuality.HardOnly:ShadowQuality.All;flashlight.shadows=value?LightShadows.None:LightShadows.Soft;}
+  public void SetLowQuality(bool value){lowQuality=value;GetComponent<Camera>().depthTextureMode=value?DepthTextureMode.None:DepthTextureMode.DepthNormals;QualitySettings.antiAliasing=value?0:4;QualitySettings.shadowDistance=value?28:55;QualitySettings.shadows=value?ShadowQuality.HardOnly:ShadowQuality.All;flashlight.shadows=value?LightShadows.None:LightShadows.Soft;}
   void Update(){for(int i=0;i<lamps.Count;i++)lamps[i].intensity=i==2?1.4f+Mathf.PerlinNoise(Time.time*3,0)*.4f:1.7f;}
   void OnRenderImage(RenderTexture source,RenderTexture destination){if(grade&&!lowQuality)Graphics.Blit(source,destination,grade);else Graphics.Blit(source,destination);}
   void OnDestroy(){if(grade)Destroy(grade);}

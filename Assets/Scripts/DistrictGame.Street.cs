@@ -23,19 +23,11 @@ namespace Askich {
     for(int i=0;i<sides;i++){triangles.Add(index);triangles.Add(index+1+(i+1)%sides);triangles.Add(index+1+i);}
    }
    // All ground decoration is authored in the clear stretch between the two houses.
-   for(int x=-21;x<=21;x+=2){
-    Patch(new Vector2(x,-19.7f),new Vector2(1.8f,.7f),new Color(.35f,.32f,.23f),.07f);
-    Patch(new Vector2(x,-28),new Vector2(1.8f,.7f),new Color(.32f,.3f,.22f),.07f);
-   }
-   for(int i=0;i<36;i++){
-    var p=new Vector2(Rand(-22,22),Rand(-26.7f,-21.3f));
-    Patch(p,new Vector2(Rand(.2f,.85f),Rand(.15f,.5f)),new Color(.19f,.205f,.205f),.07f);
-   }
    // Jagged dark strips follow the road instead of drawing a uniform grid.
    for(int i=0;i<22;i++){
     var p=new Vector2(Rand(-21,21),Rand(-26.7f,-21.3f));
     for(int n=0;n<3;n++){
-     Patch(p,new Vector2(Rand(.15f,.45f),.025f),new Color(.095f,.10f,.095f),.075f,4);
+     Patch(p,new Vector2(Rand(.15f,.45f),.025f),new Color(.14f,.15f,.145f),.028f,4);
      p+=new Vector2(.28f,Rand(-.13f,.13f));
     }
    }
@@ -47,10 +39,10 @@ namespace Askich {
     float x=Rand(-21,21),z=i%2==0?Rand(-19.7f,-17):Rand(-30,-28);
     if(new Rect(-10.1f,-20.8f,6.2f,2.9f).Contains(new Vector2(x,z)))continue;
     if(Mathf.Abs(x+12)<1.4f||Mathf.Abs(x-12)<1.4f||Mathf.Abs(x)<4)continue;
-    float height=Rand(.16f,.44f);Color tint=new Color(Rand(.8f,1.2f),Rand(.8f,1.1f),Rand(.7f,1));
+    float height=Rand(.12f,.32f);Color tint=new Color(Rand(.8f,1.2f),Rand(.8f,1.1f),Rand(.7f,1));
     for(int blade=0;blade<3;blade++){
      int index=vertices.Count;float a=Rand(0,Mathf.PI*2);
-     var side=new Vector3(Mathf.Cos(a),0,Mathf.Sin(a))*.055f;
+     var side=new Vector3(Mathf.Cos(a),0,Mathf.Sin(a))*.038f;
      vertices.Add(new Vector3(x,.08f,z)-side);vertices.Add(new Vector3(x,.08f,z)+side);vertices.Add(new Vector3(x+.07f,height,z+.03f));
      triangles.Add(index);triangles.Add(index+1);triangles.Add(index+2);
      colors.Add(tint*.65f);colors.Add(tint*.65f);colors.Add(tint);
@@ -92,6 +84,7 @@ namespace Askich {
    return position;
   }
   void ReleaseStreet(){
+   foreach(var mesh in environmentArtMeshes)if(mesh)Destroy(mesh);
    foreach(var obj in new UnityEngine.Object[]{streetMesh,grassMesh,streetMaterial,grassMaterial})if(obj)Destroy(obj);
   }
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

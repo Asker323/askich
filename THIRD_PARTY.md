@@ -68,3 +68,18 @@ No new external assets. The existing Julien Kaspar CC0 body remains the anatomic
 ## World life and progression (2026-11-08)
 
 No new external assets or paid services. Gas station, pumps, engine, house roof variants and furnishings, books, food packets, material/tool icons and the character journal are project-authored geometry/code. Existing licensed characters, world props and infected recordings are reused. Page-turn audio reuses the project-generated cloth noise at low volume; educational radio uses project static and written captions, without speech recordings. Daylight and enemy perception are project code. No claim of new scanned materials, original human anatomy or new infected models is made.
+
+
+## Environment materials (2026-11-15)
+
+Five Poly Haven texture sets are redistributed under [CC0 1.0](https://polyhaven.com/license):
+
+- [Asphalt 01](https://polyhaven.com/a/asphalt_01)
+- [Plastered Wall 02](https://polyhaven.com/a/plastered_wall_02)
+- [Plaster Stone Wall 02](https://polyhaven.com/a/plaster_stone_wall_02)
+- [Wood Floor Deck](https://polyhaven.com/a/wood_floor_deck)
+- [Brown Mud Leaves 01](https://polyhaven.com/a/brown_mud_leaves_01)
+
+Each set contains 1K JPEG colour, OpenGL normal and roughness maps. Exact download URLs and SHA-256 hashes are recorded in `Assets/Resources/Survival/Surfaces/sources.json`. The importer enables mipmaps, repeat sampling, compression and anisotropic filtering. No paid assets, speech services or online runtime dependencies were added.
+
+ScannedSurface (world projection, material blending), chipped RoadPaint, contact shading, combined kerbstones, roof drainage, interior skirting and table legs are project-authored. The fixed windows reuse the project's existing glass/frame/curtain meshes; four facade openings are authored for the two starting houses. Source textures are unchanged; colours and plaster coverage are adjusted in shaders.

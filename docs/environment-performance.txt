@@ -1,0 +1,5 @@
+GPU: NVIDIA GeForce RTX 4060 Laptop GPU
+Resolution: 1920x800
+Development Player; stationary starting street, no active enemies.
+Median frame: 16.67 ms; p95: 16.71 ms
+Not a full-world benchmark.
