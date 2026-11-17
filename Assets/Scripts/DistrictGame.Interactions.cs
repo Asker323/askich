@@ -41,9 +41,7 @@ namespace Askich {
     h.door.transform.localRotation=Quaternion.Euler(0,-h.doorAngle,0);
     h.gate.active=!occupied&&h.doorAngle<(h.open?70:25);
     for(int i=0;i<3;i++){
-     bool searching=searchSlot==i&&searchHome==h;
-     float angle=h.taken[i]?105:searching?Mathf.Lerp(15,55,Mathf.Clamp01(searchTime/.4f))+Mathf.Sin(searchTime*14)*3:0;
-     h.lids[i].localRotation=Quaternion.RotateTowards(h.lids[i].localRotation,Quaternion.Euler(angle,0,0),dt*240);
+     PoseStorage(h,i,dt,false);
     }
    }
    containerAudio.SetSearching(searchSlot>=0||cacheSearching);

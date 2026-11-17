@@ -11,7 +11,7 @@ namespace Askich {
   AnimationClip crawlerLunge;
   readonly AnimationClip[] provisions=new AnimationClip[3];int provisionMode;float provisionTime;
   AnimationClip windowClimb;float windowClimbPhase=-1;
-  float lungeTime;
+  float lungeTime,storageSearch=-1;
   AudioSource vocal;
   AudioLowPassFilter occlusion;
   string state;
@@ -122,11 +122,12 @@ namespace Askich {
    provisionMode=mode;provisionTime=Mathf.Clamp01(progress);actionRemaining=.2f;
   }
   public void SetWindowClimb(float phase){windowClimbPhase=phase;if(phase<0){if(state=="WindowClimb"){state=null;actionRemaining=0;}return;}Play("WindowClimb",false,0);actionRemaining=.2f;}
+  public void SetStorageSearch(float seconds){storageSearch=seconds;}
   public void SetSearching(bool active){searching=active;}
   public void Tick(float speed,float dt,float distance,bool clear){
    if(dead)return;
    actionRemaining-=dt;
-   if(!zombie&&searching&&actionRemaining<=0){Play("Search",true,1);return;}
+   if(!zombie&&searching&&actionRemaining<=0){Play("Search",true,storageSearch>=0?0:1);if(storageSearch>=0)animationPlayer[clips["Search"]].normalizedTime=storageSearch/1.5f;return;}
    if(actionRemaining<=0&&crawler&&speed<=.1f)Play("Crawl",true,0);
    else if(actionRemaining<=0){bool running=!zombie&&!ReverseWalk&&speed>(state=="Run"?3.0f:3.5f);Play(speed>.1f?(crawler?"Crawl":running?"Run":"Walk"):"Idle",true,speed>.1f?Mathf.Clamp(speed/(crawler?1.1f:zombie?1.45f:running?4.6f:1.8f),.35f,1.9f)*(!zombie&&ReverseWalk?-1:1):1);}
    if(!zombie)return;

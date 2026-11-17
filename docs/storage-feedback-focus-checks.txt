@@ -1,0 +1,18 @@
+PASS mouse can select the farther of two reachable storage boxes
+PASS reachable selected storage has a visible world outline
+PASS left click starts selected search through Update without striking
+PASS holding left mouse does not repeatedly restart or cancel search
+PASS second click cancels search and sound without taking loot or attacking
+PASS aiming hides storage outline and reserves combat controls
+PASS aim plus left click attacks even when cursor is over storage
+PASS pause hides outline and clears stale storage focus
+PASS clicked searched box opens its own inventory instead of nearer neighbour
+PASS moving cursor cannot switch the open storage inventory
+PASS selected container item can be selected through graphical input
+PASS Take transfers from clicked box and preserves neighbouring contents
+PASS leaving selected container reach cannot silently switch to another box
+PASS loading clears open-container focus without changing save format
+PASS keyboard fallback highlights nearest reachable container when mouse is elsewhere
+PASS E still starts highlighted nearest-container search
+PASS movement interrupts mouse or keyboard search without revealing contents
+PASS outside house cannot target or highlight storage through walls

@@ -21,13 +21,13 @@ namespace Askich {
    ConfigureStorage(h,id);for(int i=0;i<3;i++)BuildStorageModel(h,id,i);
    RefreshContainers(h);
   }
-  void RefreshContainers(Home h){for(int i=0;i<3;i++)if(h.lids[i])h.lids[i].localRotation=Quaternion.Euler(h.taken[i]?105:0,0,0);}
+  void RefreshContainers(Home h){for(int i=0;i<3;i++)if(h.lids[i])PoseStorage(h,i,0,true);}
   void BeginSearch(Home h,int slot){
    if(searchSlot==slot&&searchHome==h)return;
    searchHome=h;searchSlot=slot;searchTime=0;searchNoiseClock=0;heroVelocity=Vector2.zero;
    Vector2 direction=h.p+h.containers[slot]-hero.p;
-   if(direction.sqrMagnitude>.001f)hero.root.rotation=Quaternion.LookRotation(V(direction.normalized));Alert(h.p+h.containers[slot],h.noise[slot]);
-   if(containerAudio)containerAudio.Play(V(h.p+h.containers[slot],1),h.noise[slot],false);
+   if(direction.sqrMagnitude>.001f){face=direction.normalized;hero.root.rotation=Quaternion.LookRotation(V(face));}
+   if(containerAudio)containerAudio.StartStorage(V(h.p+h.containers[slot],1),h.noise[slot]);SearchBeat();
   }
   int NearbyContainer(Home h){
    int found=-1;float nearest=1.6f;
@@ -42,8 +42,7 @@ namespace Askich {
    if(current==null)return;
 
    int i=FocusedStorageSlot();if(i>=0){
-    string risk=current.noise[i]>=9?"громко":current.noise[i]<=3?"тихо":"умеренный шум";
-    GUI.Label(new Rect(35,130,520,30),"E · "+current.labels[i]+(current.taken[i]?"":" · "+risk),small);return;
+    if(searchSlot<0){GUI.Label(new Rect(35,130,520,30),"E · "+current.labels[i],small);if(!current.taken[i])DrawSearchRisk(new Rect(35,160,42,18),current.noise[i],false);}return;
    }
    if(current.note!=null&&Vector2.Distance(hero.p,current.p+new Vector2(-2,0))<1.7f)
     GUI.Label(new Rect(35,130,520,30),"E · записка",small);
@@ -124,20 +123,4 @@ namespace Askich {
 #endif
  }
 
- public sealed class DistrictContainerAudio:MonoBehaviour {
-  AudioSource source;AudioClip soft,metal,close,wood;
-  void Awake(){source=gameObject.AddComponent<AudioSource>();source.playOnAwake=false;source.spatialBlend=1;source.minDistance=1;source.maxDistance=16;source.rolloffMode=AudioRolloffMode.Linear;source.dopplerLevel=0;soft=Make("Cloth rummage",.7f,0);metal=Make("Sticking tool chest",1.1f,410);close=Make("Container latch",.18f,240);}
-  static AudioClip Make(string name,float duration,float ring){
-   const int rate=22050;var data=new float[(int)(rate*duration)];var random=new System.Random(117);float filtered=0;
-   for(int i=0;i<data.Length;i++){float t=(float)i/rate;filtered=Mathf.Lerp(filtered,(float)random.NextDouble()*2-1,.13f);float envelope=Mathf.Sin(Mathf.PI*t/duration);float pulse=.25f+.75f*Mathf.Pow(Mathf.Sin(t*24),2);data[i]=(filtered*.6f+(ring>0?Mathf.Sin(t*ring*6.283f)*.12f*Mathf.Exp(-t*6):0))*envelope*pulse;}
-   var clip=AudioClip.Create(name,data.Length,1,rate,false);clip.SetData(data,0);return clip;
-  }
-  public bool Searching=>source&&source.loop&&source.isPlaying;
-  public void SetSearching(bool active){if(!active&&source.loop){source.Stop();source.loop=false;}}
-  public void Play(Vector3 position,float noise,bool complete){
-   source.Stop();source.transform.position=position;source.loop=!complete;
-   if(!wood)wood=Make("Wooden drawer",.6f,140);source.clip=complete?close:noise>=9?metal:noise<=3?soft:wood;source.volume=complete?.25f:noise>=9?.7f:.4f;source.Play();
-  }
-  void OnDestroy(){if(soft)Destroy(soft);if(metal)Destroy(metal);if(close)Destroy(close);if(wood)Destroy(wood);}
- }
 }

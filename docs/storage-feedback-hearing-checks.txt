@@ -1,0 +1,25 @@
+PASS open ground preserves the normal sound range
+PASS solid wall attenuates a crossing sound ray
+PASS overlapping wall pieces count as one obstacle
+PASS separate walls add attenuation independently
+PASS inactive obstacles do not muffle a sound
+PASS quiet steps do not alert a listener three metres away
+PASS ordinary footsteps alert a nearby listener
+PASS ordinary footsteps do not reach a distant listener
+PASS running reaches farther than walking
+PASS real crouched keyboard movement stays unheard behind the listener
+PASS real walking footsteps alert a nearby listener who cannot see the survivor
+PASS closed front door muffles a moderate indoor noise
+PASS open doorway passes the same noise and keeps its source location
+PASS loud noise remains audible through a closed door
+PASS rear doorway uses its actual blocking state
+PASS closed glass muffles a quiet sound through the window
+PASS open window passes sound without the low sill acting as a full wall
+PASS broken glass no longer muffles sound
+PASS repeated stationary noise refreshes interest without rebuilding the same path
+PASS visible survivor keeps priority over acoustic distractions
+PASS actual kitchen search is muffled by the intact exterior wall
+PASS repeated search noise stays muffled in the running Player
+PASS loud sound crosses the same wall and attracts the listener
+PASS save load restores acoustic door and window states
+PASS restored barriers immediately affect hearing correctly

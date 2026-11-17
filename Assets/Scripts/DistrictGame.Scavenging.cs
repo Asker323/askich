@@ -20,7 +20,20 @@ namespace Askich {
    if(med){var red=new Color(.51f,.2f,.17f);Part("First aid cross",new Vector3(0,.045f,-depth/2),new Vector3(.28f,.012f,.075f),red,lid);Part("First aid cross",new Vector3(0,.046f,-depth/2),new Vector3(.075f,.012f,.28f),red,lid);}
    if(tool)for(int side=-1;side<=1;side+=2)Part("Metal corner",V(p+new Vector2(side*(width/2-.06f),-depth/2-.01f),.18f+height/2),new Vector3(.075f,height,.03f),new Color(.48f,.45f,.34f));
    if(!med&&!tool)for(int n=0;n<2;n++){Part("Kitchen drawer seam",V(p+Vector2.down*(depth/2+.01f),.35f+n*.35f),new Vector3(width-.08f,.025f,.025f),new Color(.17f,.14f,.1f));}
-   h.storageArt[i]=art.ToArray();
+   h.storageRest[i]=lid.position;
+   if(!med&&!tool){
+    h.drawers[i]=true;
+    // Replace the moving top with a shallow drawer; the cabinet top stays fixed.
+    foreach(var renderer in art)if(renderer.transform.IsChildOf(lid))renderer.enabled=false;
+    lid.position=V(p,.69f);h.storageRest[i]=lid.position;
+    Part("Fixed kitchen worktop",V(p,1.1f),new Vector3(width+.06f,.08f,depth+.06f),color);
+    Part("Sliding drawer front",new Vector3(0,0,-depth/2-.025f),new Vector3(width,.27f,.07f),color,lid);
+    Part("Drawer pull",new Vector3(0,0,-depth/2-.09f),new Vector3(.28f,.045f,.05f),new Color(.38f,.38f,.32f),lid);
+    Part("Drawer bottom",new Vector3(0,-.1f,0),new Vector3(width-.12f,.035f,depth-.08f),new Color(.2f,.15f,.1f),lid);
+    for(int side=-1;side<=1;side+=2)Part("Drawer side",new Vector3(side*(width/2-.08f),0,0),new Vector3(.055f,.23f,depth-.08f),color,lid);
+    Part("Forgotten wrapper",new Vector3(.23f,-.07f,-.1f),new Vector3(.18f,.025f,.14f),new Color(.5f,.46f,.34f),lid);
+   }
+   h.storageArt[i]=art.FindAll(v=>v.enabled).ToArray();
   }
   DistrictItemKind StorageKind(Home h,int i)=>h.loot[i]=="Топор"?DistrictItemKind.Axe:h.loot[i]=="Копьё"?DistrictItemKind.Spear:h.loot[i]=="Еда"?DistrictItemKind.Food:h.loot[i]=="Бинт"?DistrictItemKind.Bandage:NamedStorageKind(h.loot[i]);
   DistrictItemKind NamedStorageKind(string name){for(int kind=14;kind<ItemNames.Length;kind++)if(ItemNames[kind]==name)return (DistrictItemKind)kind;return DistrictItemKind.Empty;}
@@ -30,8 +43,9 @@ namespace Askich {
    h.taken[i]=true;progression.Gain(DistrictSkill.Agility,1.5f);findKind=(int)kind;findText=kind==DistrictItemKind.Empty?"Пусто":items[0].Empty?ItemNames[(int)kind]:"Нет места · оставлено: "+ItemNames[(int)kind];findUntil=Time.unscaledTime+3;
    if(containerAudio)containerAudio.Play(V(h.p+h.containers[i],1),h.noise[i],true);Save();
   }
-  void CancelSearch(){searchSlot=-1;searchTime=0;if(containerAudio)containerAudio.SetSearching(false);}
-  void TickSearchNoise(float dt){if(searchSlot<0)return;searchNoiseClock+=dt;if(searchNoiseClock>=1){searchNoiseClock=0;Alert(searchHome.p+searchHome.containers[searchSlot],searchHome.noise[searchSlot]);}}
+  void CancelSearch(){searchSlot=-1;searchTime=0;searchNoiseClock=0;if(containerAudio)containerAudio.SetSearching(false);}
+  void SearchBeat(){if(searchSlot<0)return;Alert(searchHome.p+searchHome.containers[searchSlot],searchHome.noise[searchSlot]);if(containerAudio)containerAudio.Pulse();}
+  void TickSearchNoise(float dt){if(searchSlot<0)return;searchNoiseClock+=dt;if(searchNoiseClock>=.75f){searchNoiseClock%=.75f;SearchBeat();}}
   bool TakeStoredItem(int store,int slot){
    if(store<0||slot<0||slot>=6||store!=NearbyStore()||medicalAction!=MedicalAction.None)return false;
    var items=inventory.Container(store);var item=items[slot];if(item.Empty)return false;

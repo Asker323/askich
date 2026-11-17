@@ -1,0 +1,16 @@
+PASS wood search starts one material-specific audible event
+PASS kitchen drawer slides horizontally while loot remains undiscovered
+PASS survivor searches with free hands rather than waving the equipped axe
+PASS rummage includes a quiet gap instead of an endless audio loop
+PASS next timed search beat selects another sound variation
+PASS hand animation follows the same elapsed search time as sound beats
+PASS cancel button is excluded from world attack input
+PASS actual cancel click stops sound without looting or attacking
+PASS cancelled drawer closes smoothly
+PASS keyboard pause cancels search and does not leave hidden rummage playing
+PASS inventory interrupts search without discovering the contents
+PASS walking away interrupts search immediately
+PASS tool chest keeps a hinged lid and a distinct metal sound
+PASS medical storage uses soft rustling rather than a metal rattle
+PASS completed search leaves an open drawer with no ongoing noise
+PASS existing save data restores the new open drawer appearance
