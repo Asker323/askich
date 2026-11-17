@@ -13,7 +13,7 @@ namespace Askich {
    Wall("East window wall south",h.p+new Vector2(4,-2),new Vector2(.3f,4),2.8f,tint);Wall("East window wall north",h.p+new Vector2(4,3),new Vector2(.3f,2),2.8f,tint);
    var sill=Wall("Window sill wall",h.p+new Vector2(4,1),new Vector2(.3f,2),.8f,tint);sill.blocksSight=false;
    Cube("Window upper wall",V(h.p+new Vector2(4,1),2.50f),new Vector3(.3f,.60f,2),tint);
-   var w=new HouseWindow{home=h,sill=sill,p=h.p+new Vector2(4,1)};w.pane=new Barrier{rect=new Rect(w.p-new Vector2(.15f,1),new Vector2(.3f,2))};barriers.Add(w.pane);
+   var w=new HouseWindow{home=h,sill=sill,p=h.p+new Vector2(4,1)};w.pane=new Barrier{soundLoss=2,rect=new Rect(w.p-new Vector2(.15f,1),new Vector2(.3f,2))};barriers.Add(w.pane);
    var dressing=new GameObject("Detailed domestic window");dressing.transform.position=V(h.p+new Vector2(4,0));w.art=dressing.AddComponent<DistrictWindowArt>();w.art.Build(id==8);w.leaf=w.art.Leaf;w.glass=w.art.Glass;houseWindows.Add(w);
   }
   void BuildDoorBoards(BackExit e){e.boardArt=new GameObject[2];for(int i=0;i<2;i++){var board=Cube("Removable back door barricade",V(e.p+Vector2.down*.15f,.8f+i*.7f),new Vector3(2.85f,.22f,.10f),new Color(.35f,.27f,.18f));board.transform.rotation=Quaternion.Euler(0,0,i==0?8:-8);board.SetActive(false);e.boardArt[i]=board;}}

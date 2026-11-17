@@ -16,6 +16,9 @@ namespace Askich {
     if(z.hp<=0||Vector2.Distance(z.p,source)>=radius*(z.id%3==1?.9f:z.id%3==2?1.16f:1))continue;
     // A visible target takes priority over distractions; hidden targets are never tracked.
     if(z.awareness==Awareness.Chase&&CanSeeHero(z))continue;
+    float hearing=radius*(z.id%3==1?.9f:z.id%3==2?1.16f:1);
+    if(NoiseDistance(source,z.p)>=hearing)continue;
+    if(z.awareness==Awareness.Investigate&&(z.goal-source).sqrMagnitude<.0625f){z.alert=14;continue;}
     z.awareness=Awareness.Investigate;z.goal=source;z.searchOrigin=source;z.alert=14;z.repath=0;z.unreachable=0;z.searchClock=z.searchPause=0;z.searchStep=0;z.path.Clear();
    }
   }

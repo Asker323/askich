@@ -28,7 +28,7 @@ namespace Askich {
     float x=side*2.5f;
     if(id==5||id==6){
      // Keep the full solid footprint: these are fixed windows, not extra exits.
-     Wall("Front window sill wall",p+new Vector2(x,-4),new Vector2(3,.3f),.8f,tint,h,true);
+     Wall("Front window sill wall",p+new Vector2(x,-4),new Vector2(3,.3f),.8f,tint,h,true).soundLoss=2;
      for(int edge=-1;edge<=1;edge+=2)Wall("Front window pier wall",p+new Vector2(x+edge*1.075f,-4),new Vector2(.85f,.3f),2.8f,tint,h,true);
      h.cut.Add(Cube("Front window lintel wall",V(p+new Vector2(x,-4),2.5f),new Vector3(1.3f,.6f,.3f),tint));
      var frame=new GameObject("Fixed glazed facade window");frame.transform.position=V(p+new Vector2(x-.65f,-4));frame.transform.rotation=Quaternion.Euler(0,90,0);frame.transform.localScale=new Vector3(1,1,.65f);frame.AddComponent<DistrictWindowArt>().Build(id==6);h.cut.Add(frame);

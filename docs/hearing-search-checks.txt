@@ -1,0 +1,17 @@
+PASS search begins with a listening pause instead of spinning
+PASS search selects a reachable nearby point
+PASS search route remains local to the remembered position
+PASS unseen survivor movement cannot redirect search
+PASS infected walks between search points without leaving remembered area or crossing solids
+PASS new sound replaces old search route with the actual sound location
+PASS visible survivor immediately resumes pursuit
+PASS visible survivor remains higher priority than a distraction
+PASS search cannot move or rotate an infected during a committed attack
+PASS enclosed infected rejects inaccessible search points with a bounded path budget
+PASS failed search cannot escape through a solid enclosure
+PASS unsuccessful search still expires instead of tracking forever
+PASS closed doorway breaks pursuit and preserves last seen position
+PASS arrival at lost trail enters local search
+PASS live Player search moves outside a closed house without seeing or damaging the hidden survivor
+PASS save load preserves world and clears transient search state
+PASS normal navigation retains its full budget across the district seam

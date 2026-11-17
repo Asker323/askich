@@ -9,7 +9,7 @@ namespace Askich {
    if(!HasHousePlan(id)){Wall("North wall",h.p+Vector2.up*4,new Vector2(8,.3f),2.8f,tint);return;}
    for(int side=-1;side<=1;side+=2)Wall("Rear wall section",h.p+new Vector2(side*2.65f,4),new Vector2(2.7f,.3f),2.8f,tint);
    Cube("Rear door lintel",V(h.p+Vector2.up*4,2.66f),new Vector3(2.6f,.28f,.3f),tint);
-   var exit=new BackExit{home=h,bit=id==4?1:2,p=h.p+Vector2.up*4};exit.gate=new Barrier{rect=new Rect(exit.p-new Vector2(1.3f,.2f),new Vector2(2.6f,.4f))};barriers.Add(exit.gate);
+   var exit=new BackExit{home=h,bit=id==4?1:2,p=h.p+Vector2.up*4};exit.gate=new Barrier{soundLoss=3,rect=new Rect(exit.p-new Vector2(1.3f,.2f),new Vector2(2.6f,.4f))};barriers.Add(exit.gate);
    exit.leaf=new GameObject("Back door hinge").transform;exit.leaf.position=V(exit.p+Vector2.right*1.3f);
    Color wood=new Color(.28f,.31f,.25f);Cube("Back door leaf",new Vector3(-1.3f,1.2f,0),new Vector3(2.6f,2.4f,.13f),wood,exit.leaf);
    for(int n=0;n<6;n++)Cube("Back door plank seam",new Vector3(-2.4f+n*.43f,1.2f,-.075f),new Vector3(.025f,2.25f,.015f),wood*.7f,exit.leaf);
