@@ -69,7 +69,7 @@ namespace Askich {
    foreach(var actor in infected){
     var e=s.version>=2?Array.Find(s.enemies,v=>v.id==actor.id):null;
     actor.p=e==null?actor.spawn:e.hp>0?ResolveSolidPosition(new Vector2(e.x,e.z)):new Vector2(e.x,e.z);actor.hp=e==null?actor.maxHp:s.version<=3?e.hp/LegacyEnemyHealth(actor.id)*actor.maxHp:e.hp;
-    actor.callCooldown=0;actor.awareness=Awareness.Roam;actor.searchClock=actor.unreachable=0;actor.searchOrigin=actor.p;actor.goal=actor.p;actor.alert=actor.wind=actor.rest=actor.repath=actor.stagger=actor.recovery=0;actor.striking=false;actor.path.Clear();actor.root.position=V(actor.p);actor.root.rotation=Quaternion.Euler(0,e==null?0:e.yaw,0);
+    actor.callCooldown=0;actor.awareness=Awareness.Roam;actor.searchClock=actor.searchPause=actor.unreachable=0;actor.searchStep=0;actor.searchOrigin=actor.p;actor.goal=actor.p;actor.alert=actor.wind=actor.rest=actor.repath=actor.stagger=actor.recovery=0;actor.striking=false;actor.path.Clear();actor.root.position=V(actor.p);actor.root.rotation=Quaternion.Euler(0,e==null?0:e.yaw,0);
     if(actor.visual)actor.visual.Restore(actor.hp<=0);
    }
    hero.p=ResolveSolidPosition(new Vector2(s.x,s.z));if(Blocked(hero.p))hero.p=new Vector2(-12,-20);

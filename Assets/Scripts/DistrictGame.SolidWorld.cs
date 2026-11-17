@@ -25,14 +25,14 @@ namespace Askich {
    public PathNode(Vector2Int cell,int cost,int priority,int order){this.cell=cell;this.cost=cost;this.priority=priority;this.order=order;}
    public int CompareTo(PathNode other){int result=priority.CompareTo(other.priority);return result!=0?result:order.CompareTo(other.order);}
   }
-  List<Vector2> FindPath(Vector2 start,Vector2 end){
+  List<Vector2> FindPath(Vector2 start,Vector2 end,int maxVisited=12000){
    const float cellSize=.5f;var source=Vector2Int.RoundToInt(start/cellSize);var target=Vector2Int.RoundToInt(end/cellSize);
    var empty=new List<Vector2>();if(Blocked((Vector2)target*cellSize))return empty;
    var open=new SortedSet<PathNode>();var cost=new Dictionary<Vector2Int,int>();var previous=new Dictionary<Vector2Int,Vector2Int>();int order=0;
    int Distance(Vector2Int cell)=>Mathf.Abs(cell.x-target.x)+Mathf.Abs(cell.y-target.y);
    open.Add(new PathNode(source,0,Distance(source),order++));cost[source]=0;
    Vector2Int[] directions={Vector2Int.up,Vector2Int.right,Vector2Int.down,Vector2Int.left};
-   for(int visited=0;open.Count>0&&visited<12000;visited++){
+   for(int visited=0;open.Count>0&&visited<maxVisited;visited++){
     var node=open.Min;open.Remove(node);if(cost[node.cell]!=node.cost)continue;
     if(node.cell==target){var result=new List<Vector2>();var cell=target;while(cell!=source){result.Add((Vector2)cell*cellSize);cell=previous[cell];}result.Reverse();return result;}
     foreach(var direction in directions){var next=node.cell+direction;int steps=node.cost+1;if(cost.TryGetValue(next,out var known)&&known<=steps||Blocked((Vector2)next*cellSize)||Blocked(((Vector2)node.cell+(Vector2)next)*(.5f*cellSize)))continue;cost[next]=steps;previous[next]=node.cell;open.Add(new PathNode(next,steps,steps+Distance(next),order++));}

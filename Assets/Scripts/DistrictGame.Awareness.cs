@@ -16,17 +16,17 @@ namespace Askich {
     if(z.hp<=0||Vector2.Distance(z.p,source)>=radius*(z.id%3==1?.9f:z.id%3==2?1.16f:1))continue;
     // A visible target takes priority over distractions; hidden targets are never tracked.
     if(z.awareness==Awareness.Chase&&CanSeeHero(z))continue;
-    z.awareness=Awareness.Investigate;z.goal=source;z.searchOrigin=source;z.alert=14;z.repath=0;z.unreachable=0;
+    z.awareness=Awareness.Investigate;z.goal=source;z.searchOrigin=source;z.alert=14;z.repath=0;z.unreachable=0;z.searchClock=z.searchPause=0;z.searchStep=0;z.path.Clear();
    }
   }
-  void StartSearching(Person z){z.awareness=Awareness.Search;z.searchClock=6;z.path.Clear();z.alert=6;}
+  void StartSearching(Person z){z.awareness=Awareness.Search;z.searchClock=6;z.searchPause=.45f;z.searchStep=0;z.path.Clear();z.goal=z.p;z.unreachable=0;z.alert=6;}
   void ObserveEnemy(Person z,float dt){
    bool sees=CanSeeHero(z);
    if(sees){if(z.awareness!=Awareness.Chase&&z.callCooldown<=0){z.callCooldown=22;HearNoise(z.p,7.5f);if(z.visual)z.visual.AlertCall();}z.awareness=Awareness.Chase;z.goal=hero.p;z.searchOrigin=hero.p;z.alert=8;z.unreachable=0;return;}
    if(z.awareness==Awareness.Chase){z.awareness=Awareness.Investigate;z.goal=z.searchOrigin;z.alert=10;z.repath=0;}
    z.alert=Mathf.Max(0,z.alert-dt);
    if(z.awareness==Awareness.Search){
-    z.searchClock-=dt;z.root.Rotate(0,65*dt,0);
+    z.searchClock-=dt;
     if(z.searchClock<=0){z.awareness=Awareness.Roam;z.alert=0;z.path.Clear();}return;
    }
    if(z.awareness==Awareness.Investigate&&(Vector2.Distance(z.p,z.goal)<.9f||z.alert<=0||z.unreachable>2.5f))StartSearching(z);
@@ -41,7 +41,8 @@ namespace Askich {
     float distance=Vector2.Distance(z.p,hero.p);
     if(distance<(IsCrawler(z)?CrawlerRange:1.35f)&&z.rest<=0&&CanSeeHero(z)){BeginEnemyAttack(z);continue;}
     Vector2 old=z.p;
-    if(z.awareness==Awareness.Search||(z.awareness==Awareness.Chase&&distance<.9f)){Animate(z,Vector2.zero,true,0);continue;}
+    if(z.awareness==Awareness.Search){TickSearchMovement(z,dt);Animate(z,z.p-old,true,0);continue;}
+    if(z.awareness==Awareness.Chase&&distance<.9f){Animate(z,Vector2.zero,true,0);continue;}
     if(z.awareness==Awareness.Chase||z.awareness==Awareness.Investigate){
      if(z.repath<=0){z.path=FindPath(z.p,z.goal);z.repath=.65f+(z.id%5)*.08f;}
      if(z.path.Count>0){Vector2 target=z.path[0];if(Vector2.Distance(z.p,target)<.25f)z.path.RemoveAt(0);else z.p=MoveAmongActors(z,(target-z.p).normalized*dt*z.speed,true);}
