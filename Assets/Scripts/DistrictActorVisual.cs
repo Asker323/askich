@@ -153,7 +153,7 @@ namespace Askich {
   }
   public void AlertCall(){if(zombie&&vocal&&vocal.isActiveAndEnabled&&voices!=null&&voices.Length>0){vocal.PlayOneShot(voices[visualVariant%voices.Length],.8f);nextVoice=4;}}
   public void Hurt(){if(dead)return;hurtFlash=.14f;if(windowClimbPhase>=0)return;if(clips.ContainsKey("HitReact")){state=null;Play("HitReact",false,1.4f);actionRemaining=.26f;}}
-  public void Revive(){dead=false;hurtFlash=0;tintApplied=false;actionRemaining=0;state=null;Play(crawler?"Crawl":"Idle",true,crawler?0:1);}
+  public void Revive(){ResetStorageContact();dead=false;hurtFlash=0;tintApplied=false;actionRemaining=0;state=null;Play(crawler?"Crawl":"Idle",true,crawler?0:1);}
   public void Restore(bool corpse){Revive();if(!corpse)return;Die();var clip=animationPlayer[clips["Death"]];animationPlayer.Play(clips["Death"]);clip.time=clip.length;clip.speed=0;animationPlayer.Sample();}
   public void Die(){if(dead)return;dead=true;state=null;Play("Death",false,1);if(vocal)vocal.Stop();}
 #if UNITY_EDITOR || DEVELOPMENT_BUILD

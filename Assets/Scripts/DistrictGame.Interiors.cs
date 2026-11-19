@@ -22,11 +22,11 @@ namespace Askich {
    RefreshContainers(h);
   }
   void RefreshContainers(Home h){for(int i=0;i<3;i++)if(h.lids[i])PoseStorage(h,i,0,true);}
-  void BeginSearch(Home h,int slot){
+  void BeginSearch(Home h,int slot,bool preserveFacing=false){
    if(searchSlot==slot&&searchHome==h)return;
    searchHome=h;searchSlot=slot;searchTime=0;searchNoiseClock=0;heroVelocity=Vector2.zero;
    Vector2 direction=h.p+h.containers[slot]-hero.p;
-   if(direction.sqrMagnitude>.001f){face=direction.normalized;hero.root.rotation=Quaternion.LookRotation(V(face));}
+   if(direction.sqrMagnitude>.001f){face=direction.normalized;if(!preserveFacing)hero.root.rotation=Quaternion.LookRotation(V(face));}
    if(containerAudio)containerAudio.StartStorage(V(h.p+h.containers[slot],1),h.noise[slot]);SearchBeat();
   }
   int NearbyContainer(Home h){

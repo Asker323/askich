@@ -43,7 +43,7 @@ namespace Askich {
    h.taken[i]=true;progression.Gain(DistrictSkill.Agility,1.5f);findKind=(int)kind;findText=kind==DistrictItemKind.Empty?"Пусто":items[0].Empty?ItemNames[(int)kind]:"Нет места · оставлено: "+ItemNames[(int)kind];findUntil=Time.unscaledTime+3;
    if(containerAudio)containerAudio.Play(V(h.p+h.containers[i],1),h.noise[i],true);Save();
   }
-  void CancelSearch(){approachHome=null;searchSlot=-1;searchTime=0;searchNoiseClock=0;if(containerAudio)containerAudio.SetSearching(false);}
+  void CancelSearch(){approachHome=null;approachTurning=false;searchSlot=-1;searchTime=0;searchNoiseClock=0;if(containerAudio)containerAudio.SetSearching(false);}
   void SearchBeat(){if(searchSlot<0)return;Alert(searchHome.p+searchHome.containers[searchSlot],searchHome.noise[searchSlot]);if(containerAudio)containerAudio.Pulse();}
   void TickSearchNoise(float dt){if(searchSlot<0)return;searchNoiseClock+=dt;if(searchNoiseClock>=.75f){searchNoiseClock%=.75f;SearchBeat();}}
   bool TakeStoredItem(int store,int slot){
