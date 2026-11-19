@@ -24,7 +24,8 @@ namespace Askich {
    Check(NearbyContainer(h)==2&&hoveredStorage==1&&FocusedStorageSlot()==1,"mouse can select the farther of two reachable storage boxes");
    Check(storageCue&&storageCue.enabled,"reachable selected storage has a visible world outline");
    int sequence=strikeSequence;Point(1,true);yield return null;yield return null;
-   Check(searchSlot==1&&attack<=0&&strikeSequence==sequence,"left click starts selected search through Update without striking");
+   float approachDeadline=Time.time+3;while(approachHome!=null&&Time.time<approachDeadline)yield return null;
+   Check(searchSlot==1&&attack<=0&&strikeSequence==sequence,"left click starts selected search through Update without striking"+(searchSlot==1?"":" ["+notice+"; position="+hero.p+"; slot="+searchSlot+"]"));
    yield return new WaitForSeconds(.25f);
    Check(searchSlot==1&&searchTime>.2f&&!h.taken[1],"holding left mouse does not repeatedly restart or cancel search");Point(1);yield return null;
    yield return new WaitForEndOfFrame();var picture=ScreenCapture.CaptureScreenshotAsTexture();File.WriteAllBytes(Path.Combine(folder,"storage-focus-search.png"),picture.EncodeToPNG());Destroy(picture);
@@ -32,6 +33,7 @@ namespace Askich {
    Point(1,false,true);yield return null;yield return null;Check(pcAiming&&!storageCue.enabled,"aiming hides storage outline and reserves combat controls");
    yield return Click(1,true);Check(attack>0&&strikeSequence==sequence+1&&searchSlot<0,"aim plus left click attacks even when cursor is over storage");Point(1);yield return new WaitForSeconds(1.1f);
    paused=true;yield return null;yield return null;Check(!storageCue.enabled&&hoveredStorage<0,"pause hides outline and clears stale storage focus");paused=false;Point(1);yield return null;yield return null;
+   hero.p=h.p+new Vector2(.8f,1.9f);heroVelocity=Vector2.zero;yield return new WaitForSeconds(.3f);
    h.taken[1]=true;h.taken[2]=true;inventory.Container(16)[0]=new DistrictItem(DistrictItemKind.Food,1);inventory.Container(17)[0]=new DistrictItem(DistrictItemKind.Bandage,1);
    yield return Click(1);Check(suppliesOpen&&NearbyStore()==16&&openedStorage==16&&attack<=0,"clicked searched box opens its own inventory instead of nearer neighbour");
    Point(2);yield return null;yield return null;Check(NearbyStore()==16&&!storageCue.enabled,"moving cursor cannot switch the open storage inventory");
@@ -44,6 +46,7 @@ namespace Askich {
    mouse.MakeCurrent();InputSystem.QueueStateEvent(mouse,new MouseState{position=new Vector2(Screen.width-30,Screen.height/2)});yield return null;yield return null;
    Check(hoveredStorage<0&&FocusedStorageSlot()==2&&storageCue.enabled,"keyboard fallback highlights nearest reachable container when mouse is elsewhere");
    keyboard.MakeCurrent();InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.E));yield return null;yield return null;InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;
+   approachDeadline=Time.time+3;while(approachHome!=null&&Time.time<approachDeadline)yield return null;
    Check(searchSlot==2,"E still starts highlighted nearest-container search");
    InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.S));yield return new WaitForSeconds(.15f);InputSystem.QueueStateEvent(keyboard,new KeyboardState());yield return null;
    Check(searchSlot<0&&!h.taken[2],"movement interrupts mouse or keyboard search without revealing contents");

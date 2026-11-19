@@ -19,7 +19,7 @@ namespace Askich {
    if(!StorageReachable(home,slot)||medicalAction!=MedicalAction.None)return;
    if(searchSlot>=0){CancelSearch();return;}
    if(home.taken[slot]){openedStorage=homes.IndexOf(home)*3+slot;suppliesOpen=true;inventorySelection=-1;}
-   else BeginSearch(home,slot);
+   else ApproachStorage(home,slot);
   }
   void TickStoragePointer(){
    storageClickConsumed=false;hoveredStorage=StorageUnderPointer();

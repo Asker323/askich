@@ -64,7 +64,7 @@ namespace Askich {
    }
    // No world state changes until the complete snapshot has passed validation.
    RestoreBackExits(s.backDoors);RestoreFortifications(s.barricades,s.windowState);explorationFlags=s.exploration;RefreshExploration(true);
-   worldGeneration++;trainingRadio=false;journalOpen=false;ClearPcCombat();ClearStorageFocus();containerAudio.SetSearching(false);CancelMedical();suppliesOpen=false;throwCooldown=0;heroVelocity=Vector2.zero;heroStagger=0;searchSlot=-1;attack=0;damageDelay=0;radioOn=false;voice.Stop();staticSound.Stop();
+   worldGeneration++;approachHome=null;trainingRadio=false;journalOpen=false;ClearPcCombat();ClearStorageFocus();containerAudio.SetSearching(false);CancelMedical();suppliesOpen=false;throwCooldown=0;heroVelocity=Vector2.zero;heroStagger=0;searchSlot=-1;attack=0;damageDelay=0;radioOn=false;voice.Stop();staticSound.Stop();
    for(int n=0;n<homes.Count;n++){var h=homes[n];h.open=n<s.doors.Length&&s.doors[n];SnapDoor(h);for(int i=0;i<3;i++)h.taken[i]=n*3+i<s.taken.Length&&s.taken[n*3+i];RefreshContainers(h);}
    foreach(var actor in infected){
     var e=s.version>=2?Array.Find(s.enemies,v=>v.id==actor.id):null;
