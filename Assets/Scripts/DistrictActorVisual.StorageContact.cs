@@ -3,6 +3,8 @@ namespace Askich {
  public sealed partial class DistrictActorVisual {
   readonly Transform[] reachUpper=new Transform[2],reachLower=new Transform[2],reachHand=new Transform[2];
   Transform[] contactBones;Quaternion[] contactBase,contactOffsets;Vector3 contactHipOffset;float storedContactWeight;
+  float storageLift;public Transform StorageHand=>reachHand[1];
+  public void SetStorageLift(float value){storageLift=value;}
   Transform reachHips;bool contactWanted;Vector3 contactPoint;float contactWeight;
   void PrepareStorageContact(GameObject model){
    if(zombie)return;
@@ -11,7 +13,7 @@ namespace Askich {
     for(int i=0;i<2;i++){string side=i==0?"L":"R";if(bone.name=="UpperArm."+side)reachUpper[i]=bone;if(bone.name=="LowerArm."+side)reachLower[i]=bone;if(bone.name=="Hand."+side)reachHand[i]=bone;}
    }
   }
-  void ResetStorageContact(){contactWanted=false;contactWeight=storedContactWeight=0;}
+  void ResetStorageContact(){storageLift=0;contactWanted=false;contactWeight=storedContactWeight=0;}
   public void SetStorageContact(bool active,Vector3 point){contactWanted=active;if(active)contactPoint=point;}
   void ApplyStorageContact(float dt){
    if(zombie||!reachHips)return;
@@ -39,6 +41,7 @@ namespace Askich {
     var upper=reachUpper[i];var lower=reachLower[i];var hand=reachHand[i];if(!upper||!lower||!hand)continue;
     float phase=storageSearch*Mathf.PI*2/1.5f+i*Mathf.PI;
     var goal=contactPoint+transform.right*((i==0?-.14f:.14f)+Mathf.Sin(phase)*.025f)+Vector3.up*(.025f+.035f*(1+Mathf.Sin(phase)));
+    if(i==1)goal+=Vector3.up*(storageLift*.24f)-transform.forward*(storageLift*.12f);
     goal=Vector3.Lerp(hand.position,goal,weight);
     float a=Vector3.Distance(upper.position,lower.position),b=Vector3.Distance(lower.position,hand.position);
     Vector3 delta=goal-upper.position;float distance=Mathf.Clamp(delta.magnitude,.05f,a+b-.015f);Vector3 direction=delta.normalized;goal=upper.position+direction*distance;

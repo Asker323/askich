@@ -1,0 +1,17 @@
+PASS approach precedes rummaging and sound: 1
+PASS approach walks without teleporting: 1
+PASS search starts at the accessible front edge: 1
+PASS contact pose blends in: 1
+PASS hands reach the actual container height: 1
+PASS feet remain at ground level: 1
+PASS cancellation releases contact pose: 1
+PASS approach precedes rummaging and sound: 2
+PASS approach walks without teleporting: 2
+PASS search starts at the accessible front edge: 2
+PASS contact pose blends in: 2
+PASS hands reach the actual container height: 2
+PASS feet remain at ground level: 2
+PASS cancellation releases contact pose: 2
+PASS E cancels automatic approach before looting
+PASS blocked standing point rejects approach without crossing furniture
+PASS existing save loads after transient contact and approach state

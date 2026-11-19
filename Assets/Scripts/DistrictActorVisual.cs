@@ -105,7 +105,7 @@ namespace Askich {
   }
   static float LocomotionGrip(string key,float phase)=>key=="Run"?60+2*Mathf.Sin(phase*Mathf.PI*2-1):key=="Walk"?46+3*Mathf.Sin(phase*Mathf.PI*2-1):38;
   float LooseGrip=>windowClimbPhase>=0?0:provisionMode>0||searching?0:state=="Punch"?85:LocomotionGrip(state,state!=null&&clips.ContainsKey(state)?animationPlayer[clips[state]].normalizedTime:0);
-  void UpdateHands(float dt){if(!handSkin)return;float target=LooseGrip;void Set(int index,float value){if(index>=0)handSkin.SetBlendShapeWeight(index,Mathf.Lerp(handSkin.GetBlendShapeWeight(index),value,1-Mathf.Exp(-18*dt)));}Set(leftGrip,EquippedWeapon>0?100:target);Set(rightGrip,target);}
+  void UpdateHands(float dt){if(!handSkin)return;float target=LooseGrip;void Set(int index,float value){if(index>=0)handSkin.SetBlendShapeWeight(index,Mathf.Lerp(handSkin.GetBlendShapeWeight(index),value,1-Mathf.Exp(-18*dt)));}Set(leftGrip,EquippedWeapon>0?100:target);Set(rightGrip,storageLift>0?58:target);}
   public bool Equip(int weapon){bool changed=EquippedWeapon!=weapon;EquippedWeapon=weapon;if(nativeAxe)nativeAxe.SetActive(weapon==1);if(nativeSpear)nativeSpear.SetActive(weapon==2);if(handSkin&&leftGrip>=0&&(changed||weapon>0))handSkin.SetBlendShapeWeight(leftGrip,weapon>0?100:LooseGrip);return weapon==1&&nativeAxe||weapon==2&&nativeSpear;}
 
   void Play(string key,bool loop,float speed){

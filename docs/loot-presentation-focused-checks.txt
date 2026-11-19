@@ -1,0 +1,20 @@
+PASS early search neither displays a find nor grants it
+PASS final search phase displays a bandage before transfer
+PASS held find uses the actual bandage model shared with inventory artwork
+PASS visible find follows the animated hand
+PASS visible preview cannot grant or duplicate inventory contents
+PASS cancelling the visible preview grants no item
+PASS cancelled preview remains uncollected after reload
+PASS completed search transfers exactly one previewed item
+PASS repeated reveal does not duplicate the inspected item
+PASS completed transfer survives reload without a visual ghost
+PASS full pockets preview the find without claiming capacity
+PASS full pockets lower the inspected item back before completion
+PASS full pockets leave the actual item in its container
+PASS returned item persists after reload
+PASS freeing one slot permits a single later transfer
+PASS empty container never displays a fabricated find
+PASS empty search completes without an inventory reward
+PASS food uses its own tin model rather than a bandage placeholder
+PASS capacity preview preserves the existing free weapon-hand exception
+PASS death removes the transient held object without granting unfinished loot

@@ -1,0 +1,17 @@
+PASS facing away does not start rummage or its sound: 1
+PASS 180 degree turn advances gradually before search: 1
+PASS search starts facing the container: 1
+PASS contact reaches the working pose: 1
+PASS cancel stops sound immediately while posture starts releasing: 1
+PASS release completes in the normal idle animation: 1
+PASS facing away does not start rummage or its sound: 2
+PASS 180 degree turn advances gradually before search: 2
+PASS search starts facing the container: 2
+PASS contact reaches the working pose: 2
+PASS cancel stops sound immediately while posture starts releasing: 2
+PASS release completes in the normal idle animation: 2
+PASS keyboard movement interrupts search without waiting for the visual release
+PASS attack takes priority over the previous contact pose
+PASS completed search also returns to idle without a retained crouch
+PASS save remains loadable after turn and release transitions
+PASS loading clears an unfinished visual release instead of carrying its pose into another state

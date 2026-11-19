@@ -29,11 +29,11 @@ namespace Askich {
    else if(approachClock>4){CancelSearch();Say("Проход к ящику занят");}
   }
   void SetStorageContact(){
-   if(searchSlot<0){hero.visual.SetStorageContact(false,Vector3.zero);return;}
+   if(searchSlot<0){ClearLootPreview();hero.visual.SetStorageContact(false,Vector3.zero);return;}
    var h=searchHome;int i=searchSlot;
    // Contact stays on the accessible front edge rather than at the box centre.
    var point=h.drawers[i]?h.lids[i].position+new Vector3(0,.08f,-.2f):V(h.p+h.containers[i]+Vector2.down*.18f,h.storageRest[i].y+.015f);
-   hero.visual.SetStorageContact(true,point);
+   TickLootPreview(h,i);hero.visual.SetStorageContact(true,point);
   }
  }
 }

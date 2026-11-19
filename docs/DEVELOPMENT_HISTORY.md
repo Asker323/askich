@@ -1,6 +1,8 @@
 # Этапы разработки Zonbee
 
-Последний этап: [переходы обыска](STORAGE_TRANSITIONS.md).
+Последний этап: [находка в руке](LOOT_PRESENTATION.md).
+
+Предыдущий этап: [переходы обыска](STORAGE_TRANSITIONS.md).
 
 Предыдущий этап: [подход и контакт с контейнером](STORAGE_CONTACT.md).
 

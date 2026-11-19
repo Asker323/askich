@@ -16,7 +16,21 @@ namespace Askich {
    inventoryCamera.enabled=false;inventoryCamera.cullingMask=1<<31;inventoryCamera.clearFlags=CameraClearFlags.SolidColor;inventoryCamera.backgroundColor=Color.clear;inventoryCamera.orthographic=true;
    var key=new GameObject("Inventory studio key",typeof(Light));key.transform.SetParent(inventoryStage.transform,false);key.transform.rotation=Quaternion.Euler(35,-25,0);var light=key.GetComponent<Light>();light.type=LightType.Directional;light.intensity=1.4f;light.cullingMask=1<<31;
    for(int kind=1;kind<ItemNames.Length;kind++){
-    var root=new GameObject(ItemNames[kind]);root.transform.SetParent(inventoryStage.transform,false);
+    var root=MakeItemVisual(kind,inventoryStage.transform);
+    SetPortraitLayer(root);
+    inventoryIcons[kind]=CapturePortrait(root,128,128,.05f);
+    root.SetActive(false);Destroy(root);
+   }
+   bodyModel=Instantiate(Resources.Load<GameObject>("Survival/Human/Hero"),inventoryStage.transform,false);
+   var anim=bodyModel.GetComponentInChildren<Animation>();
+   Resources.Load<AnimationClip>("Survival/Human/Hero_Idle").SampleAnimation(anim.gameObject,0);
+   anim.enabled=false;
+   foreach(var bone in bodyModel.GetComponentsInChildren<Transform>(true))if(System.Array.IndexOf(new[]{"knife","woodenbat_barbed","woodenbat_saw","pistol","shotgun","guitar","smg","spear","rifle","axe"},bone.name.ToLowerInvariant())>=0)bone.gameObject.SetActive(false);
+   foreach(var skin in bodyModel.GetComponentsInChildren<SkinnedMeshRenderer>())skin.forceMatrixRecalculationPerRender=true;
+   SetPortraitLayer(bodyModel);
+  }
+  GameObject MakeItemVisual(int kind,Transform parent){
+    var root=new GameObject(ItemNames[kind]);root.transform.SetParent(parent,false);
     void Part(string name,Vector3 pos,Vector3 scale,Color color){Cube(name,pos,scale,color,root.transform);}
     if(kind>=14)MakeProgressionIcon(root.transform,kind);else if(kind>=11)MakeClothingIcon(root.transform,kind);
     else if(kind==9||kind==10){MakeWaterModel(root.transform);if(kind==10)foreach(var renderer in root.GetComponentsInChildren<Renderer>())renderer.sharedMaterial=Mat(new Color(.49f,.58f,.59f));}
@@ -42,17 +56,7 @@ namespace Askich {
     }else{
      for(int i=0;i<3;i++)Part("Pebble",new Vector3((i-1)*.15f,i%2*.1f,0),new Vector3(.22f,.16f,.18f),new Color(.44f,.45f,.4f));
     }
-    SetPortraitLayer(root);
-    inventoryIcons[kind]=CapturePortrait(root,128,128,.05f);
-    root.SetActive(false);Destroy(root);
-   }
-   bodyModel=Instantiate(Resources.Load<GameObject>("Survival/Human/Hero"),inventoryStage.transform,false);
-   var anim=bodyModel.GetComponentInChildren<Animation>();
-   Resources.Load<AnimationClip>("Survival/Human/Hero_Idle").SampleAnimation(anim.gameObject,0);
-   anim.enabled=false;
-   foreach(var bone in bodyModel.GetComponentsInChildren<Transform>(true))if(System.Array.IndexOf(new[]{"knife","woodenbat_barbed","woodenbat_saw","pistol","shotgun","guitar","smg","spear","rifle","axe"},bone.name.ToLowerInvariant())>=0)bone.gameObject.SetActive(false);
-   foreach(var skin in bodyModel.GetComponentsInChildren<SkinnedMeshRenderer>())skin.forceMatrixRecalculationPerRender=true;
-   SetPortraitLayer(bodyModel);
+   return root;
   }
   static void SetPortraitLayer(GameObject obj){foreach(var t in obj.GetComponentsInChildren<Transform>(true))t.gameObject.layer=31;}
   Texture2D CapturePortrait(GameObject target,int width,int height,float size){
