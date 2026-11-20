@@ -48,7 +48,7 @@ namespace Askich {
    }
    for(int n=0;n<3;n++)Cube("Distinct chipped plaster",V(h.p+new Vector2(HasHousePlan(id)?(n==2?2.9f:-3.4f+n*.55f):-2.9f+n*1.6f+id%3*.13f,3.81f),.6f+n*.22f),new Vector3(.3f+id%3*.1f,.15f,.02f),new Color(.29f,.30f,.26f));
    if(id%2==0){Cube("Front timber porch",V(h.p+Vector2.down*4.9f,.11f),new Vector3(2.5f,.16f,1.6f),new Color(.31f,.27f,.20f));for(int n=0;n<2;n++)Cube("House flower box",V(h.p+new Vector2(-3.1f+n*6.2f,-5.2f),.28f),new Vector3(1.1f,.4f,.55f),frame);}
-   else Cube("Old firewood rack",V(h.p+new Vector2(4.8f,1),.45f),new Vector3(.9f,.8f,2.4f),new Color(.32f,.25f,.18f));
+   else Cube("Old firewood rack",V(h.p+new Vector2(5.2f,-2.7f),.45f),new Vector3(.9f,.8f,1.8f),new Color(.32f,.25f,.18f));
   }
   void BuildWorldLife(){
    var station=homes[StationHome];station.note="ЗАПИСКА МЕХАНИКА: «Насосы обесточены. Аварийные лампы держит аккумулятор. Бензин увезли. Ключ оставил у прилавка, руководство — на столе. На верстаке лежит двигатель: новичок только испортит резьбу. Сначала прочти хотя бы первую главу. Радио у связиста иногда ловит учебную передачу»";
@@ -62,14 +62,12 @@ namespace Askich {
    }
    var forecourtLight=DistrictAtmosphere.Point("Station canopy emergency light",new Vector3(96,3,4),new Color(1,.77f,.45f),1.25f,10);forecourtLight.enabled=false;worldNightLights.Add(forecourtLight);
    var shopLight=DistrictAtmosphere.Point("Station shop emergency light",V(station.p,2.3f),new Color(.85f,.83f,.67f),.65f,6);shopLight.enabled=false;worldNightLights.Add(shopLight);
-   Cube("Station cashier counter",V(station.p+new Vector2(2,0),.6f),new Vector3(1.2f,1.1f,2),new Color(.33f,.31f,.24f));Cube("Dusty cash register",V(station.p+new Vector2(2,0),1.3f),new Vector3(.6f,.35f,.55f),new Color(.24f,.27f,.25f));
-   for(int shelf=0;shelf<3;shelf++){Cube("Station shelf",V(station.p+new Vector2(-3.5f,1),.55f+shelf*.5f),new Vector3(.6f,.07f,2),new Color(.30f,.34f,.31f));for(int item=0;item<3;item++)Cube("Last dusty packets",V(station.p+new Vector2(-3.5f,.4f+item*.5f),.7f+shelf*.5f),new Vector3(.22f,.23f,.17f),HouseColours[(shelf+item)%6]);}
    Cube("Engine stand",V(enginePosition,.65f),new Vector3(1.15f,.1f,.9f),new Color(.25f,.29f,.27f));for(int side=-1;side<=1;side+=2)Cube("Engine stand leg",V(enginePosition+new Vector2(side*.45f,0),.33f),new Vector3(.08f,.66f,.7f),new Color(.25f,.29f,.27f));
    engineModel=new GameObject("Salvageable engine");engineModel.transform.position=V(enginePosition,.85f);Cube("Rusty engine block",Vector3.zero,new Vector3(.8f,.38f,.5f),new Color(.32f,.29f,.23f),engineModel.transform);for(int i=0;i<4;i++)Cube("Cylinder head",new Vector3(-.28f+i*.18f,.23f,0),new Vector3(.12f,.16f,.3f),new Color(.39f,.41f,.36f),engineModel.transform);
    barriers.Add(new Barrier{rect=new Rect(enginePosition-new Vector2(.5f,.4f),new Vector2(1,.8f))});
    AddLifeFind(station.p+new Vector2(-2,0),.83f,"Руководство по механике",new[]{Ingredient(DistrictItemKind.MechanicsBook,1)});
-   AddLifeFind(homes[4].p+new Vector2(-2,0),.83f,"Книга «Домашняя мастерская»",new[]{Ingredient(DistrictItemKind.CraftBook,1)});
-   AddLifeFind(station.p+new Vector2(2,1),1.2f,"Гаечный ключ",new[]{Ingredient(DistrictItemKind.Wrench,1)});
+   AddLifeFind(homes[6].p+new Vector2(-2,0),.83f,"Книга «Домашняя мастерская»",new[]{Ingredient(DistrictItemKind.CraftBook,1)});
+   AddLifeFind(station.p+new Vector2(2,-1.9f),1.14f,"Гаечный ключ",new[]{Ingredient(DistrictItemKind.Wrench,1)});
    AddLifeFind(new Vector2(103,7),.13f,"Связка досок",new[]{Ingredient(DistrictItemKind.Wood,4)});
    Cube("Station offcut crate",new Vector3(103,.2f,10),new Vector3(.8f,.35f,.7f),new Color(.34f,.28f,.19f));
    AddLifeFind(new Vector2(103,10),.4f,"Ящик обрезков",new[]{Ingredient(DistrictItemKind.Scrap,3),Ingredient(DistrictItemKind.Wire,2),Ingredient(DistrictItemKind.Cloth,2)});

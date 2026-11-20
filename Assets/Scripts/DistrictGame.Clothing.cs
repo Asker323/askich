@@ -1,11 +1,11 @@
 using UnityEngine;
 namespace Askich {
  public sealed partial class DistrictGame {
-  readonly Vector2[] clothingPositions={new Vector2(-14.8f,-11.7f),new Vector2(9.4f,-10.8f),new Vector2(35,-34)};
+  readonly Vector2[] clothingPositions={new Vector2(-13.5f,-13.05f),new Vector2(-38.2f,37.2f),new Vector2(95,7.2f)};
   readonly GameObject[] clothingModels=new GameObject[3];
   static Rect ClothingSlot(int index)=>new Rect(322,193+index*81,60,60);
   int ClothingTarget(Vector2 p){for(int i=0;i<3;i++)if(ClothingSlot(i).Contains(p))return 11+i;return -1;}
-  void BuildClothingFinds(){for(int i=0;i<3;i++){var obj=new GameObject(ItemNames[11+i]+" to find");obj.transform.position=V(clothingPositions[i],.6f);MakeClothingIcon(obj.transform,11+i);clothingModels[i]=obj;}}
+  void BuildClothingFinds(){for(int i=0;i<3;i++){var obj=new GameObject(ItemNames[11+i]+" to find");obj.transform.position=V(clothingPositions[i],i==2?.14f:.25f);MakeClothingIcon(obj.transform,11+i);if(i<2)obj.transform.rotation=Quaternion.Euler(90,0,i==0?15:-12);clothingModels[i]=obj;}}
   void MakeClothingIcon(Transform root,int kind){
    var color=kind==11?new Color(.31f,.37f,.32f):kind==12?new Color(.26f,.31f,.35f):new Color(.25f,.23f,.20f);
    if(kind==11){Cube("Shirt body",Vector3.zero,new Vector3(.38f,.48f,.08f),color,root);for(int side=-1;side<=1;side+=2)Cube("Short sleeve",new Vector3(side*.24f,.12f,0),new Vector3(.18f,.2f,.08f),color,root).transform.localRotation=Quaternion.Euler(0,0,-side*20);}

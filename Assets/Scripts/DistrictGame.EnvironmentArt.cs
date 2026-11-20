@@ -18,15 +18,15 @@ namespace Askich {
     Cube("Interior timber skirting north",V(h.p+Vector2.up*3.78f,.25f),new Vector3(7.6f,.18f,.07f),wood);
     Cube("Interior timber skirting east",V(h.p+Vector2.right*3.78f,.25f),new Vector3(.07f,.18f,7.6f),wood);
     for(int side=-1;side<=1;side+=2){Cube("Interior timber skirting front",V(h.p+new Vector2(side*2.55f,-3.78f),.25f),new Vector3(2.5f,.18f,.07f),wood);}
-    for(int x=-1;x<=1;x+=2)for(int z=-1;z<=1;z+=2)Cube("Table timber leg",V(h.p+new Vector2(-2+x*.64f,z*.49f),.40f),new Vector3(.11f,.48f,.11f),wood);
-    Cube("Table timber apron",V(h.p+new Vector2(-2,0),.59f),new Vector3(1.4f,.12f,1.1f),wood);
+    for(int x=-1;x<=1;x+=2)for(int z=-1;z<=1;z+=2)Cube("Table timber leg",V(h.p+new Vector2(-2+x*.64f,-.2f+z*.24f),.40f),new Vector3(.11f,.48f,.11f),wood);
+    Cube("Table timber apron",V(h.p+new Vector2(-2,-.2f),.59f),new Vector3(1.4f,.12f,.6f),wood);
    }
   }
   void BuildFrontFacade(Home h,int id,Color tint){
    Vector2 p=h.p;
    for(int side=-1;side<=1;side+=2){
     float x=side*2.5f;
-    if(id==5||id==6){
+    if(IsCuratedHome(id)){
      // Keep the full solid footprint: these are fixed windows, not extra exits.
      Wall("Front window sill wall",p+new Vector2(x,-4),new Vector2(3,.3f),.8f,tint,h,true).soundLoss=2;
      for(int edge=-1;edge<=1;edge+=2)Wall("Front window pier wall",p+new Vector2(x+edge*1.075f,-4),new Vector2(.85f,.3f),2.8f,tint,h,true);

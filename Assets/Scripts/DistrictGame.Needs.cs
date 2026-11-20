@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Askich {
  public sealed partial class DistrictGame {
   float nourishment=70,hydration=60,tiredness=15;
-  readonly Vector2[] waterPositions={new Vector2(-9,-11.7f),new Vector2(14,-13.8f),new Vector2(99,41)};
+  readonly Vector2[] waterPositions={new Vector2(-8.6f,-13.8f),new Vector2(-32.6f,34.2f),new Vector2(99,41)};
   readonly bool[] waterTaken=new bool[3];
   readonly List<GameObject> waterModels=new List<GameObject>();
   static readonly Rect RestButton=new Rect(35,310,260,54);

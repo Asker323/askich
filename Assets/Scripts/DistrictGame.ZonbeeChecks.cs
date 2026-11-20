@@ -21,8 +21,8 @@ namespace Askich {
    Check(stopped.x<=table.rect.xMin+.01f&&stopped.x>point.x,"large movement step cannot tunnel through table");
    Check(SolidBlocked(table.rect.center),"table footprint blocks the survivor body");
    var fixedPosition=ResolveSolidPosition(table.rect.center);Check(!Blocked(fixedPosition)&&RoomAt(fixedPosition)==RoomAt(table.rect.center),"legacy position inside furniture is repaired within its original room");
-   Check(Sight(table.rect.center+Vector2.down,table.rect.center+Vector2.up),"low furniture does not falsely block head-height sight");
-   foreach(var home in homes){home.open=true;SnapDoor(home);for(int slot=0;slot<3;slot++){
+   Check(Sight(table.rect.center+Vector2.left,table.rect.center+Vector2.right),"low furniture does not falsely block head-height sight");
+   foreach(var home in homes.Where(h=>h.built)){home.open=true;SnapDoor(home);for(int slot=0;slot<3;slot++){
     Check(ContainerReachable(home,slot),"reachable container after solid furniture: "+homes.IndexOf(home)+" / "+slot);
    }}
    hero.p=new Vector2(-24,-24);hero.root.position=V(hero.p);progression.Data.minute=990;noticeTime=0;showMap=showHelp=false;

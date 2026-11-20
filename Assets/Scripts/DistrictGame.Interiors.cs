@@ -12,13 +12,13 @@ namespace Askich {
     h.containers=new[]{new Vector2(2,-1.9f),new Vector2(2,2.4f),new Vector2(0,2.4f)};
     h.labels=new[]{"Ящик с инструментами","Кухонный ящик","Дорожная аптечка"};
     h.seconds=new[]{3.4f,2.2f,1.3f};h.noise=new[]{13f,6f,3f};
-    h.note="ЗАПИСКА НИНЫ: «Саша велел оставить приёмник на этой частоте. Ключи сняли с крючков, сумку бросили. Взяли только документы. Топор заедает в железном ящике у кровати — не греми. Анна через улицу ещё перевязывала людей. Потом все шли к башне»";
+    h.note="ЗАПИСКА НИНЫ: «Саша велел оставить приёмник на этой частоте. Ключи сняли с крючков, сумку бросили. Взяли только документы. Топор заедает в железном ящике у кровати — не греми. Анна в доме на северо-западе ещё перевязывала людей. Потом все шли к башне»";
    }else if(id==6){
-    h.title="Временный медпункт";h.labels=new[]{"Перевязочный ящик","Медицинская сумка","Опустевший шкаф"};
+    h.title="Дом фельдшера";h.labels=new[]{"Перевязочный ящик","Медицинская сумка","Опустевший шкаф"};
     h.seconds=new[]{2.1f,1.3f,2.8f};h.noise=new[]{5f,3f,9f};
     h.note="ЗАПИСКА АННЫ: «Остались только бинты. Антибиотики увезли вчера. Нина и Саша ушли к башне, я задержалась с последним пациентом. Если придёшь позже — не ищи нас здесь. Не включай соседское радио надолго»";
    }
-   ConfigureStorage(h,id);for(int i=0;i<3;i++)BuildStorageModel(h,id,i);
+   if(id==6||id==StationHome)h.containers=new[]{new Vector2(2,-1.9f),new Vector2(2,2.4f),new Vector2(0,2.4f)};ConfigureStorage(h,id);for(int i=0;i<3;i++)BuildStorageModel(h,id,i);
    RefreshContainers(h);
   }
   void RefreshContainers(Home h){for(int i=0;i<3;i++)if(h.lids[i])PoseStorage(h,i,0,true);}
@@ -41,6 +41,7 @@ namespace Askich {
   }
   void DrawInteriorHint(){
    if(current==null)return;
+   var tv=NearbyTelevision();if(tv!=null){GUI.Label(new Rect(35,130,520,30),tv.on?"E · выключить телевизор":"E · включить телевизор",small);return;}
 
    int i=FocusedStorageSlot();if(i>=0){
     if(searchSlot<0){GUI.Label(new Rect(35,130,520,30),"E · "+current.labels[i],small);if(!current.taken[i])DrawSearchRisk(new Rect(35,160,42,18),current.noise[i],false);}return;

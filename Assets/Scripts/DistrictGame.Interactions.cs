@@ -19,19 +19,19 @@ namespace Askich {
    h.cut.Add(Cube("Door frame lintel",V(point,2.56f),new Vector3(2.2f,.14f,.24f),new Color(.42f,.43f,.36f)));
    SnapDoor(h);
   }
-  void SnapDoor(Home h){
+  void SnapDoor(Home h){if(!h.built)return;
    h.doorHeld=false;h.doorAngle=h.open?100:0;
    h.door.SetActive(true);
    h.door.transform.localRotation=Quaternion.Euler(0,-h.doorAngle,0);
    h.gate.active=!h.open;
   }
-  bool DoorwayOccupied(Home h){
+  bool DoorwayOccupied(Home h){if(!h.built)return false;
    var rect=new Rect(h.gate.rect.x-.28f,h.gate.rect.y-.28f,h.gate.rect.width+.56f,h.gate.rect.height+.56f);
    if(rect.Contains(hero.p))return true;
    return infected.Exists(z=>z.hp>0&&rect.Contains(z.p));
   }
   void TickInteractions(float dt){
-   foreach(var h in homes){
+   foreach(var h in homes){if(!h.built)continue;
     bool occupied=DoorwayOccupied(h);
     bool held=!h.open&&occupied;
     if(held&&!h.doorHeld&&Vector2.Distance(hero.p,h.p+Vector2.down*4)<3)Say("Проём занят. Отойди или оттесни заражённого.");

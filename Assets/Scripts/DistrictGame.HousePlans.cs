@@ -4,12 +4,12 @@ namespace Askich {
  public sealed partial class DistrictGame {
   sealed class BackExit {public GameObject[] boardArt;public int boards;public Home home;public int bit;public bool open;public float angle;public Barrier gate;public Transform leaf;public Vector2 p;}
   readonly List<BackExit> backExits=new List<BackExit>();
-  static bool HasHousePlan(int id)=>id==4||id==8;
+  static bool HasHousePlan(int id)=>id==5||id==6;
   void BuildNorthWall(Home h,int id,Color tint){
    if(!HasHousePlan(id)){Wall("North wall",h.p+Vector2.up*4,new Vector2(8,.3f),2.8f,tint);return;}
    for(int side=-1;side<=1;side+=2)Wall("Rear wall section",h.p+new Vector2(side*2.65f,4),new Vector2(2.7f,.3f),2.8f,tint);
    Cube("Rear door lintel",V(h.p+Vector2.up*4,2.66f),new Vector3(2.6f,.28f,.3f),tint);
-   var exit=new BackExit{home=h,bit=id==4?1:2,p=h.p+Vector2.up*4};exit.gate=new Barrier{soundLoss=3,rect=new Rect(exit.p-new Vector2(1.3f,.2f),new Vector2(2.6f,.4f))};barriers.Add(exit.gate);
+   var exit=new BackExit{home=h,bit=id==5?1:2,p=h.p+Vector2.up*4};exit.gate=new Barrier{soundLoss=3,rect=new Rect(exit.p-new Vector2(1.3f,.2f),new Vector2(2.6f,.4f))};barriers.Add(exit.gate);
    exit.leaf=new GameObject("Back door hinge").transform;exit.leaf.position=V(exit.p+Vector2.right*1.3f);
    Color wood=new Color(.28f,.31f,.25f);Cube("Back door leaf",new Vector3(-1.3f,1.2f,0),new Vector3(2.6f,2.4f,.13f),wood,exit.leaf);
    for(int n=0;n<6;n++)Cube("Back door plank seam",new Vector3(-2.4f+n*.43f,1.2f,-.075f),new Vector3(.025f,2.25f,.015f),wood*.7f,exit.leaf);
@@ -18,7 +18,7 @@ namespace Askich {
    Cube("Back doorstep",V(exit.p+Vector2.up*.55f,.08f),new Vector3(2.8f,.16f,1.1f),new Color(.43f,.43f,.36f));Cube("Back yard worn path",V(exit.p+Vector2.up*2,.012f),new Vector3(1.4f,.025f,2.5f),new Color(.34f,.31f,.23f));backExits.Add(exit);BuildDoorBoards(exit);
   }
   void Partition(Home h,string name,Vector2 local,Vector2 size,Color tint){
-   var p=h.p+local;barriers.Add(new Barrier{rect=new Rect(p-size/2,size)});
+   var p=h.p+local;barriers.Add(new Barrier{soundLoss=4,rect=new Rect(p-size/2,size)});
    Cube(name+" lower wall",V(p,.47f),new Vector3(size.x,.94f,size.y),tint);
    h.cut.Add(Cube(name+" upper wall",V(p,1.75f),new Vector3(size.x,1.62f,size.y),tint));
    Cube(name+" skirting",V(p,.19f),new Vector3(size.x+.035f,.13f,size.y+.035f),tint*.65f);

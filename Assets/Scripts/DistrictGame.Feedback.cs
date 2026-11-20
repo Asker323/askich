@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Askich {
  public sealed partial class DistrictGame {
   GroundSound SurfaceAt(Vector2 position){
-   for(int i=0;i<homes.Count;i++)if(Mathf.Abs(position.x-homes[i].p.x)<3.85f&&Mathf.Abs(position.y-homes[i].p.y)<3.85f)return i==6?GroundSound.Tile:GroundSound.Wood;
+   for(int i=0;i<homes.Count;i++)if(homes[i].built&&Mathf.Abs(position.x-homes[i].p.x)<3.85f&&Mathf.Abs(position.y-homes[i].p.y)<3.85f)return i==6?GroundSound.Tile:GroundSound.Wood;
    for(int i=-24;i<=24;i+=24)if(Mathf.Abs(position.y-i)<3.5f||(position.x<60&&Mathf.Abs(position.x-i)<3.5f))return GroundSound.Asphalt;
    if(new Rect(91,31,20,16).Contains(position))return GroundSound.Asphalt;
    return GroundSound.Grass;

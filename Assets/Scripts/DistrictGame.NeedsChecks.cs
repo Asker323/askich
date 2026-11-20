@@ -33,7 +33,7 @@ namespace Askich {
    check(tiredness<36&&StaminaRecovery>.7f,"completed rest reduces fatigue and restores recovery");
    Save();float saved=hydration;nourishment=0;hydration=0;tiredness=100;
    check(Load()&&Mathf.Abs(hydration-saved)<.01f&&inventory.Count(DistrictItemKind.Water)==2,"needs and partial water bottle persist together");
-   string snapshot=File.ReadAllText(SavePath);var old=JsonUtility.FromJson<SaveData>(snapshot);old.version=5;File.WriteAllText(SavePath,JsonUtility.ToJson(old));
+   string snapshot=File.ReadAllText(SavePath);var old=JsonUtility.FromJson<SaveData>(snapshot);old.version=5;PopulateLegacyTestEnemies(old);File.WriteAllText(SavePath,JsonUtility.ToJson(old));
    check(Load()&&nourishment==70&&hydration==60&&tiredness==15,"v5 saves migrate with healthy starting needs");
    var bad=JsonUtility.FromJson<SaveData>(snapshot);bad.hydration=float.NaN;File.WriteAllText(SavePath,JsonUtility.ToJson(bad));File.WriteAllText(SavePath+".bak","broken");saved=hydration;
    check(!Load()&&hydration==saved,"invalid needs are rejected before world mutation");

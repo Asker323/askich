@@ -1,0 +1,6 @@
+Buildings: 22 -> 3
+Infected: 39 -> 6
+Renderers after initial frame: 1576
+Movement prop records: 269
+Wall/door barriers: 76
+No measured FPS claim.

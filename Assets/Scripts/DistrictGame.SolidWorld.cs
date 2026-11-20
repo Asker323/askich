@@ -44,7 +44,7 @@ namespace Askich {
    for(int x=-3;x<=3;x++)for(int z=-3;z<=3;z++){var approach=(Vector2)Vector2Int.RoundToInt(target*2)*.5f+new Vector2(x,z)*.5f;if(Vector2.Distance(approach,target)>=1.6f||Blocked(approach)||!Sight(approach,target))continue;if(FindPath(home.p+Vector2.down*5,approach).Count>0)return true;}
    return false;
   }
-  Home RoomAt(Vector2 p)=>homes.Find(h=>Mathf.Abs(p.x-h.p.x)<3.8f&&Mathf.Abs(p.y-h.p.y)<3.8f);
+  Home RoomAt(Vector2 p)=>homes.Find(h=>h.built&&Mathf.Abs(p.x-h.p.x)<3.8f&&Mathf.Abs(p.y-h.p.y)<3.8f);
   Vector2 ResolveSolidPosition(Vector2 position){
    position=ResolveStreetPosition(position);if(!Blocked(position))return position;var room=RoomAt(position);
    for(float radius=.2f;radius<=4;radius+=.2f)for(int i=0;i<32;i++){float angle=i*Mathf.PI/16;var candidate=position+new Vector2(Mathf.Cos(angle),Mathf.Sin(angle))*radius;if(RoomAt(candidate)==room&&!Blocked(candidate))return candidate;}

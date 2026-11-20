@@ -1,0 +1,35 @@
+PASS two new exits preserve all existing home identities
+PASS clear rear approach and solid closed door: 5
+PASS real E begins physical door swing: 5
+PASS pause freezes rear door: 5
+PASS open rear doorway is traversable: 5
+PASS rear entrance reaches living space with front door closed: 5
+PASS rear entrance reaches storage 5 / 0
+PASS rear entrance reaches storage 5 / 1
+PASS rear entrance reaches storage 5 / 2
+PASS body can move through the open exit: 5
+PASS occupied rear door cannot close on survivor: 5
+PASS occupied rear exit saves safely open: 5
+PASS closing rear door restores collision: 5
+PASS old position in a new partition is repaired within its own home: 5
+PASS clear rear approach and solid closed door: 6
+PASS real E begins physical door swing: 6
+PASS pause freezes rear door: 6
+PASS open rear doorway is traversable: 6
+PASS rear entrance reaches living space with front door closed: 6
+PASS rear entrance reaches storage 6 / 0
+PASS rear entrance reaches storage 6 / 1
+PASS rear entrance reaches storage 6 / 2
+PASS body can move through the open exit: 6
+PASS occupied rear door cannot close on survivor: 6
+PASS occupied rear exit saves safely open: 6
+PASS closing rear door restores collision: 6
+PASS old position in a new partition is repaired within its own home: 6
+PASS living infected navigates through rear doorway while front is closed
+PASS family bedroom wall blocks sight while its doorway remains open
+PASS carpenter partition has a distinct central passage
+PASS nearer kitchen storage retains E priority over rear exit
+PASS both rear exits restore their open state from save
+PASS old v9 saves without rear-door state load with closed new exits
+PASS unknown rear-door state rejected before changing the world
+PASS valid household snapshot reloads after rejection

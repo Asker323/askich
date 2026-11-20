@@ -34,7 +34,7 @@ namespace Askich {
    hero.p=homes[5].p+new Vector2(2,1);Save();string snapshot=File.ReadAllText(SavePath);
    inventory.Load(new DistrictInventoryData());
    check(Load()&&inventory.Data.containers.Find(c=>c.index==15).items[0].kind==1&&alcoholDoses==2,"v5 round trip preserves container stash, bag and partial bottle");
-   var old=JsonUtility.FromJson<SaveData>(snapshot);old.version=4;old.food=100;old.bandages=80;old.alcohol=11;old.sterile=12;old.stones=25;old.weapon=2;
+   var old=JsonUtility.FromJson<SaveData>(snapshot);old.version=4;PopulateLegacyTestEnemies(old);old.food=100;old.bandages=80;old.alcohol=11;old.sterile=12;old.stones=25;old.weapon=2;
    File.WriteAllText(SavePath,JsonUtility.ToJson(old));check(Load()&&weapon==2&&inventory.Data.overflow.Count>0,"large old inventory migrates with recoverable overflow");
    int Total(DistrictItemKind kind){int n=inventory.Count(kind);foreach(var item in inventory.Data.overflow)if(item.kind==(int)kind)n+=item.amount;return n;}
    check(Total(DistrictItemKind.Food)==100&&Total(DistrictItemKind.Bandage)==80&&Total(DistrictItemKind.Alcohol)==11&&Total(DistrictItemKind.Sterile)==12&&Total(DistrictItemKind.Stone)==25,"migration preserves every legacy item and alcohol dose");

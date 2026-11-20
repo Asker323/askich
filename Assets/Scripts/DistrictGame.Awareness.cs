@@ -3,7 +3,7 @@ namespace Askich {
  public sealed partial class DistrictGame {
   enum Awareness {Roam,Investigate,Chase,Search}
   static float LegacyEnemyHealth(int id)=>id%3==1?90:id%3==2?40:65;
-  static float EnemyDamage(Person z)=>z.id%3==1?34:z.id%3==2?20:26;
+  static float EnemyDamage(Person z)=>z.id%3==1?44:z.id%3==2?28:34;
   bool CanSeeHero(Person z){
    Vector2 offset=hero.p-z.p;float distance=offset.magnitude;
    float range=Mathf.Lerp(crouching?2.8f:5.5f,crouching?4:11,atmosphere.Daylight);

@@ -14,10 +14,10 @@ namespace Askich {
   MedicalAction medicalAction;
   static readonly Rect InventoryButton=new Rect(810,475,200,65),SneakButton=new Rect(810,395,200,65),ThrowButton=new Rect(810,315,200,65);
   void BuildSurvivalSupplies(){
-   AddSupply(new Vector2(14,-13),0,"Этиловый спирт · 3 дозы");
+   AddSupply(homes[6].p+new Vector2(2,-1),0,"Этиловый спирт · 3 дозы");
    AddSupply(new Vector2(-15,-14),0,"Этиловый спирт · 3 дозы");
    AddSupply(new Vector2(99,43),0,"Этиловый спирт · 3 дозы");
-   AddSupply(new Vector2(9,-14),1,"Перевязочный набор · 2 бинта");
+   AddSupply(homes[6].p+new Vector2(-1.6f,-.65f),1,"Перевязочный набор · 2 бинта");
    AddSupply(new Vector2(101,43),1,"Перевязочный набор · 2 бинта");
    AddSupply(new Vector2(-14,-20),2,"Камни · 3 штуки");
    AddSupply(new Vector2(61,0),2,"Камни · 3 штуки");

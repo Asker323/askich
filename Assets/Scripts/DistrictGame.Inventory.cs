@@ -45,7 +45,7 @@ namespace Askich {
    Cube("Handle",new Vector3(0,.32f,0),new Vector3(.18f,.05f,.06f),new Color(.13f,.16f,.17f),root.transform);
    return root;
   }
-  void BuildBackpackFind(){backpackFind=MakeBackpack("School backpack to find",V(backpackPosition,.7f));}
+  void BuildBackpackFind(){backpackFind=MakeBackpack("School backpack to find",V(backpackPosition,1.05f));}
   bool UseBackpackFind(){
    if(inventory.Data.bagFound||Vector2.Distance(hero.p,backpackPosition)>=1.25f||!Sight(hero.p,backpackPosition))return false;
    if(!inventory.TryAdd(DistrictItemKind.Backpack,1)){Say("Освободи ячейку для рюкзака.");return true;}
@@ -57,7 +57,7 @@ namespace Askich {
    if(backpackFind)backpackFind.SetActive(!inventory.Data.bagFound);
   }
   int NearbyStore(){
-   if(current==null)return -1;
+   if(current==null||!current.built)return -1;
    if(suppliesOpen&&openedStorage>=0){var home=homes[openedStorage/3];int slot=openedStorage%3;return home.taken[slot]&&StorageReachable(home,slot)?openedStorage:-1;}
    int index=FocusedStorageSlot();
    return index>=0&&current.taken[index]?homes.IndexOf(current)*3+index:-1;

@@ -1,0 +1,17 @@
+PASS only one of three buildings contains a weapon
+PASS kitchen drawers never contain weapons or bandages
+PASS clinic storage contains medical supplies
+PASS unarmed survivor can carry found tool directly in hand
+PASS full pockets leave discovered axe in actual storage
+PASS repeated interaction cannot duplicate discovered loot
+PASS uncollected loot persists with searched state
+PASS failed transfer does not consume storage item
+PASS freeing pocket permits one atomic transfer
+PASS taken item cannot respawn after reload
+PASS E cancels search without revealing items and stops sound immediately
+PASS ongoing search can attract an enemy arriving after the initial noise
+PASS quiet medical search completes through real Update
+PASS clicking storage icon selects the real stored item
+PASS Take button transfers selected item through graphical input
+PASS Take all button merges stored supplies without replacing pockets
+PASS walking away prevents remote storage transfer

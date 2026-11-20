@@ -14,7 +14,7 @@ namespace Askich {
    var sill=Wall("Window sill wall",h.p+new Vector2(4,1),new Vector2(.3f,2),.8f,tint);sill.blocksSight=false;
    Cube("Window upper wall",V(h.p+new Vector2(4,1),2.50f),new Vector3(.3f,.60f,2),tint);
    var w=new HouseWindow{home=h,sill=sill,p=h.p+new Vector2(4,1)};w.pane=new Barrier{soundLoss=2,rect=new Rect(w.p-new Vector2(.15f,1),new Vector2(.3f,2))};barriers.Add(w.pane);
-   var dressing=new GameObject("Detailed domestic window");dressing.transform.position=V(h.p+new Vector2(4,0));w.art=dressing.AddComponent<DistrictWindowArt>();w.art.Build(id==8);w.leaf=w.art.Leaf;w.glass=w.art.Glass;houseWindows.Add(w);
+   var dressing=new GameObject("Detailed domestic window");dressing.transform.position=V(h.p+new Vector2(4,0));w.art=dressing.AddComponent<DistrictWindowArt>();w.art.Build(id==6);w.leaf=w.art.Leaf;w.glass=w.art.Glass;houseWindows.Add(w);
   }
   void BuildDoorBoards(BackExit e){e.boardArt=new GameObject[2];for(int i=0;i<2;i++){var board=Cube("Removable back door barricade",V(e.p+Vector2.down*.15f,.8f+i*.7f),new Vector3(2.85f,.22f,.10f),new Color(.35f,.27f,.18f));board.transform.rotation=Quaternion.Euler(0,0,i==0?8:-8);board.SetActive(false);e.boardArt[i]=board;}}
   void RefreshBoards(BackExit e){foreach(var art in e.boardArt)art.SetActive(e.boards>0);if(e.boards>0){e.open=false;e.angle=0;e.gate.active=true;e.leaf.rotation=Quaternion.identity;}}
@@ -27,7 +27,7 @@ namespace Askich {
    if(!glassBreak){const int rate=22050;var data=new float[rate/2];var random=new System.Random(422);for(int i=0;i<data.Length;i++){float t=(float)i/rate;data[i]=((float)random.NextDouble()*2-1)*Mathf.Exp(-t*14)*.55f+Mathf.Sin(t*8700)*Mathf.Exp(-t*25)*.12f;}glassBreak=AudioClip.Create("Authored breaking glass",data.Length,1,rate,false);glassBreak.SetData(data,0);}AudioSource.PlayClipAtPoint(glassBreak,V(p,1.6f),.55f);
   }
   bool UseWindow(){var w=NearbyWindow();if(w==null)return false;if(w.state==2){Say("C · перелезть через окно");return true;}bool outside=hero.p.x>w.p.x;
-   if(w.state==0&&outside&&homes.IndexOf(w.home)==8){if(weapon==0){Say("Заперто изнутри. Для стекла нужен инструмент.");return true;}if(attack>0||stamina<14)return true;breakingWindow=w;glassTime=0;glassHealth=health;stamina-=14;attack=.85f;heroVelocity=Vector2.zero;hero.root.rotation=Quaternion.LookRotation(V((w.p-hero.p).normalized));hero.visual.Attack(weapon,.85f);return true;}
+   if(w.state==0&&outside&&homes.IndexOf(w.home)==6){if(weapon==0){Say("Заперто изнутри. Для стекла нужен инструмент.");return true;}if(attack>0||stamina<14)return true;breakingWindow=w;glassTime=0;glassHealth=health;stamina-=14;attack=.85f;heroVelocity=Vector2.zero;hero.root.rotation=Quaternion.LookRotation(V((w.p-hero.p).normalized));hero.visual.Attack(weapon,.85f);return true;}
    w.state=w.state==0?1:0;Alert(w.p,3);foley.Door(V(w.p,1.6f),w.state==1);Save();return true;
   }
   string FortReason(BackExit e,int mode){if(Climbing||attack>0||heroStagger>0||medicalAction!=MedicalAction.None||cacheSearching||searchSlot>=0)return "Сначала закончи действие";if(BackOccupied(e))return "Проём занят";if(mode!=2&&RoomAt(hero.p)!=e.home)return "Крепления находятся внутри";if(mode==0)return inventory.Count(DistrictItemKind.Wood)<2||inventory.Count(DistrictItemKind.Wire)<1?"Нужно 2 доски и проволока":null;if(mode==1)return TryPack(new[]{Ingredient(DistrictItemKind.Wood,1)},false)?null:"Нужно место для снятой доски";return weapon==0?"Нужен инструмент":stamina<14?"Недостаточно сил":null;}
@@ -56,7 +56,7 @@ namespace Askich {
     if(z.repath<=0||z.barricadeRoute!=e){z.path=FindPath(z.p,approach);z.repath=.7f;z.barricadeRoute=e;}Vector2 old=z.p;if(z.path.Count>0){if(Vector2.Distance(z.p,z.path[0])<.25f)z.path.RemoveAt(0);else z.p=MoveAmongActors(z,(z.path[0]-z.p).normalized*dt*z.speed,true);}Animate(z,z.p-old,true,0);return true;
    }z.barricadeRoute=null;return false;
   }
-  void DrawFortifications(){if(Climbing)return;var w=NearbyWindow();if(w!=null){string hint=w.state==2?"C · перелезть":w.state==1?"C · перелезть    E · закрыть окно":hero.p.x>w.p.x&&homes.IndexOf(w.home)==8?"E · разбить запертое окно · инструмент · громко":"E · открыть окно · тихо";Panel(new Rect(350,495,580,36));GUI.Label(new Rect(362,502,556,26),hint,small);}if(FortWorking){Panel(new Rect(350,545,580,38));GUI.Label(new Rect(362,551,556,28),(fortMode==2?"Взлом":fortMode==0?"Укрепление":"Разбор")+" · "+Mathf.RoundToInt(fortTime/(fortMode==2?.35f:fortMode==0?6:4)*100)+"% · E отмена",small);}}
+  void DrawFortifications(){if(Climbing)return;var w=NearbyWindow();if(w!=null){string hint=w.state==2?"C · перелезть":w.state==1?"C · перелезть    E · закрыть окно":hero.p.x>w.p.x&&homes.IndexOf(w.home)==6?"E · разбить запертое окно · инструмент · громко":"E · открыть окно · тихо";Panel(new Rect(350,495,580,36));GUI.Label(new Rect(362,502,556,26),hint,small);}if(FortWorking){Panel(new Rect(350,545,580,38));GUI.Label(new Rect(362,551,556,28),(fortMode==2?"Взлом":fortMode==0?"Укрепление":"Разбор")+" · "+Mathf.RoundToInt(fortTime/(fortMode==2?.35f:fortMode==0?6:4)*100)+"% · E отмена",small);}}
   void ReleaseFortifications(){if(glassBreak)Destroy(glassBreak);}
  }
 }

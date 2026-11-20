@@ -1,0 +1,53 @@
+PASS three constructed buildings retain 22 stable legacy storage identities
+PASS retired buildings create no roofs doors storage meshes or barriers
+PASS occupied buildings spread across the continuous map
+PASS six persistent infected replace the previous 39
+PASS all six spawn clear of obstacles with increased health
+PASS runner heavy and crawler have distinct increased speed and contact damage
+PASS reachable actual search position: 5 / 0
+PASS reachable actual search position: 5 / 1
+PASS reachable actual search position: 5 / 2
+PASS bathroom bedroom living room and kitchen circulation: 5 (-1.60, 1.55)
+PASS bathroom bedroom living room and kitchen circulation: 5 (-1.65, -0.95)
+PASS bathroom bedroom living room and kitchen circulation: 5 (2.35, -0.30)
+PASS bathroom bedroom living room and kitchen circulation: 5 (1.20, 1.30)
+PASS bathtub bed and couch stop movement: 5
+PASS bathroom partition blocks vision: 5
+PASS reachable actual search position: 6 / 0
+PASS reachable actual search position: 6 / 1
+PASS reachable actual search position: 6 / 2
+PASS bathroom bedroom living room and kitchen circulation: 6 (-1.60, 1.55)
+PASS bathroom bedroom living room and kitchen circulation: 6 (-1.65, -0.95)
+PASS bathroom bedroom living room and kitchen circulation: 6 (2.35, -0.30)
+PASS bathroom bedroom living room and kitchen circulation: 6 (1.20, 1.30)
+PASS bathtub bed and couch stop movement: 6
+PASS bathroom partition blocks vision: 6
+PASS reachable actual search position: 21 / 0
+PASS reachable actual search position: 21 / 1
+PASS reachable actual search position: 21 / 2
+PASS bathroom bedroom living room and kitchen circulation: 21 (-1.60, 1.55)
+PASS bathroom bedroom living room and kitchen circulation: 21 (-1.65, -0.95)
+PASS bathroom bedroom living room and kitchen circulation: 21 (2.35, -0.30)
+PASS bathroom bedroom living room and kitchen circulation: 21 (1.20, 1.30)
+PASS bathtub bed and couch stop movement: 21
+PASS bathroom partition blocks vision: 21
+PASS water pickup remains visible on clear floor (-8.60, -13.80)
+PASS water pickup remains visible on clear floor (-32.60, 34.20)
+PASS water pickup remains visible on clear floor (99.00, 41.00)
+PASS clothing pickup remains on clear floor (-13.50, -13.05)
+PASS clothing pickup remains on clear floor (-38.20, 37.20)
+PASS clothing pickup remains on clear floor (95.00, 7.20)
+PASS retained homes have working rear exits and glazed climbing windows
+PASS E powers television picture spatial static and local glow
+PASS television noise alerts an infected through the nearby exterior wall
+PASS television switch state survives save and reload
+PASS E switches picture noise and glow off together
+PASS real v9 snapshot migrates to the curated district
+PASS migration archives exact original bytes outside rotating autosave backup
+PASS migration preserves original file health and all carried items
+PASS retired storage contents return once without granting unsearched loot
+PASS migration preserves dead infected and relative damage of surviving infected
+PASS old clinic position moves safely with the relocated home
+PASS reloading migrated v10 cannot duplicate recovered items
+PASS duplicate enemy identity rejects corrupted save before mutating world
+PASS three furnished interiors use runtime static batching and independent televisions

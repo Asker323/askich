@@ -57,7 +57,7 @@ namespace Askich {
    Require(queuedPcAction==0,"inventory clears buffered action");
    Reset();Save();attack=.1f;RequestPcStrike(Vector2.up,false);Require(Load()&&queuedPcAction==0,"loading clears buffered action without a save-format change");
    Reset();attack=.1f;RequestPcStrike(Vector2.up,false);guard.stagger=0;guard.p=hero.p+Vector2.up;guard.recovery=0;BeginEnemyAttack(guard);TickEnemyAttack(guard,EnemyImpact+.01f);
-   Require(queuedPcAction==0&&heroStagger>0&&health==74,"real enemy impact interrupts buffer and retains 26 damage");
+   Require(queuedPcAction==0&&heroStagger>0&&health==66,"real enemy impact interrupts buffer and deals increased 34 damage");
    Reset();var keyboard=InputSystem.AddDevice<Keyboard>();keyboard.MakeCurrent();InputSystem.QueueStateEvent(keyboard,new KeyboardState(Key.Space));yield return null;yield return null;
    int sequence=strikeSequence;Require(attack>0&&activeStrike.shove&&stamina<80,"Space input starts live shove through Update");
    yield return new WaitForSeconds(.7f);Require(strikeSequence==sequence&&attack<=0,"holding Space does not repeat shove");
