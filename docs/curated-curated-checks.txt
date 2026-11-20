@@ -50,4 +50,5 @@ PASS migration preserves dead infected and relative damage of surviving infected
 PASS old clinic position moves safely with the relocated home
 PASS reloading migrated v10 cannot duplicate recovered items
 PASS duplicate enemy identity rejects corrupted save before mutating world
+PASS station canopy cuts away while inside staff rooms
 PASS three furnished interiors use runtime static batching and independent televisions

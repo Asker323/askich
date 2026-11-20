@@ -79,7 +79,7 @@ namespace Askich {
   int NearbyLifeFind(){int found=-1;float range=1.25f;for(int i=0;i<lifeFinds.Count;i++){var f=lifeFinds[i];float distance=Vector2.Distance(hero.p,f.p);if((progression.Data.finds&(1<<i))==0&&distance<range&&Sight(hero.p,f.p)){range=distance;found=i;}}return found;}
   bool UseLifeFind(){int i=NearbyLifeFind();if(i<0)return false;var find=lifeFinds[i];if(!TryPack(find.items,true)){Say("Освободи место для находки. Она останется здесь.");return true;}progression.Data.finds|=1<<i;RefreshLifeFinds();Save();Say("Подобрано: "+find.title+". I — предметы, J — навыки и ремесло.");return true;}
   bool UseEngine(){if(!NearEngine)return false;BeginMedical(MedicalAction.Salvage);return true;}
-  void TickWorldLife(float dt){progression.Advance(dt);atmosphere.SetTime(progression.Data.minute/60);bool underCanopy=new Rect(89.5f,-.3f,13,8).Contains(hero.p);canopyPanel.SetActive(!underCanopy);canopyStripe.SetActive(!underCanopy);foreach(var light in worldNightLights)light.enabled=atmosphere.Daylight<.65f;}
+  void TickWorldLife(float dt){progression.Advance(dt);atmosphere.SetTime(progression.Data.minute/60);bool underCanopy=new Rect(89.5f,-.3f,13,8).Contains(hero.p)||RoomAt(hero.p)==homes[StationHome];canopyPanel.SetActive(!underCanopy);canopyStripe.SetActive(!underCanopy);foreach(var light in worldNightLights)light.enabled=atmosphere.Daylight<.65f;}
   string ClockText{get{int minute=Mathf.FloorToInt(progression.Data.minute);return (minute/60).ToString("D2")+":"+(minute%60).ToString("D2");}}
   void DrawWorldLife(){
    int find=NearbyLifeFind();if(find>=0)GUI.Label(new Rect(35,235,720,30),lifeFinds[find].title+" · подобрать / E",small);
